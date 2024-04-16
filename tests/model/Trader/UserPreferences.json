@@ -1,0 +1,29 @@
+[
+  {
+    "accounts": [
+      {
+        "accountNumber": "string",
+        "primaryAccount": false,
+        "type": "string",
+        "nickName": "string",
+        "accountColor": "string",
+        "displayAcctId": "string",
+        "autoPositionEffect": false
+      }
+    ],
+    "streamerInfo": [
+      {
+        "streamerSocketUrl": "string",
+        "schwabClientCustomerId": "string",
+        "schwabClientCorrelId": "string",
+        "schwabClientChannel": "string",
+        "schwabClientFunctionId": "string"
+      }
+    ],
+    "offers": [
+      {
+        "level2Permissions": false
+      }
+    ]
+  }
+]

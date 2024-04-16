@@ -1,0 +1,41 @@
+{
+  "securitiesAccount": {
+    "type": "CASH",
+    "accountNumber": "string",
+    "roundTrips": 0,
+    "isDayTrader": false,
+    "isClosingOnlyRestricted": false,
+    "pfcbFlag": false,
+    "positions": [
+      {
+        "shortQuantity": 0,
+        "averagePrice": 0,
+        "currentDayProfitLoss": 0,
+        "currentDayProfitLossPercentage": 0,
+        "longQuantity": 0,
+        "settledLongQuantity": 0,
+        "settledShortQuantity": 0,
+        "agedQuantity": 0,
+        "instrument": {
+          "cusip": "string",
+          "symbol": "string",
+          "description": "string",
+          "instrumentId": 0,
+          "netChange": 0,
+          "type": "SWEEP_VEHICLE"
+        },
+        "marketValue": 0,
+        "maintenanceRequirement": 0,
+        "averageLongPrice": 0,
+        "averageShortPrice": 0,
+        "taxLotAverageLongPrice": 0,
+        "taxLotAverageShortPrice": 0,
+        "longOpenProfitLoss": 0,
+        "shortOpenProfitLoss": 0,
+        "previousSessionLongQuantity": 0,
+        "previousSessionShortQuantity": 0,
+        "currentDayCost": 0
+      }
+    ]
+  }
+}

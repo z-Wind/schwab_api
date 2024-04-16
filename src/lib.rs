@@ -15,5 +15,5 @@ unused_allocation
     clippy::module_name_repetitions
 )]
 
-mod error;
-mod servicer;
+pub mod error;
+pub mod servicer;

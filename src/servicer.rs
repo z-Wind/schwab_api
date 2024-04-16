@@ -1,4 +1,4 @@
-mod api;
+pub mod api;
 mod endpoints;
-mod model;
+pub mod model;
 mod token;

@@ -1,0 +1,86 @@
+[
+  {
+    "activityId": 0,
+    "time": "2024-04-16T01:00:37.059Z",
+    "user": {
+      "cdDomainId": "string",
+      "login": "string",
+      "type": "ADVISOR_USER",
+      "userId": 0,
+      "systemUserName": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "brokerRepCode": "string"
+    },
+    "description": "string",
+    "accountNumber": "string",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-16T01:00:37.059Z",
+    "settlementDate": "2024-04-16T01:00:37.059Z",
+    "positionId": 0,
+    "orderId": 0,
+    "netAmount": 0,
+    "activityType": "ACTIVITY_CORRECTION",
+    "transferItems": [
+      {
+        "instrument": {
+          "cusip": "string",
+          "symbol": "string",
+          "description": "string",
+          "instrumentId": 0,
+          "netChange": 0,
+          "type": "SWEEP_VEHICLE"
+        },
+        "amount": 0,
+        "cost": 0,
+        "price": 0,
+        "feeType": "COMMISSION",
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 0,
+    "time": "2024-04-16T01:20:02.219Z",
+    "user": {
+      "cdDomainId": "string",
+      "login": "string",
+      "type": "ADVISOR_USER",
+      "userId": 0,
+      "systemUserName": "string",
+      "firstName": "string",
+      "lastName": "string",
+      "brokerRepCode": "string"
+    },
+    "description": "string",
+    "accountNumber": "string",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-16T01:20:02.220Z",
+    "settlementDate": "2024-04-16T01:20:02.220Z",
+    "positionId": 0,
+    "orderId": 0,
+    "netAmount": 0,
+    "activityType": "ACTIVITY_CORRECTION",
+    "transferItems": [
+      {
+        "instrument": {
+          "cusip": "string",
+          "symbol": "string",
+          "description": "string",
+          "instrumentId": 0,
+          "netChange": 0,
+          "type": "SWEEP_VEHICLE"
+        },
+        "amount": 0,
+        "cost": 0,
+        "price": 0,
+        "feeType": "COMMISSION",
+        "positionEffect": "OPENING"
+      }
+    ]
+  }
+]

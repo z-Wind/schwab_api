@@ -1,0 +1,70 @@
+{
+  "AAAIX": {
+    "assetMainType": "MUTUAL_FUND",
+    "symbol": "AAAIX",
+    "realtime": true,
+    "ssid": -1,
+    "reference": {
+      "cusip": "025085853",
+      "description": "American Century Strategic Allocation: Aggressive Fund - I Class",
+      "exchange": "3",
+      "exchangeName": "Mutual Fund"
+    },
+    "quote": {
+      "52WeekHigh": 9.24,
+      "52WeekLow": 7.48,
+      "closePrice": 9.12,
+      "nAV": 0,
+      "netChange": -0.03,
+      "netPercentChange": -0.32894736842104566,
+      "securityStatus": "Normal",
+      "totalVolume": 0,
+      "tradeTime": 0
+    },
+    "fundamental": {
+      "avg10DaysVolume": 0,
+      "avg1YearVolume": 0,
+      "divAmount": 0,
+      "divFreq": 0,
+      "divPayAmount": 0,
+      "divYield": 0.83059,
+      "eps": 0,
+      "fundLeverageFactor": 0,
+      "peRatio": 0
+    }
+  },
+  "AAAHX": {
+    "assetMainType": "MUTUAL_FUND",
+    "symbol": "AAAHX",
+    "realtime": true,
+    "ssid": -1,
+    "reference": {
+      "cusip": "02507J789",
+      "description": "One Choice Blend+ 2015 Portfolio  I Class",
+      "exchange": "3",
+      "exchangeName": "Mutual Fund"
+    },
+    "quote": {
+      "52WeekHigh": 10.64,
+      "52WeekLow": 9.95,
+      "closePrice": 10.53,
+      "nAV": 0,
+      "netChange": 0,
+      "netPercentChange": 0,
+      "securityStatus": "Normal",
+      "totalVolume": 0,
+      "tradeTime": 0
+    },
+    "fundamental": {
+      "avg10DaysVolume": 0,
+      "avg1YearVolume": 0,
+      "divAmount": 0,
+      "divFreq": 0,
+      "divPayAmount": 0,
+      "divYield": 0,
+      "eps": 0,
+      "fundLeverageFactor": 0,
+      "peRatio": 0
+    }
+  }
+}
