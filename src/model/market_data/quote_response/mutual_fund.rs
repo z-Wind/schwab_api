@@ -2,7 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
-use crate::servicer::model::market_data::quote_response::equity::Fundamental;
+use crate::model::market_data::quote_response::equity::Fundamental;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,7 +31,7 @@ pub struct QuoteMutualFund {
     pub net_percent_change: f64,
     pub security_status: String,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
@@ -43,7 +43,6 @@ pub struct ReferenceMutualFund {
     pub exchange: String,
     pub exchange_name: String,
 }
-
 
 #[cfg(test)]
 mod tests {

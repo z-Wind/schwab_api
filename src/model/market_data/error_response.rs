@@ -29,8 +29,6 @@ pub struct Source {
 mod tests {
     use super::*;
 
-    use std::collections::HashMap;
-
     #[test]
     fn test_de() {
         let json = include_str!(concat!(

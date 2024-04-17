@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::servicer::model::trader::accounts::AccountsInstrument;
+use crate::model::trader::accounts::AccountsInstrument;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -94,8 +94,8 @@ mod tests {
         println!("{val:?}");
         assert!(val.is_ok());
     }
-	
-	#[test]
+
+    #[test]
     fn test_de_orders() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),

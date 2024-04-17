@@ -11,8 +11,8 @@ use std::time::SystemTime;
 use url::Url;
 
 use crate::error::Error;
-use crate::servicer::token::local_server;
-use crate::servicer::token::Token;
+use crate::token::local_server;
+use crate::token::Token;
 
 #[derive(Debug)]
 pub(crate) struct Authorizer {

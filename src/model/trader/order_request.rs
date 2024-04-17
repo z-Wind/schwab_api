@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::servicer::model::trader::order::OrderActivity;
-use crate::servicer::model::trader::order::OrderLegCollection;
+use crate::model::trader::order::OrderActivity;
+use crate::model::trader::order::OrderLegCollection;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -9,7 +9,7 @@ pub struct CandleList {
     pub candles: Vec<Candle>,
     pub empty: bool,
     pub previous_close: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub previous_close_date: chrono::DateTime<chrono::Utc>,
     #[serde(rename = "previousCloseDateISO8601")]
     pub previous_close_date_iso8601: Option<chrono::DateTime<chrono::Utc>>,
@@ -21,7 +21,7 @@ pub struct CandleList {
 #[serde(rename_all = "camelCase")]
 pub struct Candle {
     pub close: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub datetime: chrono::DateTime<chrono::Utc>,
     #[serde(rename = "dateTimeISO8601")]
     pub datetime_iso8601: Option<chrono::DateTime<chrono::Utc>>,
@@ -34,8 +34,6 @@ pub struct Candle {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-	use std::collections::HashMap;
 
     #[test]
     fn test_de() {

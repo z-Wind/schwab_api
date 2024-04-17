@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_with::{serde_as, TimestampMilliSeconds};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,17 +37,17 @@ pub struct FundamentalInst {
     pub pb_ratio: f64,
     pub pr_ratio: f64,
     pub pcf_ratio: f64,
-	#[serde(rename = "grossMarginTTM")]
+    #[serde(rename = "grossMarginTTM")]
     pub gross_margin_ttm: f64,
-	#[serde(rename = "grossMarginMRQ")]
+    #[serde(rename = "grossMarginMRQ")]
     pub gross_margin_mrq: f64,
-	#[serde(rename = "netProfitMarginTTM")]
+    #[serde(rename = "netProfitMarginTTM")]
     pub net_profit_margin_ttm: f64,
-	#[serde(rename = "netProfitMarginMRQ")]
+    #[serde(rename = "netProfitMarginMRQ")]
     pub net_profit_margin_mrq: f64,
-	#[serde(rename = "operatingMarginTTM")]
+    #[serde(rename = "operatingMarginTTM")]
     pub operating_margin_ttm: f64,
-	#[serde(rename = "operatingMarginMRQ")]
+    #[serde(rename = "operatingMarginMRQ")]
     pub operating_margin_mrq: f64,
     pub return_on_equity: f64,
     pub return_on_assets: f64,
@@ -60,13 +59,13 @@ pub struct FundamentalInst {
     pub lt_debt_to_equity: f64,
     pub total_debt_to_equity: f64,
     #[serde(rename = "epsTTM")]
-	pub eps_ttm: f64,
+    pub eps_ttm: f64,
     #[serde(rename = "epsChangePercentTTM")]
-	pub eps_change_percent_ttm: f64,
+    pub eps_change_percent_ttm: f64,
     pub eps_change_year: f64,
     pub eps_change: f64,
     pub rev_change_year: f64,
-	#[serde(rename = "revChangeTTM")]
+    #[serde(rename = "revChangeTTM")]
     pub rev_change_ttm: f64,
     pub rev_change_in: f64,
     pub shares_outstanding: f64,

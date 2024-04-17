@@ -2,7 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 
-type Markets = HashMap<String, HashMap<String, Hours>>;
+pub type Markets = HashMap<String, HashMap<String, Hours>>;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

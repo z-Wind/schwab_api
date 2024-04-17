@@ -2,20 +2,22 @@ mod endpoints;
 mod market_data;
 mod trader;
 
-use reqwest::{Client, StatusCode};
-use std::collections::HashMap;
+use reqwest::Client;
 
-use super::{model, token::TokenChecker};
+use super::token::TokenChecker;
 use crate::error::Error;
 
 #[derive(Debug)]
-pub(crate) struct API {
+pub struct API {
     token_checker: TokenChecker,
     client: Client,
 }
 
 impl API {
-    pub(crate) async fn new(client_id: String, secret: String) -> Result<Self, Error> {
+    /// # Panics
+    ///
+    /// Will panic if no home dir
+    pub async fn new(client_id: String, secret: String) -> Result<Self, Error> {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
@@ -30,7 +32,10 @@ impl API {
         })
     }
 
-    pub(crate) async fn get_quotes(&self, symbols: Vec<String>) -> Result<market_data::GetQuotesRequest, Error> {
+    pub async fn get_quotes(
+        &self,
+        symbols: Vec<String>,
+    ) -> Result<market_data::GetQuotesRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
         let req = self
             .client
@@ -39,7 +44,7 @@ impl API {
         Ok(market_data::GetQuotesRequest::new(req, symbols))
     }
 
-    pub(crate) async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
+    pub async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
         let req = self
             .client
@@ -70,18 +75,20 @@ mod tests {
         let api = client().await;
         dbg!(api
             .get_quotes(vec!["VTI".into(), "VBR".into()])
-            .await.unwrap()
-			.send()
+            .await
+            .unwrap()
+            .send()
             .await
             .unwrap());
     }
-	
-	#[tokio::test]
+
+    #[tokio::test]
     async fn test_get_quote() {
         let api = client().await;
         dbg!(api
             .get_quote("VTI".into())
-			.await.unwrap()
+            .await
+            .unwrap()
             .send()
             .await
             .unwrap());

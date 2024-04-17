@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -29,10 +28,10 @@ pub struct ExtendedMarket {
     pub last_price: f64,
     pub last_size: i64,
     pub mark: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub quote_time: chrono::DateTime<chrono::Utc>,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
@@ -70,13 +69,13 @@ pub struct QuoteEquity {
     pub ask_micid: Option<String>,
     pub ask_price: f64,
     pub ask_size: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub ask_time: chrono::DateTime<chrono::Utc>,
     #[serde(rename = "bidMICId")]
     pub bid_micid: Option<String>,
     pub bid_price: f64,
     pub bid_size: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub bid_time: chrono::DateTime<chrono::Utc>,
     pub close_price: f64,
     pub high_price: f64,
@@ -91,11 +90,11 @@ pub struct QuoteEquity {
     pub net_change: f64,
     pub net_percent_change: Option<f64>,
     pub open_price: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub quote_time: chrono::DateTime<chrono::Utc>,
     pub security_status: String,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
     pub volatility: f64,
 }
@@ -123,7 +122,7 @@ pub struct RegularMarket {
     pub regular_market_last_size: i64,
     pub regular_market_net_change: f64,
     pub regular_market_percent_change: Option<f64>,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub regular_market_trade_time: chrono::DateTime<chrono::Utc>,
 }
 
@@ -131,7 +130,7 @@ pub struct RegularMarket {
 mod tests {
     use super::*;
 
-	use std::collections::HashMap;
+    use std::collections::HashMap;
 
     #[test]
     fn test_de() {

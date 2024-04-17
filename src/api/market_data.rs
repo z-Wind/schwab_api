@@ -1,11 +1,11 @@
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
-use crate::servicer::api::Error;
-use crate::servicer::model;
+use crate::api::Error;
+use crate::model;
 
 #[derive(Debug)]
-pub(crate) struct GetQuotesRequest {
+pub struct GetQuotesRequest {
     req: RequestBuilder,
 
     symbols: Vec<String>,
@@ -66,7 +66,7 @@ impl GetQuotesRequest {
 }
 
 #[derive(Debug)]
-pub(crate) struct GetQuoteRequest {
+pub struct GetQuoteRequest {
     req: RequestBuilder,
 
     symbol: String,
@@ -142,6 +142,7 @@ mod tests {
 
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
+    use reqwest::Client;
 
     #[tokio::test]
     async fn test_get_quotes_request() {
@@ -149,7 +150,7 @@ mod tests {
         let mut server = mockito::Server::new_async().await;
 
         // Use one of these addresses to configure your client
-        let host = server.host_with_port();
+        let _host = server.host_with_port();
         let url = server.url();
 
         // Create a mock
@@ -198,7 +199,7 @@ mod tests {
         let mut server = mockito::Server::new_async().await;
 
         // Use one of these addresses to configure your client
-        let host = server.host_with_port();
+        let _host = server.host_with_port();
         let url = server.url();
 
         // Create a mock
