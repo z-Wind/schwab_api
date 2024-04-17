@@ -1,11 +1,11 @@
+mod endpoints;
+mod market_data;
+mod trader;
+
 use reqwest::{Client, StatusCode};
 use std::collections::HashMap;
 
-use super::{
-    endpoints::{self, Endpoint, EndpointPriceHistory, EndpointQuote},
-    model,
-    token::TokenChecker,
-};
+use super::{model, token::TokenChecker};
 use crate::error::Error;
 
 #[derive(Debug)]
@@ -29,6 +29,27 @@ impl API {
             client,
         })
     }
+
+    pub(crate) async fn get_quotes(&self, symbols: Vec<String>) -> Result<market_data::GetQuotesRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+        let req = self
+            .client
+            .get(endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quotes).url_endpoint())
+            .bearer_auth(access_token);
+        Ok(market_data::GetQuotesRequest::new(req, symbols))
+    }
+
+    pub(crate) async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+        let req = self
+            .client
+            .get(
+                endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quote { symbol_id: &symbol })
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Ok(market_data::GetQuoteRequest::new(req, symbol))
+    }
 }
 
 #[cfg(test)]
@@ -42,5 +63,27 @@ mod tests {
         API::new(client_id.to_string(), secret.to_string())
             .await
             .unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_get_quotes() {
+        let api = client().await;
+        dbg!(api
+            .get_quotes(vec!["VTI".into(), "VBR".into()])
+            .await.unwrap()
+			.send()
+            .await
+            .unwrap());
+    }
+	
+	#[tokio::test]
+    async fn test_get_quote() {
+        let api = client().await;
+        dbg!(api
+            .get_quote("VTI".into())
+			.await.unwrap()
+            .send()
+            .await
+            .unwrap());
     }
 }

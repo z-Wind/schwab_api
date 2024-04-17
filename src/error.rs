@@ -14,4 +14,10 @@ pub enum Error {
     NoMatchJsonFormat(String),
     #[error("Reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
+	#[error("JSON error: {0}")]
+	Json(#[from] serde_json::Error),
+	#[error("ErrorResponse: {0:?}")]
+    ErrorResponse(crate::servicer::model::ErrorResponse),
+	#[error("ServiceError: {0:?}")]
+    ServiceError(crate::servicer::model::ServiceError),
 }

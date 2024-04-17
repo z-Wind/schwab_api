@@ -159,7 +159,7 @@ mod tests {
     fn test_save_token() {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
-            .join("tdameritrade")
+            .join("schwab")
             .join("token")
             .join("normal.json");
 
@@ -170,7 +170,7 @@ mod tests {
     fn test_load_token() {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
-            .join("tdameritrade")
+            .join("schwab")
             .join("token")
             .join("normal.json");
 

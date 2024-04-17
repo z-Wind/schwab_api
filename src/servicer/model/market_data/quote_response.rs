@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::{serde_as, TimestampMilliSeconds};
 use std::collections::HashMap;
+use std::ops::Deref;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
