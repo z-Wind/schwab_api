@@ -55,6 +55,36 @@ impl API {
             .bearer_auth(access_token);
         Ok(market_data::GetQuoteRequest::new(req, symbol))
     }
+
+    pub async fn get_option_chains(
+        &self,
+        symbol: String,
+    ) -> Result<market_data::GetOptionChainsRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+        let req = self
+            .client
+            .get(
+                endpoints::Endpoint::OptionChain(endpoints::EndpointOptionChain::Chains)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Ok(market_data::GetOptionChainsRequest::new(req, symbol))
+    }
+
+    pub async fn get_option_expiration_chain(
+        &self,
+        symbol: String,
+    ) -> Result<market_data::GetOptionChainsRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+        let req = self
+            .client
+            .get(
+                endpoints::Endpoint::OptionExpirationChain(endpoints::EndpointOptionExpirationChain::ExpirationChain)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Ok(market_data::GetOptionChainsRequest::new(req, symbol))
+    }
 }
 
 #[cfg(test)]
@@ -87,6 +117,30 @@ mod tests {
         let api = client().await;
         dbg!(api
             .get_quote("VTI".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_option_chains() {
+        let api = client().await;
+        dbg!(api
+            .get_option_chains("AAPL".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_option_expiration_chain() {
+        let api = client().await;
+        dbg!(api
+            .get_option_chains("AAPL".into())
             .await
             .unwrap()
             .send()
