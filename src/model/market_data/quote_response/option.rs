@@ -31,7 +31,7 @@ pub struct QuoteOption {
     pub high_price: f64,
     pub ind_ask_price: f64,
     pub ind_bid_price: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub ind_quote_time: chrono::DateTime<chrono::Utc>,
     pub implied_yield: f64,
     pub last_price: f64,
@@ -45,7 +45,7 @@ pub struct QuoteOption {
     pub net_percent_change: f64,
     pub open_interest: f64,
     pub open_price: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub quote_time: chrono::DateTime<chrono::Utc>,
     pub rho: f64,
     pub security_status: String,
@@ -53,7 +53,7 @@ pub struct QuoteOption {
     pub theta: f64,
     pub time_value: f64,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
     pub underlying_price: f64,
     pub vega: f64,
@@ -76,7 +76,7 @@ pub struct ReferenceOption {
     pub expiration_month: i64,
     pub expiration_year: i64,
     pub is_penny_pilot: bool,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub last_trading_day: chrono::DateTime<chrono::Utc>,
     pub multiplier: i64,
     pub settlement_type: String,
@@ -85,7 +85,6 @@ pub struct ReferenceOption {
     // not in schama
     pub uv_expiration_type: String,
 }
-
 
 #[cfg(test)]
 mod tests {

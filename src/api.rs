@@ -37,23 +37,22 @@ impl API {
         symbols: Vec<String>,
     ) -> Result<market_data::GetQuotesRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
-        let req = self
-            .client
-            .get(endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quotes).url_endpoint())
-            .bearer_auth(access_token);
-        Ok(market_data::GetQuotesRequest::new(req, symbols))
+
+        Ok(market_data::GetQuotesRequest::new(
+            self.client.clone(),
+            access_token,
+            symbols,
+        ))
     }
 
     pub async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
-        let req = self
-            .client
-            .get(
-                endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quote { symbol_id: &symbol })
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
-        Ok(market_data::GetQuoteRequest::new(req, symbol))
+
+        Ok(market_data::GetQuoteRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+        ))
     }
 
     pub async fn get_option_chains(
@@ -61,29 +60,102 @@ impl API {
         symbol: String,
     ) -> Result<market_data::GetOptionChainsRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
-        let req = self
-            .client
-            .get(
-                endpoints::Endpoint::OptionChain(endpoints::EndpointOptionChain::Chains)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
-        Ok(market_data::GetOptionChainsRequest::new(req, symbol))
+
+        Ok(market_data::GetOptionChainsRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+        ))
     }
 
     pub async fn get_option_expiration_chain(
         &self,
         symbol: String,
-    ) -> Result<market_data::GetOptionChainsRequest, Error> {
+    ) -> Result<market_data::GetOptionExpirationChainRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
-        let req = self
-            .client
-            .get(
-                endpoints::Endpoint::OptionExpirationChain(endpoints::EndpointOptionExpirationChain::ExpirationChain)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
-        Ok(market_data::GetOptionChainsRequest::new(req, symbol))
+
+        Ok(market_data::GetOptionExpirationChainRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+        ))
+    }
+
+    pub async fn get_price_history(
+        &self,
+        symbol: String,
+    ) -> Result<market_data::GetPriceHistoryRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetPriceHistoryRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+        ))
+    }
+
+    pub async fn get_movers(&self, symbol: String) -> Result<market_data::GetMoversRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetMoversRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+        ))
+    }
+
+    pub async fn get_markets(
+        &self,
+        markets: Vec<String>,
+    ) -> Result<market_data::GetMarketsRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetMarketsRequest::new(
+            self.client.clone(),
+            access_token,
+            markets,
+        ))
+    }
+
+    pub async fn get_market(
+        &self,
+        market_id: String,
+    ) -> Result<market_data::GetMarketRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetMarketRequest::new(
+            self.client.clone(),
+            access_token,
+            market_id,
+        ))
+    }
+
+    pub async fn get_instrucments(
+        &self,
+        symbol: String,
+        projection: String,
+    ) -> Result<market_data::GetInstrucmentsRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetInstrucmentsRequest::new(
+            self.client.clone(),
+            access_token,
+            symbol,
+            projection,
+        ))
+    }
+
+    pub async fn get_instrucment(
+        &self,
+        cusip_id: String,
+    ) -> Result<market_data::GetInstrucmentRequest, Error> {
+        let access_token = self.token_checker.get_access_token().await?;
+
+        Ok(market_data::GetInstrucmentRequest::new(
+            self.client.clone(),
+            access_token,
+            cusip_id,
+        ))
     }
 }
 
@@ -141,6 +213,78 @@ mod tests {
         let api = client().await;
         dbg!(api
             .get_option_chains("AAPL".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_price_history() {
+        let api = client().await;
+        dbg!(api
+            .get_price_history("AAPL".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_movers() {
+        let api = client().await;
+        dbg!(api
+            .get_movers("$DJI".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_markets() {
+        let api = client().await;
+        dbg!(api
+            .get_markets(vec!["equity".to_string(), "option".to_string()])
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_market() {
+        let api = client().await;
+        dbg!(api
+            .get_market("equity".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_instrucments() {
+        let api = client().await;
+        dbg!(api
+            .get_instrucments("VTI".into(), "symbol-search".into())
+            .await
+            .unwrap()
+            .send()
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_instrucment() {
+        let api = client().await;
+        dbg!(api
+            .get_instrucment("037833100".into())
             .await
             .unwrap()
             .send()

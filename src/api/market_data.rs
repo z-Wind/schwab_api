@@ -1,8 +1,10 @@
-use reqwest::{RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
 use crate::api::Error;
 use crate::model;
+
+use super::endpoints;
 
 #[derive(Debug)]
 pub struct GetQuotesRequest {
@@ -14,7 +16,7 @@ pub struct GetQuotesRequest {
     // possible root nodes are quote, fundamental, extended, reference, regular. Sending quote, fundamental in request will return quote and fundamental data in response.
     // Dont send this attribute for full response.
     // Default value : all
-    fields: Vec<String>,
+    fields: Option<Vec<String>>,
 
     // Include indicative symbol quotes for all ETF symbols in request.
     // If ETF symbol ABC is in request and indicative=true API will return quotes for ABC and its corresponding indicative quote for $ABC.IV
@@ -22,17 +24,24 @@ pub struct GetQuotesRequest {
 }
 
 impl GetQuotesRequest {
-    pub(crate) fn new(req: RequestBuilder, symbols: Vec<String>) -> Self {
+    pub(crate) fn new(client: Client, access_token: String, symbols: Vec<String>) -> Self {
+        let req = client
+            .get(endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quotes).url_endpoint())
+            .bearer_auth(access_token);
+        Self::new_with(req, symbols)
+    }
+
+    fn new_with(req: RequestBuilder, symbols: Vec<String>) -> Self {
         Self {
             req,
             symbols,
-            fields: vec!["all".to_string()],
+            fields: None,
             indicative: None,
         }
     }
 
     pub fn fields(mut self, val: Vec<String>) -> Self {
-        self.fields = val;
+        self.fields = Some(val);
         self
     }
 
@@ -42,10 +51,10 @@ impl GetQuotesRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[
-            ("symbols", self.symbols.join(",")),
-            ("fields", self.fields.join(",")),
-        ]);
+        let mut req = self.req.query(&[("symbols", self.symbols.join(","))]);
+        if let Some(x) = self.fields {
+            req = req.query(&[("fields", x.join(","))]);
+        }
         if let Some(x) = self.indicative {
             req = req.query(&[("indicative", x.to_string())]);
         }
@@ -79,25 +88,38 @@ pub struct GetQuoteRequest {
     // possible root nodes are quote, fundamental, extended, reference, regular. Sending quote, fundamental in request will return quote and fundamental data in response.
     // Dont send this attribute for full response.
     // Default value : all
-    fields: Vec<String>,
+    fields: Option<Vec<String>>,
 }
 
 impl GetQuoteRequest {
-    pub(crate) fn new(req: RequestBuilder, symbol: String) -> Self {
+    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quote { symbol_id: &symbol })
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String) -> Self {
         Self {
             req,
             symbol,
-            fields: vec!["all".to_string()],
+            fields: None,
         }
     }
 
     pub fn fields(mut self, val: Vec<String>) -> Self {
-        self.fields = val;
+        self.fields = Some(val);
         self
     }
 
     fn build(self) -> RequestBuilder {
-        let req = self.req.query(&[("fields", self.fields.join(","))]);
+        let mut req = self.req;
+        if let Some(x) = self.fields {
+            req = req.query(&[("fields", x.join(","))]);
+        }
 
         req
     }
@@ -127,52 +149,77 @@ pub struct GetOptionChainsRequest {
     // Contract Type
     // Available values : CALL, PUT, ALL
     contract_type: Option<String>,
+
     // The Number of strikes to return above or below the at-the-money price
     strike_count: Option<i64>,
+
     // Underlying quotes to be included
     include_underlying_quote: Option<bool>,
+
     // OptionChain strategy.
     // Default is SINGLE.
     // ANALYTICAL allows the use of volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values.
     // Available values : SINGLE, ANALYTICAL, COVERED, VERTICAL, CALENDAR, STRANGLE, STRADDLE, BUTTERFLY, CONDOR, DIAGONAL, COLLAR, ROLL
-    strategy: String,
+    strategy: Option<String>,
+
     // Strike interval for spread strategy chains (see strategy param)
     interval: Option<f64>,
+
     // Strike Price
     strike: Option<f64>,
+
     // Range(ITM/NTM/OTM etc.)
     range: Option<String>,
+
     // From date(pattern: yyyy-MM-dd)
     from_date: Option<chrono::NaiveDate>,
+
     // To date (pattern: yyyy-MM-dd)
     to_date: Option<chrono::NaiveDate>,
+
     // Volatility to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
     volatility: Option<f64>,
+
     // Underlying price to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
     underlying_price: Option<f64>,
+
     // Interest rate to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
     interest_rate: Option<f64>,
+
     // Days to expiration to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
     days_to_expiration: Option<i64>,
+
     // Expiration month
     // Available values : JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC, ALL
     exp_month: Option<String>,
+
     // Option Type
     option_type: Option<String>,
+
     // Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
     // Available values : PN, NP, PP
     entitlement: Option<String>,
 }
 
 impl GetOptionChainsRequest {
-    pub(crate) fn new(req: RequestBuilder, symbol: String) -> Self {
+    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::OptionChain(endpoints::EndpointOptionChain::Chains)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String) -> Self {
         Self {
             req,
             symbol,
             contract_type: None,
             strike_count: None,
             include_underlying_quote: None,
-            strategy: "SINGLE".to_string(),
+            strategy: None,
             interval: None,
             strike: None,
             range: None,
@@ -204,7 +251,7 @@ impl GetOptionChainsRequest {
     }
 
     pub fn strategy(mut self, val: String) -> Self {
-        self.strategy = val;
+        self.strategy = Some(val);
         self
     }
 
@@ -223,11 +270,13 @@ impl GetOptionChainsRequest {
         self
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn from_date(mut self, val: chrono::NaiveDate) -> Self {
         self.from_date = Some(val);
         self
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_date(mut self, val: chrono::NaiveDate) -> Self {
         self.to_date = Some(val);
         self
@@ -269,10 +318,7 @@ impl GetOptionChainsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[
-            ("symbol", self.symbol.clone()),
-            ("strategy", self.strategy.clone()),
-        ]);
+        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
         if let Some(x) = self.contract_type.clone() {
             req = req.query(&[("contractType", x)]);
         }
@@ -281,6 +327,9 @@ impl GetOptionChainsRequest {
         }
         if let Some(x) = self.include_underlying_quote {
             req = req.query(&[("includeUnderlyingQuote", x)]);
+        }
+        if let Some(x) = self.strategy.clone() {
+            req = req.query(&[("strategy", x)]);
         }
         if let Some(x) = self.interval {
             req = req.query(&[("interval", x)]);
@@ -346,14 +395,24 @@ pub struct GetOptionExpirationChainRequest {
 }
 
 impl GetOptionExpirationChainRequest {
-    pub(crate) fn new(req: RequestBuilder, symbol: String) -> Self {
+    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+        let req: RequestBuilder = client
+            .get(
+                endpoints::Endpoint::OptionExpirationChain(
+                    endpoints::EndpointOptionExpirationChain::ExpirationChain,
+                )
+                .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String) -> Self {
         Self { req, symbol }
     }
 
     fn build(self) -> RequestBuilder {
-        let req = self.req.query(&[("symbol", self.symbol.clone())]);
-
-        req
+        self.req.query(&[("symbol", self.symbol.clone())])
     }
 
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
@@ -372,21 +431,492 @@ impl GetOptionExpirationChainRequest {
     }
 }
 
-// pub(crate) struct PriceHistoryRequestBuilder {
-// req: RequestBuilder,
-// }
+#[derive(Debug)]
+pub struct GetPriceHistoryRequest {
+    req: RequestBuilder,
 
-// pub(crate) struct MoverRequestBuilder {
-// req: RequestBuilder,
-// }
+    symbol: String,
 
-// pub(crate) struct MarketHourRequestBuilder {
-// req: RequestBuilder,
-// }
+    // The chart period being requested.
+    // Available values : day, month, year, ytd
+    period_type: Option<String>,
 
-// pub(crate) struct InstrumentRequestBuilder {
-// req: RequestBuilder,
-// }
+    // The number of chart period types.
+    //
+    // If the periodType is
+    // • day - valid values are 1, 2, 3, 4, 5, 10
+    // • month - valid values are 1, 2, 3, 6
+    // • year - valid values are 1, 2, 3, 5, 10, 15, 20
+    // • ytd - valid values are 1
+    //
+    // If the period is not specified and the periodType is
+    // • day - default period is 10.
+    // • month - default period is 1.
+    // • year - default period is 1.
+    // • ytd - default period is 1.
+    period: Option<i64>,
+
+    // The time frequencyType
+    //
+    // If the periodType is
+    // • day - valid value is minute
+    // • month - valid values are daily, weekly
+    // • year - valid values are daily, weekly, monthly
+    // • ytd - valid values are daily, weekly
+    //
+    // If frequencyType is not specified, default value depends on the periodType
+    // • day - defaulted to minute.
+    // • month - defaulted to weekly.
+    // • year - defaulted to monthly.
+    // • ytd - defaulted to weekly.
+    //
+    // Available values : minute, daily, weekly, monthly
+    frequency_type: Option<String>,
+
+    // The time frequency duration
+    //
+    // If the frequencyType is
+    // • minute - valid values are 1, 5, 10, 15, 30
+    // • daily - valid value is 1
+    // • weekly - valid value is 1
+    // • monthly - valid value is 1
+    //
+    // If frequency is not specified, default value is 1
+    frequency: Option<i64>,
+
+    // The start date, Time in milliseconds since the UNIX epoch eg 1451624400000
+    // If not specified startDate will be (endDate - period) excluding weekends and holidays.
+    start_date: Option<i64>,
+
+    // The end date, Time in milliseconds since the UNIX epoch eg 1451624400000
+    // If not specified, the endDate will default to the market close of previous business day.
+    end_date: Option<i64>,
+
+    // Need extended hours data
+    need_extended_hours_data: Option<bool>,
+
+    // Need previous close price/date
+    need_previous_close: Option<bool>,
+}
+
+impl GetPriceHistoryRequest {
+    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::PriceHistory(endpoints::EndpointPriceHistory::PriceHistory)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String) -> Self {
+        Self {
+            req,
+            symbol,
+            period_type: None,
+            period: None,
+            frequency_type: None,
+            frequency: None,
+            start_date: None,
+            end_date: None,
+            need_extended_hours_data: None,
+            need_previous_close: None,
+        }
+    }
+
+    pub fn period_type(mut self, val: String) -> Self {
+        self.period_type = Some(val);
+        self
+    }
+
+    pub fn period(mut self, val: i64) -> Self {
+        self.period = Some(val);
+        self
+    }
+
+    pub fn frequency_type(mut self, val: String) -> Self {
+        self.frequency_type = Some(val);
+        self
+    }
+
+    pub fn frequency(mut self, val: i64) -> Self {
+        self.frequency = Some(val);
+        self
+    }
+
+    pub fn start_date(mut self, val: chrono::DateTime<chrono::Utc>) -> Self {
+        self.start_date = Some(val.timestamp_millis());
+        self
+    }
+
+    pub fn end_date(mut self, val: chrono::DateTime<chrono::Utc>) -> Self {
+        self.end_date = Some(val.timestamp_millis());
+        self
+    }
+
+    pub fn need_extended_hours_data(mut self, val: bool) -> Self {
+        self.need_extended_hours_data = Some(val);
+        self
+    }
+
+    pub fn need_previous_close(mut self, val: bool) -> Self {
+        self.need_previous_close = Some(val);
+        self
+    }
+
+    fn build(self) -> RequestBuilder {
+        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
+        if let Some(x) = self.period_type.clone() {
+            req = req.query(&[("periodType", x)]);
+        }
+        if let Some(x) = self.period {
+            req = req.query(&[("period", x)]);
+        }
+        if let Some(x) = self.frequency_type {
+            req = req.query(&[("frequencyType", x)]);
+        }
+        if let Some(x) = self.frequency {
+            req = req.query(&[("frequency", x)]);
+        }
+        if let Some(x) = self.start_date {
+            req = req.query(&[("startDate", x)]);
+        }
+        if let Some(x) = self.end_date {
+            req = req.query(&[("endDate", x)]);
+        }
+        if let Some(x) = self.need_extended_hours_data {
+            req = req.query(&[("needExtendedHoursData", x)]);
+        }
+        if let Some(x) = self.need_previous_close {
+            req = req.query(&[("needPreviousClose", x)]);
+        }
+
+        req
+    }
+
+    pub async fn send(self) -> Result<model::CandleList, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::CandleList>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
+
+#[derive(Debug)]
+pub struct GetMoversRequest {
+    req: RequestBuilder,
+
+    // Index Symbol
+    // Available values : $DJI, $COMPX, $SPX, NYSE, NASDAQ, OTCBB, INDEX_ALL, EQUITY_ALL, OPTION_ALL, OPTION_PUT, OPTION_CALL
+    // Example : $DJI
+    symbol: String,
+
+    // Sort by a particular attribute
+    // Available values : VOLUME, TRADES, PERCENT_CHANGE_UP, PERCENT_CHANGE_DOWN
+    // Example : VOLUME
+    sort: Option<String>,
+
+    // To return movers with the specified directions of up or down
+    // Available values : 0, 1, 5, 10, 30, 60
+    // Default value : 0
+    frequency: Option<i64>,
+}
+
+impl GetMoversRequest {
+    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::Mover(endpoints::EndpointMover::Mover { symbol_id: &symbol })
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String) -> Self {
+        Self {
+            req,
+            symbol,
+            sort: None,
+            frequency: None,
+        }
+    }
+
+    pub fn sort(mut self, val: String) -> Self {
+        self.sort = Some(val);
+        self
+    }
+
+    pub fn frequency(mut self, val: i64) -> Self {
+        self.frequency = Some(val);
+        self
+    }
+
+    fn build(self) -> RequestBuilder {
+        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
+        if let Some(x) = self.sort.clone() {
+            req = req.query(&[("sort", x)]);
+        }
+        if let Some(x) = self.frequency {
+            req = req.query(&[("frequency", x)]);
+        }
+
+        req
+    }
+
+    pub async fn send(self) -> Result<model::Mover, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::Mover>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
+
+#[derive(Debug)]
+pub struct GetMarketsRequest {
+    req: RequestBuilder,
+
+    // List of markets
+    // Available values : equity, option, bond, future, forex
+    markets: Vec<String>,
+
+    // Valid date range is from currentdate to 1 year from today. It will default to current day if not entered. Date format:YYYY-MM-DD
+    date: Option<chrono::NaiveDate>,
+}
+
+impl GetMarketsRequest {
+    pub(crate) fn new(client: Client, access_token: String, markets: Vec<String>) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::MarketHour(endpoints::EndpointMarketHour::Markets)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, markets)
+    }
+
+    fn new_with(req: RequestBuilder, markets: Vec<String>) -> Self {
+        Self {
+            req,
+            markets,
+            date: None,
+        }
+    }
+
+    pub fn date(mut self, val: chrono::NaiveDate) -> Self {
+        self.date = Some(val);
+        self
+    }
+
+    fn build(self) -> RequestBuilder {
+        let mut req = self
+            .req
+            .query(&[("markets", self.markets.clone().join(","))]);
+        if let Some(x) = self.date {
+            req = req.query(&[("date", x)]);
+        }
+
+        req
+    }
+
+    pub async fn send(self) -> Result<model::Markets, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::Markets>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
+
+#[derive(Debug)]
+pub struct GetMarketRequest {
+    req: RequestBuilder,
+
+    // market id
+    // Available values : equity, option, bond, future, forex
+    market_id: String,
+
+    // Valid date range is from currentdate to 1 year from today. It will default to current day if not entered. Date format:YYYY-MM-DD
+    date: Option<chrono::NaiveDate>,
+}
+
+impl GetMarketRequest {
+    pub(crate) fn new(client: Client, access_token: String, market_id: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::MarketHour(endpoints::EndpointMarketHour::Market {
+                    market_id: &market_id,
+                })
+                .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, market_id)
+    }
+
+    fn new_with(req: RequestBuilder, market_id: String) -> Self {
+        Self {
+            req,
+            market_id,
+            date: None,
+        }
+    }
+
+    pub fn date(mut self, val: chrono::NaiveDate) -> Self {
+        self.date = Some(val);
+        self
+    }
+
+    fn build(self) -> RequestBuilder {
+        let mut req = self.req.query(&[("market_id", self.market_id.clone())]);
+        if let Some(x) = self.date {
+            req = req.query(&[("date", x)]);
+        }
+
+        req
+    }
+
+    pub async fn send(self) -> Result<model::Markets, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::Markets>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
+
+#[derive(Debug)]
+pub struct GetInstrucmentsRequest {
+    req: RequestBuilder,
+
+    symbol: String,
+
+    // search by
+    // Available values : symbol-search, symbol-regex, desc-search, desc-regex, search, fundamental
+    projection: String,
+}
+
+impl GetInstrucmentsRequest {
+    pub(crate) fn new(
+        client: Client,
+        access_token: String,
+        symbol: String,
+        projection: String,
+    ) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::Instrument(endpoints::EndpointInstrument::Instruments)
+                    .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, symbol, projection)
+    }
+
+    fn new_with(req: RequestBuilder, symbol: String, projection: String) -> Self {
+        Self {
+            req,
+            symbol,
+            projection,
+        }
+    }
+
+    fn build(self) -> RequestBuilder {
+        self.req.query(&[
+            ("symbol", self.symbol.clone()),
+            ("projection", self.projection.clone()),
+        ])
+    }
+
+    pub async fn send(self) -> Result<model::Instruments, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::Instruments>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
+
+#[derive(Debug)]
+pub struct GetInstrucmentRequest {
+    req: RequestBuilder,
+
+    // cusip of a security
+    cusip_id: String,
+}
+
+impl GetInstrucmentRequest {
+    pub(crate) fn new(client: Client, access_token: String, cusip_id: String) -> Self {
+        let req = client
+            .get(
+                endpoints::Endpoint::Instrument(endpoints::EndpointInstrument::Instrument {
+                    cusip_id: &cusip_id,
+                })
+                .url_endpoint(),
+            )
+            .bearer_auth(access_token);
+        Self::new_with(req, cusip_id)
+    }
+
+    fn new_with(req: RequestBuilder, cusip_id: String) -> Self {
+        Self { req, cusip_id }
+    }
+
+    fn build(self) -> RequestBuilder {
+        self.req.query(&[("cusip_id", self.cusip_id.clone())])
+    }
+
+    pub async fn send(self) -> Result<model::Instrument, Error> {
+        let req = self.build();
+        let rsp = req.send().await?;
+
+        let status = rsp.status();
+        if status != StatusCode::OK {
+            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            return Err(Error::ErrorResponse(error_response));
+        }
+
+        rsp.json::<model::Instrument>()
+            .await
+            .map_err(std::convert::Into::into)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -431,16 +961,16 @@ mod tests {
         let client = Client::new();
         let req = client.get(format!("{url}/quotes"));
 
-        let mut req = GetQuotesRequest::new(req, symbols.clone());
+        let mut req = GetQuotesRequest::new_with(req, symbols.clone());
 
         // check initial value
         assert_eq!(req.symbols, symbols);
-        assert_eq!(req.fields, vec!["all"]);
+        assert_eq!(req.fields, None);
         assert_eq!(req.indicative, None);
 
         // check setter
         req = req.fields(fields.clone());
-        assert_eq!(req.fields, fields);
+        assert_eq!(req.fields, Some(fields));
         req = req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
@@ -539,15 +1069,15 @@ mod tests {
 
         let client = Client::new();
         let req = client.get(format!("{url}/{symbol}/quotes"));
-        let mut req = GetQuoteRequest::new(req, symbol.clone());
+        let mut req = GetQuoteRequest::new_with(req, symbol.clone());
 
         // check initial value
         assert_eq!(req.symbol, symbol);
-        assert_eq!(req.fields, vec!["all"]);
+        assert_eq!(req.fields, None);
 
         // check setter
         req = req.fields(fields.clone());
-        assert_eq!(req.fields, fields);
+        assert_eq!(req.fields, Some(fields));
 
         dbg!(&req);
         let result = req.send().await;
@@ -624,14 +1154,14 @@ mod tests {
 
         let client = Client::new();
         let req = client.get(format!("{url}/chains"));
-        let mut req = GetOptionChainsRequest::new(req, symbol.clone());
+        let mut req = GetOptionChainsRequest::new_with(req, symbol.clone());
 
         // check initial value
         assert_eq!(req.symbol, symbol);
         assert_eq!(req.contract_type, None);
         assert_eq!(req.strike_count, None);
         assert_eq!(req.include_underlying_quote, None);
-        assert_eq!(req.strategy, "SINGLE".to_string());
+        assert_eq!(req.strategy, None);
         assert_eq!(req.interval, None);
         assert_eq!(req.strike, None);
         assert_eq!(req.range, None);
@@ -653,7 +1183,7 @@ mod tests {
         req = req.include_underlying_quote(include_underlying_quote.clone());
         assert_eq!(req.include_underlying_quote, Some(include_underlying_quote));
         req = req.strategy(strategy.clone());
-        assert_eq!(req.strategy, strategy);
+        assert_eq!(req.strategy, Some(strategy));
         req = req.interval(interval.clone());
         assert_eq!(req.interval, Some(interval));
         req = req.strike(strike.clone());
@@ -717,7 +1247,7 @@ mod tests {
 
         let client = Client::new();
         let req = client.get(format!("{url}/expirationchain"));
-        let req = GetOptionExpirationChainRequest::new(req, symbol.clone());
+        let req = GetOptionExpirationChainRequest::new_with(req, symbol.clone());
 
         // check initial value
         assert_eq!(req.symbol, symbol);
@@ -730,5 +1260,383 @@ mod tests {
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.expiration_list.len(), 18);
+    }
+
+    #[tokio::test]
+    async fn test_get_price_history_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbol = "AAPL".to_string();
+        let period_type = "day".to_string();
+        let period = 1;
+        let frequency_type = "minute".to_string();
+        let frequency = 2;
+        let start_date = chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
+            .unwrap()
+            .and_hms_milli_opt(0, 0, 1, 444)
+            .unwrap()
+            .and_local_timezone(chrono::Utc)
+            .unwrap();
+        let end_date = chrono::NaiveDate::from_ymd_opt(2016, 1, 1)
+            .unwrap()
+            .and_hms_milli_opt(0, 0, 1, 444)
+            .unwrap()
+            .and_local_timezone(chrono::Utc)
+            .unwrap();
+        let need_extended_hours_data = true;
+        let need_previous_close = false;
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/pricehistory")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbol".into(), symbol.clone()),
+                Matcher::UrlEncoded("periodType".into(), period_type.clone()),
+                Matcher::UrlEncoded("period".into(), period.to_string()),
+                Matcher::UrlEncoded("frequencyType".into(), frequency_type.to_string()),
+                Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
+                Matcher::UrlEncoded(
+                    "startDate".into(),
+                    start_date.timestamp_millis().to_string(),
+                ),
+                Matcher::UrlEncoded("endDate".into(), end_date.timestamp_millis().to_string()),
+                Matcher::UrlEncoded(
+                    "needExtendedHoursData".into(),
+                    need_extended_hours_data.to_string(),
+                ),
+                Matcher::UrlEncoded("needPreviousClose".into(), need_previous_close.to_string()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/CandleList.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/pricehistory"));
+        let mut req = GetPriceHistoryRequest::new_with(req, symbol.clone());
+
+        // check initial value
+        assert_eq!(req.symbol, symbol);
+        assert_eq!(req.period_type, None);
+        assert_eq!(req.period, None);
+        assert_eq!(req.frequency_type, None);
+        assert_eq!(req.frequency, None);
+        assert_eq!(req.start_date, None);
+        assert_eq!(req.end_date, None);
+        assert_eq!(req.need_extended_hours_data, None);
+        assert_eq!(req.need_previous_close, None);
+
+        // check setter
+        req = req.period_type(period_type.clone());
+        assert_eq!(req.period_type, Some(period_type));
+        req = req.period(period.clone());
+        assert_eq!(req.period, Some(period));
+        req = req.frequency_type(frequency_type.clone());
+        assert_eq!(req.frequency_type, Some(frequency_type));
+        req = req.frequency(frequency.clone());
+        assert_eq!(req.frequency, Some(frequency));
+        req = req.start_date(start_date.clone());
+        assert_eq!(req.start_date, Some(start_date.timestamp_millis()));
+        req = req.end_date(end_date.clone());
+        assert_eq!(req.end_date, Some(end_date.timestamp_millis()));
+        req = req.need_extended_hours_data(need_extended_hours_data.clone());
+        assert_eq!(req.need_extended_hours_data, Some(need_extended_hours_data));
+        req = req.need_previous_close(need_previous_close.clone());
+        assert_eq!(req.need_previous_close, Some(need_previous_close));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.symbol, "AAPL");
+    }
+
+    #[tokio::test]
+    async fn test_get_movers_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbol = "$DJI".to_string();
+        let sort = "VOLUME".to_string();
+        let frequency = 1;
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/movers/$DJI")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("sort".into(), sort.clone()),
+                Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/Mover.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/movers/{}", symbol.clone()));
+        let mut req = GetMoversRequest::new_with(req, symbol.clone());
+
+        // check initial value
+        assert_eq!(req.symbol, symbol);
+        assert_eq!(req.sort, None);
+        assert_eq!(req.frequency, None);
+
+        // check setter
+        req = req.sort(sort.clone());
+        assert_eq!(req.sort, Some(sort));
+        req = req.frequency(frequency.clone());
+        assert_eq!(req.frequency, Some(frequency));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.screeners.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn test_get_markets_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let markets = vec!["equity".to_string(), "option".to_string()];
+        let date = chrono::NaiveDate::from_ymd_opt(2015, 3, 14).unwrap();
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/markets")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("markets".into(), markets.clone().join(",")),
+                Matcher::UrlEncoded("date".into(), date.to_string()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/Markets.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/markets"));
+        let mut req = GetMarketsRequest::new_with(req, markets.clone());
+
+        // check initial value
+        assert_eq!(req.markets, markets);
+        assert_eq!(req.date, None);
+
+        // check setter
+        req = req.date(date.clone());
+        assert_eq!(req.date, Some(date));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_get_market_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let market_id = "equity".to_string();
+        let date = chrono::NaiveDate::from_ymd_opt(2015, 3, 14).unwrap();
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/markets/equity")
+            .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded(
+                "date".into(),
+                date.to_string(),
+            )]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+						  "equity": {
+							"EQ": {
+							  "date": "2022-04-14",
+							  "marketType": "EQUITY",
+							  "exchange": "NULL",
+							  "category": "NULL",
+							  "product": "EQ",
+							  "productName": "equity",
+							  "isOpen": true,
+							  "sessionHours": {
+								"preMarket": [
+								  {
+									"start": "2022-04-14T07:00:00-04:00",
+									"end": "2022-04-14T09:30:00-04:00"
+								  }
+								],
+								"regularMarket": [
+								  {
+									"start": "2022-04-14T09:30:00-04:00",
+									"end": "2022-04-14T16:00:00-04:00"
+								  }
+								],
+								"postMarket": [
+								  {
+									"start": "2022-04-14T16:00:00-04:00",
+									"end": "2022-04-14T20:00:00-04:00"
+								  }
+								]
+							  }
+							}
+						  }
+						}"#,
+            )
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/markets/{}", market_id.clone()));
+        let mut req = GetMarketRequest::new_with(req, market_id.clone());
+
+        // check initial value
+        assert_eq!(req.market_id, market_id);
+        assert_eq!(req.date, None);
+
+        // check setter
+        req = req.date(date.clone());
+        assert_eq!(req.date, Some(date));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.keys().next().unwrap(), "equity");
+    }
+
+    #[tokio::test]
+    async fn test_get_instrucments_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbol = "AAPL".to_string();
+        let projection = "symbol-search".to_string();
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/instructments")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbol".into(), symbol.clone()),
+                Matcher::UrlEncoded("projection".into(), projection.clone()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/Instruments.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/instructments"));
+        let req = GetInstrucmentsRequest::new_with(req, symbol.clone(), projection.clone());
+
+        // check initial value
+        assert_eq!(req.symbol, symbol);
+        assert_eq!(req.projection, projection);
+
+        // check setter
+        // none
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.instruments.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_get_instrucment_request() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let cusip_id = "037833100".to_string();
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/instructments/037833100")
+            .match_query(Matcher::AllOf(vec![]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+			  "cusip": "037833100",
+			  "symbol": "AAPL",
+			  "description": "Apple Inc",
+			  "exchange": "NASDAQ",
+			  "assetType": "EQUITY"
+			}"#,
+            )
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!("{url}/instructments/{}", cusip_id.clone()));
+        let req = GetInstrucmentRequest::new_with(req, cusip_id.clone());
+
+        // check initial value
+        assert_eq!(req.cusip_id, cusip_id);
+
+        // check setter
+        // none
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.cusip, "037833100");
     }
 }

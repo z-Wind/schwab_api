@@ -21,13 +21,13 @@ pub struct QuoteFuture {
     pub ask_micid: Option<String>,
     pub ask_price: f64,
     pub ask_size: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub ask_time: chrono::DateTime<chrono::Utc>,
     #[serde(rename = "bidMICId")]
     pub bid_micid: Option<String>,
     pub bid_price: f64,
     pub bid_size: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub bid_time: chrono::DateTime<chrono::Utc>,
     pub close_price: i64,
     pub future_percent_change: f64,
@@ -41,16 +41,16 @@ pub struct QuoteFuture {
     pub net_change: f64,
     pub open_interest: i64,
     pub open_price: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub quote_time: chrono::DateTime<chrono::Utc>,
     pub quote_in_session: Option<bool>,
     pub security_status: String,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub settle_time: chrono::DateTime<chrono::Utc>,
     pub tick: f64,
     pub tick_amount: f64,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
@@ -62,7 +62,7 @@ pub struct ReferenceFuture {
     pub exchange: String,
     pub exchange_name: String,
     pub future_active_symbol: String,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub future_expiration_date: chrono::DateTime<chrono::Utc>,
     pub future_is_active: bool,
     pub future_multiplier: i64,

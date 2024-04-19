@@ -34,13 +34,13 @@ pub struct QuoteForex {
     pub net_change: f64,
     pub net_percent_change: i64,
     pub open_price: f64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub quote_time: chrono::DateTime<chrono::Utc>,
     pub security_status: String,
     pub tick: i64,
     pub tick_amount: i64,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 

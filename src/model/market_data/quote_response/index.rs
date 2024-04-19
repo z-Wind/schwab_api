@@ -30,7 +30,7 @@ pub struct QuoteIndex {
     pub open_price: f64,
     pub security_status: String,
     pub total_volume: i64,
-	#[serde_as(as = "TimestampMilliSeconds<i64>")]
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 

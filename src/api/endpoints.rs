@@ -22,14 +22,10 @@ impl<'a> EndpointAccount<'a> {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointAccount::AccountNumbers => {
-                format!("{ENDPOINT_TRADER}/accounts/accountNumbers")
-            }
-            EndpointAccount::Accounts => {
-                format!("{ENDPOINT_TRADER}/accounts")
-            }
+            EndpointAccount::AccountNumbers => "/accounts/accountNumbers".to_string(),
+            EndpointAccount::Accounts => "/accounts".to_string(),
             EndpointAccount::Account { account_number } => {
-                format!("{ENDPOINT_TRADER}/accounts/{account_number}")
+                format!("/accounts/{account_number}")
             }
         }
     }
@@ -79,17 +75,15 @@ impl<'a> EndpointOrder<'a> {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointOrder::OrdersAccount { account_number } => {
-                format!("{ENDPOINT_TRADER}/accounts/{account_number}/orders")
+                format!("/accounts/{account_number}/orders")
             }
             EndpointOrder::Order {
                 account_number,
                 order_id,
-            } => format!("{ENDPOINT_TRADER}/{account_number}/orders/{order_id}"),
-            EndpointOrder::Orders => {
-                format!("{ENDPOINT_TRADER}/orders")
-            }
+            } => format!("/{account_number}/orders/{order_id}"),
+            EndpointOrder::Orders => "/orders".to_string(),
             EndpointOrder::PreviewOrderAccount { account_number } => {
-                format!("{ENDPOINT_TRADER}/accounts/{account_number}/previewOrder")
+                format!("/accounts/{account_number}/previewOrder")
             }
         }
     }
@@ -118,13 +112,13 @@ impl<'a> EndpointTransaction<'a> {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointTransaction::TransactionsAccount { account_number } => {
-                format!("{ENDPOINT_TRADER}/accounts/{account_number}/transactions")
+                format!("/accounts/{account_number}/transactions")
             }
             EndpointTransaction::Transaction {
                 account_number,
                 transaction_id,
             } => {
-                format!("{ENDPOINT_TRADER}/accounts/{account_number}/transactions/{transaction_id}")
+                format!("/accounts/{account_number}/transactions/{transaction_id}")
             }
         }
     }
@@ -142,7 +136,7 @@ impl EndpointUserPreference {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointUserPreference::UserPreference => format!("{ENDPOINT_TRADER}/userPreference"),
+            EndpointUserPreference::UserPreference => "/userPreference".to_string(),
         }
     }
 }
@@ -164,9 +158,9 @@ impl<'a> EndpointQuote<'a> {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointQuote::Quotes => format!("{ENDPOINT_MARKETDATA}/quotes"),
+            EndpointQuote::Quotes => "/quotes".to_string(),
             EndpointQuote::Quote { symbol_id } => {
-                format!("{ENDPOINT_MARKETDATA}/{symbol_id}/quotes")
+                format!("/{symbol_id}/quotes")
             }
         }
     }
@@ -184,7 +178,7 @@ impl EndpointOptionChain {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointOptionChain::Chains => format!("{ENDPOINT_MARKETDATA}/chains"),
+            EndpointOptionChain::Chains => "/chains".to_string(),
         }
     }
 }
@@ -201,9 +195,7 @@ impl EndpointOptionExpirationChain {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointOptionExpirationChain::ExpirationChain => {
-                format!("{ENDPOINT_MARKETDATA}/expirationchain")
-            }
+            EndpointOptionExpirationChain::ExpirationChain => "/expirationchain".to_string(),
         }
     }
 }
@@ -220,7 +212,7 @@ impl EndpointPriceHistory {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointPriceHistory::PriceHistory => format!("{ENDPOINT_MARKETDATA}/pricehistory"),
+            EndpointPriceHistory::PriceHistory => "/pricehistory".to_string(),
         }
     }
 }
@@ -238,7 +230,7 @@ impl<'a> EndpointMover<'a> {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointMover::Mover { symbol_id } => {
-                format!("{ENDPOINT_MARKETDATA}/movers/{symbol_id}")
+                format!("/movers/{symbol_id}")
             }
         }
     }
@@ -261,9 +253,9 @@ impl<'a> EndpointMarketHour<'a> {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointMarketHour::Markets => format!("{ENDPOINT_MARKETDATA}/markets"),
+            EndpointMarketHour::Markets => "/markets".to_string(),
             EndpointMarketHour::Market { market_id } => {
-                format!("{ENDPOINT_MARKETDATA}/markets/{market_id}")
+                format!("/markets/{market_id}")
             }
         }
     }
@@ -286,9 +278,9 @@ impl<'a> EndpointInstrument<'a> {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointInstrument::Instruments => format!("{ENDPOINT_MARKETDATA}/instruments"),
+            EndpointInstrument::Instruments => "/instruments".to_string(),
             EndpointInstrument::Instrument { cusip_id } => {
-                format!("{ENDPOINT_MARKETDATA}/instruments/{cusip_id}")
+                format!("/instruments/{cusip_id}")
             }
         }
     }
@@ -319,17 +311,35 @@ impl<'a> Endpoint<'a> {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            Endpoint::Account(endpoint) => endpoint.url_endpoint(),
-            Endpoint::Order(endpoint) => endpoint.url_endpoint(),
-            Endpoint::Transaction(endpoint) => endpoint.url_endpoint(),
-            Endpoint::UserPreference(endpoint) => endpoint.url_endpoint(),
-            Endpoint::Quote(endpoint) => endpoint.url_endpoint(),
-            Endpoint::OptionChain(endpoint) => endpoint.url_endpoint(),
-            Endpoint::OptionExpirationChain(endpoint) => endpoint.url_endpoint(),
-            Endpoint::PriceHistory(endpoint) => endpoint.url_endpoint(),
-            Endpoint::Mover(endpoint) => endpoint.url_endpoint(),
-            Endpoint::MarketHour(endpoint) => endpoint.url_endpoint(),
-            Endpoint::Instrument(endpoint) => endpoint.url_endpoint(),
+            Endpoint::Account(endpoint) => format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint()),
+            Endpoint::Order(endpoint) => format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint()),
+            Endpoint::Transaction(endpoint) => {
+                format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint())
+            }
+            Endpoint::UserPreference(endpoint) => {
+                format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint())
+            }
+            Endpoint::Quote(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::OptionChain(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::OptionExpirationChain(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::PriceHistory(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::Mover(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::MarketHour(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
+            Endpoint::Instrument(endpoint) => {
+                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            }
         }
     }
 }

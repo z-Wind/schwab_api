@@ -111,7 +111,6 @@ pub struct OptionDeliverable {
     pub currency_type: String,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
