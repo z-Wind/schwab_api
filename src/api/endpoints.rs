@@ -1,7 +1,10 @@
 /// specifies Endpoints for Schwab API
 
+const SERVER_TRADER: &str = "https://api.schwabapi.com/trader/v1";
+const SERVER_MARKETDATA: &str = "https://api.schwabapi.com/marketdata/v1";
+
 #[derive(Debug)]
-pub(crate) enum EndpointAccount<'a> {
+pub(crate) enum EndpointAccount {
     // GET
     // /accounts/accountNumbers
     // Get list of account numbers and their encrypted values
@@ -15,10 +18,10 @@ pub(crate) enum EndpointAccount<'a> {
     // GET
     // /accounts/{accountNumber}
     // Get a specific account balance and positions for the logged in user.
-    Account { account_number: &'a str },
+    Account { account_number: String },
 }
 
-impl<'a> EndpointAccount<'a> {
+impl EndpointAccount {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -29,10 +32,15 @@ impl<'a> EndpointAccount<'a> {
             }
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_TRADER}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
-pub(crate) enum EndpointOrder<'a> {
+pub(crate) enum EndpointOrder {
     // GET
     // /accounts/{accountNumber}/orders
     // Get all orders for a specific account.
@@ -40,7 +48,7 @@ pub(crate) enum EndpointOrder<'a> {
     // /accounts/{accountNumber}/orders
     // Place order for a specific account.
     OrdersAccount {
-        account_number: &'a str,
+        account_number: String,
     },
 
     // GET
@@ -53,8 +61,8 @@ pub(crate) enum EndpointOrder<'a> {
     // /accounts/{accountNumber}/orders/{orderId}
     // Replace order for a specific account
     Order {
-        account_number: &'a str,
-        order_id: &'a str,
+        account_number: String,
+        order_id: i64,
     },
 
     // GET
@@ -66,11 +74,11 @@ pub(crate) enum EndpointOrder<'a> {
     // /accounts/{accountNumber}/previewOrder
     // Preview order for a specific account. **Coming Soon**.
     PreviewOrderAccount {
-        account_number: &'a str,
+        account_number: String,
     },
 }
 
-impl<'a> EndpointOrder<'a> {
+impl EndpointOrder {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -80,34 +88,39 @@ impl<'a> EndpointOrder<'a> {
             EndpointOrder::Order {
                 account_number,
                 order_id,
-            } => format!("/{account_number}/orders/{order_id}"),
+            } => format!("/accounts/{account_number}/orders/{order_id}"),
             EndpointOrder::Orders => "/orders".to_string(),
             EndpointOrder::PreviewOrderAccount { account_number } => {
                 format!("/accounts/{account_number}/previewOrder")
             }
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_TRADER}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
-pub(crate) enum EndpointTransaction<'a> {
+pub(crate) enum EndpointTransaction {
     // GET
     // /accounts/{accountNumber}/transactions
     // Get all transactions information for a specific account.
     TransactionsAccount {
-        account_number: &'a str,
+        account_number: String,
     },
 
     // GET
     // /accounts/{accountNumber}/transactions/{transactionId}
     // Get specific transaction information for a specific account
     Transaction {
-        account_number: &'a str,
-        transaction_id: &'a str,
+        account_number: String,
+        transaction_id: i64,
     },
 }
 
-impl<'a> EndpointTransaction<'a> {
+impl EndpointTransaction {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -121,6 +134,11 @@ impl<'a> EndpointTransaction<'a> {
                 format!("/accounts/{account_number}/transactions/{transaction_id}")
             }
         }
+    }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_TRADER}{}", self.url_endpoint())
     }
 }
 
@@ -139,10 +157,15 @@ impl EndpointUserPreference {
             EndpointUserPreference::UserPreference => "/userPreference".to_string(),
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_TRADER}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
-pub(crate) enum EndpointQuote<'a> {
+pub(crate) enum EndpointQuote {
     // GET
     // /quotes
     // Get Quotes by list of symbols.
@@ -151,10 +174,10 @@ pub(crate) enum EndpointQuote<'a> {
     // GET
     // /{symbol_id}/quotes
     // Get Quote by single symbol.
-    Quote { symbol_id: &'a str },
+    Quote { symbol_id: String },
 }
 
-impl<'a> EndpointQuote<'a> {
+impl EndpointQuote {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -163,6 +186,11 @@ impl<'a> EndpointQuote<'a> {
                 format!("/{symbol_id}/quotes")
             }
         }
+    }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
     }
 }
 
@@ -181,6 +209,11 @@ impl EndpointOptionChain {
             EndpointOptionChain::Chains => "/chains".to_string(),
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
@@ -197,6 +230,11 @@ impl EndpointOptionExpirationChain {
         match self {
             EndpointOptionExpirationChain::ExpirationChain => "/expirationchain".to_string(),
         }
+    }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
     }
 }
 
@@ -215,17 +253,22 @@ impl EndpointPriceHistory {
             EndpointPriceHistory::PriceHistory => "/pricehistory".to_string(),
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
-pub(crate) enum EndpointMover<'a> {
+pub(crate) enum EndpointMover {
     // GET
     // /movers/{symbol_id}
     // Get Movers for a specific index.
-    Mover { symbol_id: &'a str },
+    Mover { symbol_id: String },
 }
 
-impl<'a> EndpointMover<'a> {
+impl EndpointMover {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -234,10 +277,15 @@ impl<'a> EndpointMover<'a> {
             }
         }
     }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
+    }
 }
 
 #[derive(Debug)]
-pub(crate) enum EndpointMarketHour<'a> {
+pub(crate) enum EndpointMarketHour {
     // GET
     // /markets
     // Get Market Hours for different markets.
@@ -246,10 +294,10 @@ pub(crate) enum EndpointMarketHour<'a> {
     // GET
     // /markets/{market_id}
     // Get Market Hours for a single market.
-    Market { market_id: &'a str },
+    Market { market_id: String },
 }
 
-impl<'a> EndpointMarketHour<'a> {
+impl EndpointMarketHour {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
@@ -259,88 +307,40 @@ impl<'a> EndpointMarketHour<'a> {
             }
         }
     }
-}
 
-#[derive(Debug)]
-pub(crate) enum EndpointInstrument<'a> {
-    // GET
-    // /instruments
-    // Get Instruments by symbols and projections.
-    Instruments,
-
-    // GET
-    // /instruments/{cusip_id}
-    // Get Instrument by specific cusip
-    Instrument { cusip_id: &'a str },
-}
-
-impl<'a> EndpointInstrument<'a> {
-    /// defines the URL for the specified Endpoint
-    pub(crate) fn url_endpoint(&self) -> String {
-        match self {
-            EndpointInstrument::Instruments => "/instruments".to_string(),
-            EndpointInstrument::Instrument { cusip_id } => {
-                format!("/instruments/{cusip_id}")
-            }
-        }
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
     }
 }
 
 #[derive(Debug)]
-pub(crate) enum Endpoint<'a> {
-    // Trader
-    Account(EndpointAccount<'a>),
-    Order(EndpointOrder<'a>),
-    Transaction(EndpointTransaction<'a>),
-    UserPreference(EndpointUserPreference),
+pub(crate) enum EndpointInstrument {
+    // GET
+    // /instruments
+    // Get Instruments by symbols and projections.
+    Instrutments,
 
-    //Market Data
-    Quote(EndpointQuote<'a>),
-    OptionChain(EndpointOptionChain),
-    OptionExpirationChain(EndpointOptionExpirationChain),
-    PriceHistory(EndpointPriceHistory),
-    Mover(EndpointMover<'a>),
-    MarketHour(EndpointMarketHour<'a>),
-    Instrument(EndpointInstrument<'a>),
+    // GET
+    // /instruments/{cusip_id}
+    // Get Instrument by specific cusip
+    Instrutment { cusip_id: String },
 }
 
-const ENDPOINT_TRADER: &str = "https://api.schwabapi.com/trader/v1";
-const ENDPOINT_MARKETDATA: &str = "https://api.schwabapi.com/marketdata/v1";
-
-impl<'a> Endpoint<'a> {
+impl EndpointInstrument {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            Endpoint::Account(endpoint) => format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint()),
-            Endpoint::Order(endpoint) => format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint()),
-            Endpoint::Transaction(endpoint) => {
-                format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint())
-            }
-            Endpoint::UserPreference(endpoint) => {
-                format!("{ENDPOINT_TRADER}{}", endpoint.url_endpoint())
-            }
-            Endpoint::Quote(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::OptionChain(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::OptionExpirationChain(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::PriceHistory(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::Mover(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::MarketHour(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
-            }
-            Endpoint::Instrument(endpoint) => {
-                format!("{ENDPOINT_MARKETDATA}{}", endpoint.url_endpoint())
+            EndpointInstrument::Instrutments => "/instrutments".to_string(),
+            EndpointInstrument::Instrutment { cusip_id } => {
+                format!("/instrutments/{cusip_id}")
             }
         }
+    }
+
+    /// defines the URL include server
+    pub(crate) fn url(&self) -> String {
+        format!("{SERVER_MARKETDATA}{}", self.url_endpoint())
     }
 }
 
@@ -352,20 +352,20 @@ mod tests {
     fn test_endpoint_account() {
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/accountNumbers",
-            Endpoint::Account(EndpointAccount::AccountNumbers).url_endpoint()
+            EndpointAccount::AccountNumbers.url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts",
-            Endpoint::Account(EndpointAccount::Accounts).url_endpoint()
+            EndpointAccount::Accounts.url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/123456",
-            Endpoint::Account(EndpointAccount::Account {
-                account_number: "123456"
-            })
-            .url_endpoint()
+            EndpointAccount::Account {
+                account_number: "123456".to_string()
+            }
+            .url()
         );
     }
 
@@ -373,32 +373,32 @@ mod tests {
     fn test_endpoint_order() {
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/123456/orders",
-            Endpoint::Order(EndpointOrder::OrdersAccount {
-                account_number: "123456"
-            })
-            .url_endpoint()
+            EndpointOrder::OrdersAccount {
+                account_number: "123456".to_string()
+            }
+            .url()
         );
 
         assert_eq!(
-            "https://api.schwabapi.com/trader/v1/123456/orders/789",
-            Endpoint::Order(EndpointOrder::Order {
-                account_number: "123456",
-                order_id: "789"
-            })
-            .url_endpoint()
+            "https://api.schwabapi.com/trader/v1/accounts/123456/orders/789",
+            EndpointOrder::Order {
+                account_number: "123456".to_string(),
+                order_id: 789
+            }
+            .url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/orders",
-            Endpoint::Order(EndpointOrder::Orders).url_endpoint()
+            EndpointOrder::Orders.url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/123456/previewOrder",
-            Endpoint::Order(EndpointOrder::PreviewOrderAccount {
-                account_number: "123456"
-            })
-            .url_endpoint()
+            EndpointOrder::PreviewOrderAccount {
+                account_number: "123456".to_string()
+            }
+            .url()
         );
     }
 
@@ -406,19 +406,19 @@ mod tests {
     fn test_endpoint_transaction() {
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/123456/transactions",
-            Endpoint::Transaction(EndpointTransaction::TransactionsAccount {
-                account_number: "123456"
-            })
-            .url_endpoint()
+            EndpointTransaction::TransactionsAccount {
+                account_number: "123456".to_string()
+            }
+            .url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/accounts/123456/transactions/789",
-            Endpoint::Transaction(EndpointTransaction::Transaction {
-                account_number: "123456",
-                transaction_id: "789"
-            })
-            .url_endpoint()
+            EndpointTransaction::Transaction {
+                account_number: "123456".to_string(),
+                transaction_id: 789
+            }
+            .url()
         );
     }
 
@@ -426,7 +426,7 @@ mod tests {
     fn test_endpoint_user_preference() {
         assert_eq!(
             "https://api.schwabapi.com/trader/v1/userPreference",
-            Endpoint::UserPreference(EndpointUserPreference::UserPreference).url_endpoint()
+            EndpointUserPreference::UserPreference.url()
         );
     }
 
@@ -434,12 +434,15 @@ mod tests {
     fn test_endpoint_quote() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/quotes",
-            Endpoint::Quote(EndpointQuote::Quotes).url_endpoint()
+            EndpointQuote::Quotes.url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/ABC/quotes",
-            Endpoint::Quote(EndpointQuote::Quote { symbol_id: "ABC" }).url_endpoint()
+            EndpointQuote::Quote {
+                symbol_id: "ABC".to_string()
+            }
+            .url()
         );
     }
 
@@ -447,7 +450,7 @@ mod tests {
     fn test_endpoint_option_chain() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/chains",
-            Endpoint::OptionChain(EndpointOptionChain::Chains).url_endpoint()
+            EndpointOptionChain::Chains.url()
         );
     }
 
@@ -455,8 +458,7 @@ mod tests {
     fn test_endpoint_option_expiration_chain() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/expirationchain",
-            Endpoint::OptionExpirationChain(EndpointOptionExpirationChain::ExpirationChain)
-                .url_endpoint()
+            EndpointOptionExpirationChain::ExpirationChain.url()
         );
     }
 
@@ -464,7 +466,7 @@ mod tests {
     fn test_endpoint_price_history() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/pricehistory",
-            Endpoint::PriceHistory(EndpointPriceHistory::PriceHistory).url_endpoint()
+            EndpointPriceHistory::PriceHistory.url()
         );
     }
 
@@ -472,7 +474,10 @@ mod tests {
     fn test_endpoint_mover() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/movers/ABC",
-            Endpoint::Mover(EndpointMover::Mover { symbol_id: "ABC" }).url_endpoint()
+            EndpointMover::Mover {
+                symbol_id: "ABC".to_string()
+            }
+            .url()
         );
     }
 
@@ -480,26 +485,31 @@ mod tests {
     fn test_endpoint_market_hour() {
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/markets",
-            Endpoint::MarketHour(EndpointMarketHour::Markets).url_endpoint()
+            EndpointMarketHour::Markets.url()
         );
 
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/markets/XYZ",
-            Endpoint::MarketHour(EndpointMarketHour::Market { market_id: "XYZ" }).url_endpoint()
+            EndpointMarketHour::Market {
+                market_id: "XYZ".to_string()
+            }
+            .url()
         );
     }
 
     #[test]
     fn test_endpoint_instrument() {
         assert_eq!(
-            "https://api.schwabapi.com/marketdata/v1/instruments",
-            Endpoint::Instrument(EndpointInstrument::Instruments).url_endpoint()
+            "https://api.schwabapi.com/marketdata/v1/instrutments",
+            EndpointInstrument::Instrutments.url()
         );
 
         assert_eq!(
-            "https://api.schwabapi.com/marketdata/v1/instruments/123456",
-            Endpoint::Instrument(EndpointInstrument::Instrument { cusip_id: "123456" })
-                .url_endpoint()
+            "https://api.schwabapi.com/marketdata/v1/instrutments/123456",
+            EndpointInstrument::Instrutment {
+                cusip_id: "123456".to_string()
+            }
+            .url()
         );
     }
 }

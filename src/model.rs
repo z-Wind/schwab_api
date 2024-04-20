@@ -11,4 +11,12 @@ pub use market_data::mover::Mover;
 pub use market_data::option_chain::OptionChain;
 pub use market_data::quote_response::QuoteResponse;
 
+pub use trader::account_number::AccountNumbers;
+pub use trader::accounts::Account;
+pub use trader::accounts::Accounts;
+pub use trader::order::Order;
+pub use trader::order_request::OrderRequest;
+pub use trader::preview_order::PreviewOrder;
 pub use trader::service_error::ServiceError;
+pub use trader::transactions::Transaction;
+pub use trader::user_preference::UserPreference;

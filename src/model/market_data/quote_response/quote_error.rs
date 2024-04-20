@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+#[allow(clippy::struct_field_names)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteError {

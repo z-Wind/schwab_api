@@ -38,10 +38,8 @@ pub struct ExtendedMarket {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fundamental {
-    #[serde(rename = "avg10DaysVolume")]
-    pub avg10days_volume: f64,
-    #[serde(rename = "avg1YearVolume")]
-    pub avg1year_volume: f64,
+    pub avg_10_days_volume: f64,
+    pub avg_1_year_volume: f64,
     pub declaration_date: Option<chrono::DateTime<chrono::Utc>>,
     pub div_amount: f64,
     pub div_ex_date: Option<chrono::DateTime<chrono::Utc>>,
@@ -114,6 +112,7 @@ pub struct ReferenceEquity {
     pub otc_market_tier: Option<String>,
 }
 
+#[allow(clippy::struct_field_names)]
 #[serde_as]
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

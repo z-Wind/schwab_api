@@ -24,10 +24,12 @@ pub struct GetQuotesRequest {
 }
 
 impl GetQuotesRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbols: Vec<String>) -> Self {
-        let req = client
-            .get(endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quotes).url_endpoint())
-            .bearer_auth(access_token);
+    fn endpoint() -> endpoints::EndpointQuote {
+        endpoints::EndpointQuote::Quotes
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbols: Vec<String>) -> Self {
+        let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbols)
     }
 
@@ -92,12 +94,13 @@ pub struct GetQuoteRequest {
 }
 
 impl GetQuoteRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+    fn endpoint(symbol_id: String) -> endpoints::EndpointQuote {
+        endpoints::EndpointQuote::Quote { symbol_id }
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbol: String) -> Self {
         let req = client
-            .get(
-                endpoints::Endpoint::Quote(endpoints::EndpointQuote::Quote { symbol_id: &symbol })
-                    .url_endpoint(),
-            )
+            .get(Self::endpoint(symbol.clone()).url())
             .bearer_auth(access_token);
         Self::new_with(req, symbol)
     }
@@ -202,13 +205,12 @@ pub struct GetOptionChainsRequest {
 }
 
 impl GetOptionChainsRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
-        let req = client
-            .get(
-                endpoints::Endpoint::OptionChain(endpoints::EndpointOptionChain::Chains)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
+    fn endpoint() -> endpoints::EndpointOptionChain {
+        endpoints::EndpointOptionChain::Chains
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbol: String) -> Self {
+        let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbol)
     }
 
@@ -318,8 +320,8 @@ impl GetOptionChainsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
-        if let Some(x) = self.contract_type.clone() {
+        let mut req = self.req.query(&[("symbol", self.symbol)]);
+        if let Some(x) = self.contract_type {
             req = req.query(&[("contractType", x)]);
         }
         if let Some(x) = self.strike_count {
@@ -328,7 +330,7 @@ impl GetOptionChainsRequest {
         if let Some(x) = self.include_underlying_quote {
             req = req.query(&[("includeUnderlyingQuote", x)]);
         }
-        if let Some(x) = self.strategy.clone() {
+        if let Some(x) = self.strategy {
             req = req.query(&[("strategy", x)]);
         }
         if let Some(x) = self.interval {
@@ -337,7 +339,7 @@ impl GetOptionChainsRequest {
         if let Some(x) = self.strike {
             req = req.query(&[("strike", x)]);
         }
-        if let Some(x) = self.range.clone() {
+        if let Some(x) = self.range {
             req = req.query(&[("range", x)]);
         }
         if let Some(x) = self.from_date {
@@ -358,13 +360,13 @@ impl GetOptionChainsRequest {
         if let Some(x) = self.days_to_expiration {
             req = req.query(&[("daysToExpiration", x)]);
         }
-        if let Some(x) = self.exp_month.clone() {
+        if let Some(x) = self.exp_month {
             req = req.query(&[("expMonth", x)]);
         }
-        if let Some(x) = self.option_type.clone() {
+        if let Some(x) = self.option_type {
             req = req.query(&[("optionType", x)]);
         }
-        if let Some(x) = self.entitlement.clone() {
+        if let Some(x) = self.entitlement {
             req = req.query(&[("entitlement", x)]);
         }
 
@@ -395,15 +397,12 @@ pub struct GetOptionExpirationChainRequest {
 }
 
 impl GetOptionExpirationChainRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
-        let req: RequestBuilder = client
-            .get(
-                endpoints::Endpoint::OptionExpirationChain(
-                    endpoints::EndpointOptionExpirationChain::ExpirationChain,
-                )
-                .url_endpoint(),
-            )
-            .bearer_auth(access_token);
+    fn endpoint() -> endpoints::EndpointOptionExpirationChain {
+        endpoints::EndpointOptionExpirationChain::ExpirationChain
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbol: String) -> Self {
+        let req: RequestBuilder = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbol)
     }
 
@@ -412,7 +411,7 @@ impl GetOptionExpirationChainRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        self.req.query(&[("symbol", self.symbol.clone())])
+        self.req.query(&[("symbol", self.symbol)])
     }
 
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
@@ -500,13 +499,12 @@ pub struct GetPriceHistoryRequest {
 }
 
 impl GetPriceHistoryRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
-        let req = client
-            .get(
-                endpoints::Endpoint::PriceHistory(endpoints::EndpointPriceHistory::PriceHistory)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
+    fn endpoint() -> endpoints::EndpointPriceHistory {
+        endpoints::EndpointPriceHistory::PriceHistory
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbol: String) -> Self {
+        let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbol)
     }
 
@@ -566,8 +564,8 @@ impl GetPriceHistoryRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
-        if let Some(x) = self.period_type.clone() {
+        let mut req = self.req.query(&[("symbol", self.symbol)]);
+        if let Some(x) = self.period_type {
             req = req.query(&[("periodType", x)]);
         }
         if let Some(x) = self.period {
@@ -632,13 +630,15 @@ pub struct GetMoversRequest {
 }
 
 impl GetMoversRequest {
-    pub(crate) fn new(client: Client, access_token: String, symbol: String) -> Self {
+    fn endpoint(symbol_id: String) -> endpoints::EndpointMover {
+        endpoints::EndpointMover::Mover { symbol_id }
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, symbol: String) -> Self {
         let req = client
-            .get(
-                endpoints::Endpoint::Mover(endpoints::EndpointMover::Mover { symbol_id: &symbol })
-                    .url_endpoint(),
-            )
+            .get(Self::endpoint(symbol.clone()).url())
             .bearer_auth(access_token);
+
         Self::new_with(req, symbol)
     }
 
@@ -662,8 +662,8 @@ impl GetMoversRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("symbol", self.symbol.clone())]);
-        if let Some(x) = self.sort.clone() {
+        let mut req = self.req.query(&[("symbol", self.symbol)]);
+        if let Some(x) = self.sort {
             req = req.query(&[("sort", x)]);
         }
         if let Some(x) = self.frequency {
@@ -702,13 +702,13 @@ pub struct GetMarketsRequest {
 }
 
 impl GetMarketsRequest {
-    pub(crate) fn new(client: Client, access_token: String, markets: Vec<String>) -> Self {
-        let req = client
-            .get(
-                endpoints::Endpoint::MarketHour(endpoints::EndpointMarketHour::Markets)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
+    fn endpoint() -> endpoints::EndpointMarketHour {
+        endpoints::EndpointMarketHour::Markets
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, markets: Vec<String>) -> Self {
+        let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
+
         Self::new_with(req, markets)
     }
 
@@ -726,9 +726,7 @@ impl GetMarketsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self
-            .req
-            .query(&[("markets", self.markets.clone().join(","))]);
+        let mut req = self.req.query(&[("markets", self.markets.join(","))]);
         if let Some(x) = self.date {
             req = req.query(&[("date", x)]);
         }
@@ -765,15 +763,15 @@ pub struct GetMarketRequest {
 }
 
 impl GetMarketRequest {
-    pub(crate) fn new(client: Client, access_token: String, market_id: String) -> Self {
+    fn endpoint(market_id: String) -> endpoints::EndpointMarketHour {
+        endpoints::EndpointMarketHour::Market { market_id }
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, market_id: String) -> Self {
         let req = client
-            .get(
-                endpoints::Endpoint::MarketHour(endpoints::EndpointMarketHour::Market {
-                    market_id: &market_id,
-                })
-                .url_endpoint(),
-            )
+            .get(Self::endpoint(market_id.clone()).url())
             .bearer_auth(access_token);
+
         Self::new_with(req, market_id)
     }
 
@@ -791,7 +789,7 @@ impl GetMarketRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("market_id", self.market_id.clone())]);
+        let mut req = self.req.query(&[("market_id", self.market_id)]);
         if let Some(x) = self.date {
             req = req.query(&[("date", x)]);
         }
@@ -827,18 +825,17 @@ pub struct GetInstrucmentsRequest {
 }
 
 impl GetInstrucmentsRequest {
+    fn endpoint() -> endpoints::EndpointInstrument {
+        endpoints::EndpointInstrument::Instrutments
+    }
+
     pub(crate) fn new(
-        client: Client,
+        client: &Client,
         access_token: String,
         symbol: String,
         projection: String,
     ) -> Self {
-        let req = client
-            .get(
-                endpoints::Endpoint::Instrument(endpoints::EndpointInstrument::Instruments)
-                    .url_endpoint(),
-            )
-            .bearer_auth(access_token);
+        let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbol, projection)
     }
 
@@ -851,10 +848,8 @@ impl GetInstrucmentsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        self.req.query(&[
-            ("symbol", self.symbol.clone()),
-            ("projection", self.projection.clone()),
-        ])
+        self.req
+            .query(&[("symbol", self.symbol), ("projection", self.projection)])
     }
 
     pub async fn send(self) -> Result<model::Instruments, Error> {
@@ -877,19 +872,19 @@ impl GetInstrucmentsRequest {
 pub struct GetInstrucmentRequest {
     req: RequestBuilder,
 
+    #[allow(dead_code)]
     // cusip of a security
     cusip_id: String,
 }
 
 impl GetInstrucmentRequest {
-    pub(crate) fn new(client: Client, access_token: String, cusip_id: String) -> Self {
+    fn endpoint(cusip_id: String) -> endpoints::EndpointInstrument {
+        endpoints::EndpointInstrument::Instrutment { cusip_id }
+    }
+
+    pub(crate) fn new(client: &Client, access_token: String, cusip_id: String) -> Self {
         let req = client
-            .get(
-                endpoints::Endpoint::Instrument(endpoints::EndpointInstrument::Instrument {
-                    cusip_id: &cusip_id,
-                })
-                .url_endpoint(),
-            )
+            .get(Self::endpoint(cusip_id.clone()).url())
             .bearer_auth(access_token);
         Self::new_with(req, cusip_id)
     }
@@ -899,7 +894,7 @@ impl GetInstrucmentRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        self.req.query(&[("cusip_id", self.cusip_id.clone())])
+        self.req
     }
 
     pub async fn send(self) -> Result<model::Instrument, Error> {
@@ -959,7 +954,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/quotes"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetQuotesRequest::endpoint().url_endpoint()
+        ));
 
         let mut req = GetQuotesRequest::new_with(req, symbols.clone());
 
@@ -1068,7 +1066,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/{symbol}/quotes"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetQuoteRequest::endpoint(symbol.clone()).url_endpoint()
+        ));
         let mut req = GetQuoteRequest::new_with(req, symbol.clone());
 
         // check initial value
@@ -1089,6 +1090,7 @@ mod tests {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     #[tokio::test]
     async fn test_get_options_chains_request() {
         // Request a new server from the pool
@@ -1153,7 +1155,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/chains"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetOptionChainsRequest::endpoint().url_endpoint()
+        ));
         let mut req = GetOptionChainsRequest::new_with(req, symbol.clone());
 
         // check initial value
@@ -1178,29 +1183,29 @@ mod tests {
         // check setter
         req = req.contract_type(contract_type.clone());
         assert_eq!(req.contract_type, Some(contract_type));
-        req = req.strike_count(strike_count.clone());
+        req = req.strike_count(strike_count);
         assert_eq!(req.strike_count, Some(strike_count));
-        req = req.include_underlying_quote(include_underlying_quote.clone());
+        req = req.include_underlying_quote(include_underlying_quote);
         assert_eq!(req.include_underlying_quote, Some(include_underlying_quote));
         req = req.strategy(strategy.clone());
         assert_eq!(req.strategy, Some(strategy));
-        req = req.interval(interval.clone());
+        req = req.interval(interval);
         assert_eq!(req.interval, Some(interval));
-        req = req.strike(strike.clone());
+        req = req.strike(strike);
         assert_eq!(req.strike, Some(strike));
         req = req.range(range.clone());
         assert_eq!(req.range, Some(range));
-        req = req.from_date(from_date.clone());
+        req = req.from_date(from_date);
         assert_eq!(req.from_date, Some(from_date));
-        req = req.to_date(to_date.clone());
+        req = req.to_date(to_date);
         assert_eq!(req.to_date, Some(to_date));
-        req = req.volatility(volatility.clone());
+        req = req.volatility(volatility);
         assert_eq!(req.volatility, Some(volatility));
-        req = req.underlying_price(underlying_price.clone());
+        req = req.underlying_price(underlying_price);
         assert_eq!(req.underlying_price, Some(underlying_price));
-        req = req.interest_rate(interest_rate.clone());
+        req = req.interest_rate(interest_rate);
         assert_eq!(req.interest_rate, Some(interest_rate));
-        req = req.days_to_expiration(days_to_expiration.clone());
+        req = req.days_to_expiration(days_to_expiration);
         assert_eq!(req.days_to_expiration, Some(days_to_expiration));
         req = req.exp_month(exp_month.clone());
         assert_eq!(req.exp_month, Some(exp_month));
@@ -1246,7 +1251,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/expirationchain"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetOptionExpirationChainRequest::endpoint().url_endpoint()
+        ));
         let req = GetOptionExpirationChainRequest::new_with(req, symbol.clone());
 
         // check initial value
@@ -1323,7 +1331,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/pricehistory"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetPriceHistoryRequest::endpoint().url_endpoint()
+        ));
         let mut req = GetPriceHistoryRequest::new_with(req, symbol.clone());
 
         // check initial value
@@ -1340,19 +1351,19 @@ mod tests {
         // check setter
         req = req.period_type(period_type.clone());
         assert_eq!(req.period_type, Some(period_type));
-        req = req.period(period.clone());
+        req = req.period(period);
         assert_eq!(req.period, Some(period));
         req = req.frequency_type(frequency_type.clone());
         assert_eq!(req.frequency_type, Some(frequency_type));
-        req = req.frequency(frequency.clone());
+        req = req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
-        req = req.start_date(start_date.clone());
+        req = req.start_date(start_date);
         assert_eq!(req.start_date, Some(start_date.timestamp_millis()));
-        req = req.end_date(end_date.clone());
+        req = req.end_date(end_date);
         assert_eq!(req.end_date, Some(end_date.timestamp_millis()));
-        req = req.need_extended_hours_data(need_extended_hours_data.clone());
+        req = req.need_extended_hours_data(need_extended_hours_data);
         assert_eq!(req.need_extended_hours_data, Some(need_extended_hours_data));
-        req = req.need_previous_close(need_previous_close.clone());
+        req = req.need_previous_close(need_previous_close);
         assert_eq!(req.need_previous_close, Some(need_previous_close));
 
         dbg!(&req);
@@ -1394,7 +1405,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/movers/{}", symbol.clone()));
+        let req = client.get(format!(
+            "{url}{}",
+            GetMoversRequest::endpoint(symbol.clone()).url_endpoint()
+        ));
         let mut req = GetMoversRequest::new_with(req, symbol.clone());
 
         // check initial value
@@ -1405,7 +1419,7 @@ mod tests {
         // check setter
         req = req.sort(sort.clone());
         assert_eq!(req.sort, Some(sort));
-        req = req.frequency(frequency.clone());
+        req = req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
 
         dbg!(&req);
@@ -1446,7 +1460,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/markets"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetMarketsRequest::endpoint().url_endpoint()
+        ));
         let mut req = GetMarketsRequest::new_with(req, markets.clone());
 
         // check initial value
@@ -1454,7 +1471,7 @@ mod tests {
         assert_eq!(req.date, None);
 
         // check setter
-        req = req.date(date.clone());
+        req = req.date(date);
         assert_eq!(req.date, Some(date));
 
         dbg!(&req);
@@ -1526,7 +1543,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/markets/{}", market_id.clone()));
+        let req = client.get(format!(
+            "{url}{}",
+            GetMarketRequest::endpoint(market_id.clone()).url_endpoint()
+        ));
         let mut req = GetMarketRequest::new_with(req, market_id.clone());
 
         // check initial value
@@ -1534,7 +1554,7 @@ mod tests {
         assert_eq!(req.date, None);
 
         // check setter
-        req = req.date(date.clone());
+        req = req.date(date);
         assert_eq!(req.date, Some(date));
 
         dbg!(&req);
@@ -1559,7 +1579,7 @@ mod tests {
 
         // Create a mock
         let mock = server
-            .mock("GET", "/instructments")
+            .mock("GET", "/instrutments")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
                 Matcher::UrlEncoded("projection".into(), projection.clone()),
@@ -1575,7 +1595,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/instructments"));
+        let req = client.get(format!(
+            "{url}{}",
+            GetInstrucmentsRequest::endpoint().url_endpoint()
+        ));
         let req = GetInstrucmentsRequest::new_with(req, symbol.clone(), projection.clone());
 
         // check initial value
@@ -1606,8 +1629,7 @@ mod tests {
 
         // Create a mock
         let mock = server
-            .mock("GET", "/instructments/037833100")
-            .match_query(Matcher::AllOf(vec![]))
+            .mock("GET", "/instrutments/037833100")
             // .match_query(Matcher::Any)
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1624,7 +1646,10 @@ mod tests {
             .await;
 
         let client = Client::new();
-        let req = client.get(format!("{url}/instructments/{}", cusip_id.clone()));
+        let req = client.get(format!(
+            "{url}{}",
+            GetInstrucmentRequest::endpoint(cusip_id.clone()).url_endpoint()
+        ));
         let req = GetInstrucmentRequest::new_with(req, cusip_id.clone());
 
         // check initial value

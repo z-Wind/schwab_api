@@ -48,6 +48,7 @@ pub struct Underlying {
     pub trade_time: i64,
 }
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionContract {

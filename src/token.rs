@@ -148,6 +148,7 @@ mod tests {
             .join("Schwab-rust.json");
         #[allow(clippy::option_env_unwrap)]
         let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
+        #[allow(clippy::option_env_unwrap)]
         let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
         TokenChecker::new(path, client_id.to_string(), secret.to_string())
