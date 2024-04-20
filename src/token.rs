@@ -30,8 +30,10 @@ impl TokenChecker {
         path: PathBuf,
         client_id: String,
         secret: String,
+        redirect_url: String,
+        certs_dir: PathBuf,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(client_id, secret);
+        let auth = Authorizer::new(client_id, secret, redirect_url, certs_dir);
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
             Err(_) => auth.save(path.clone()).await?,
@@ -151,9 +153,15 @@ mod tests {
         #[allow(clippy::option_env_unwrap)]
         let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
-        TokenChecker::new(path, client_id.to_string(), secret.to_string())
-            .await
-            .unwrap();
+        TokenChecker::new(
+            path,
+            client_id.to_string(),
+            secret.to_string(),
+            "https://127.0.0.1:8080".to_string(),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+        )
+        .await
+        .unwrap();
     }
 
     #[test]

@@ -7,7 +7,11 @@
 Currently, the API only supports individual developers.
 
 ## Prerequisites
-To use the API, you need to apply for access on the [Charles Schwab Developer Portal](https://developer.schwab.com/home). Upon approval, you will receive the necessary Key and Secret.
+1. To use the API, you need to apply for access on the [Charles Schwab Developer Portal](https://developer.schwab.com/home). Upon approval, you will receive the necessary Key and Secret.
+2. Create a self-signed certificate
+    ```
+    openssl req -newkey rsa:4096 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+    ```
 
 ## Example
 ```rust
@@ -15,9 +19,11 @@ use schwab_api::api;
 
 #[tokio::main]
 async fn main() {
-    let key = "your_api_key".to_string();
+    let key = "your_app_key".to_string();
     let secret = "your_secret".to_string();
-    let price = api::API::new(key, secret)
+    let callback_url = "https://127.0.0.1:8080".to_string();
+    let certs_dir = "your_certs_dir";
+    let price = api::API::new(key, secret, callback_url, certs_dir)
         .await
         .unwrap()
         .get_quote("VTI".to_string())

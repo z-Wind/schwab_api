@@ -3,6 +3,7 @@ mod market_data;
 mod trader;
 
 use reqwest::Client;
+use std::path::PathBuf;
 
 use super::token::TokenChecker;
 use crate::{error::Error, model};
@@ -17,13 +18,19 @@ impl API {
     /// # Panics
     ///
     /// Will panic if no home dir
-    pub async fn new(key: String, secret: String) -> Result<Self, Error> {
+    pub async fn new(
+        key: String,
+        secret: String,
+        callback_url: String,
+        certs_dir: &str,
+    ) -> Result<Self, Error> {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
             .join("Schwab-rust.json");
+        let certs_dir = PathBuf::from(certs_dir);
 
-        let token_checker = TokenChecker::new(path, key, secret).await?;
+        let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir).await?;
         let client = Client::new();
 
         Ok(API {
@@ -348,9 +355,14 @@ mod tests {
         let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
         #[allow(clippy::option_env_unwrap)]
         let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
-        API::new(client_id.to_string(), secret.to_string())
-            .await
-            .unwrap()
+        API::new(
+            client_id.to_string(),
+            secret.to_string(),
+            "https://127.0.0.1:8080".to_string(),
+            concat!(env!("CARGO_MANIFEST_DIR"), "tests/certs"),
+        )
+        .await
+        .unwrap()
     }
 
     #[cfg_attr(

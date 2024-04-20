@@ -17,24 +17,29 @@ use crate::token::Token;
 #[derive(Debug)]
 pub(crate) struct Authorizer {
     client: BasicClient,
+    certs_dir: PathBuf,
 }
 
 type RequestTokenError = BasicRequestTokenError<oauth2::reqwest::Error<reqwest::Error>>;
 
 impl Authorizer {
-    pub(crate) fn new(app_key: String, secret: String) -> Self {
+    pub(crate) fn new(
+        app_key: String,
+        secret: String,
+        redirect_url: String,
+        certs_dir: PathBuf,
+    ) -> Self {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
         let auth_url = AuthUrl::new("https://api.schwabapi.com/v1/oauth/authorize".to_string())
             .expect("Invalid authorization endpoint URL");
         let token_url = TokenUrl::new("https://api.schwabapi.com/v1/oauth/token".to_string())
             .expect("Invalid token endpoint URL");
-        let redirect_url =
-            RedirectUrl::new("https://127.0.0.1:8080".to_string()).expect("Invalid redirect URL");
+        let redirect_url = RedirectUrl::new(redirect_url).expect("Invalid redirect URL");
 
         let client = BasicClient::new(app_key, Some(secret), auth_url, Some(token_url))
             .set_redirect_uri(redirect_url);
-        Authorizer { client }
+        Authorizer { client, certs_dir }
     }
 
     pub(crate) async fn authorize(&self) -> Result<Token, RequestTokenError> {
@@ -48,7 +53,7 @@ impl Authorizer {
             }
         }
 
-        let auth_code = Self::auth_code(csrf_token).await;
+        let auth_code = Self::auth_code(csrf_token, self.certs_dir.clone()).await;
 
         let token_result = self.refresh_token(auth_code).await?;
         // println!("{token_result:?}");
@@ -84,8 +89,8 @@ impl Authorizer {
         (auth_url, csrf_token)
     }
 
-    async fn auth_code(csrf_state: CsrfToken) -> AuthorizationCode {
-        let code = local_server::local_server(csrf_state).await;
+    async fn auth_code(csrf_state: CsrfToken, certs_dir: PathBuf) -> AuthorizationCode {
+        let code = local_server::local_server(csrf_state, certs_dir).await;
 
         AuthorizationCode::new(code)
     }
@@ -142,7 +147,12 @@ mod tests {
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_auth() {
-        let auth = Authorizer::new(client_id_static().to_string(), secret_static().to_string());
+        let auth = Authorizer::new(
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            REDIRECT_URL.to_string(),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+        );
 
         let result = auth.authorize().await;
 
@@ -153,7 +163,12 @@ mod tests {
     fn test_get_auth_code_url() {
         const CLIENTID: &str = "CLIENTID";
         const SECRET: &str = "SECRET";
-        let auth = Authorizer::new(CLIENTID.to_string(), SECRET.to_string());
+        let auth = Authorizer::new(
+            CLIENTID.to_string(),
+            SECRET.to_string(),
+            REDIRECT_URL.to_string(),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+        );
 
         let (auth_url, csrf_token) = auth.auth_code_url();
 
@@ -189,7 +204,10 @@ mod tests {
     #[tokio::test]
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
     async fn test_get_auth_code() {
-        let auth_code = tokio::spawn(Authorizer::auth_code(CsrfToken::new("CSRF".to_string())));
+        let auth_code = tokio::spawn(Authorizer::auth_code(
+            CsrfToken::new("CSRF".to_string()),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+        ));
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)
             .build()
@@ -206,6 +224,6 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(auth_code.await.unwrap().secret(), "code");
-        assert_eq!(body, "TDAmeritrade returned the following code:\ncode\nYou can now safely close this browser window.");
+        assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
     }
 }

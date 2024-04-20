@@ -10,22 +10,15 @@ use serde::Deserialize;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-pub(super) async fn local_server(csrf: CsrfToken) -> String {
+pub(super) async fn local_server(csrf: CsrfToken, certs_dir: PathBuf) -> String {
     let (tx, rx) = async_channel::unbounded();
 
     let app_state = AppState { csrf, tx };
 
     // configure certificate and private key used by https
-    let config = RustlsConfig::from_pem_file(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("cert.pem"),
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("certs")
-            .join("key.pem"),
-    )
-    .await
-    .expect("certs setting ok");
+    let config = RustlsConfig::from_pem_file(certs_dir.join("cert.pem"), certs_dir.join("key.pem"))
+        .await
+        .expect("certs setting ok");
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 
@@ -63,7 +56,7 @@ async fn get_code(
     }
 
     let content = format!(
-        "TDAmeritrade returned the following code:\n{}\nYou can now safely close this browser window.",
+        "Schwab returned the following code:\n{}\nYou can now safely close this browser window.",
         &query.code
     );
 
@@ -106,7 +99,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             String::from_utf8(bytes.to_vec()).unwrap(),
-            "TDAmeritrade returned the following code:\ncode\nYou can now safely close this browser window."
+            "Schwab returned the following code:\ncode\nYou can now safely close this browser window."
         );
         assert_eq!(rx.recv().await.unwrap(), "code");
     }
