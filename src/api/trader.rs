@@ -1,9 +1,13 @@
+//! APIs to access Account Balances & Positions, to perform trading activities
+//! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production)
+
 use reqwest::{Client, RequestBuilder, StatusCode};
 
 use super::endpoints;
 use crate::api::Error;
 use crate::model;
 
+/// Get list of account numbers and their encrypted values
 #[derive(Debug)]
 pub struct GetAccountNumbersRequest {
     req: RequestBuilder,
@@ -43,14 +47,18 @@ impl GetAccountNumbersRequest {
     }
 }
 
+/// Get linked account(s) balances and positions for the logged in user.
 #[derive(Debug)]
 pub struct GetAccountsRequest {
     req: RequestBuilder,
 
-    // This allows one to determine which fields they want returned. Possible value in this String can be:
-    // positions
-    // Example:
-    // fields=positions
+    /// This allows one to determine which fields they want returned.
+    ///
+    /// Possible value in this String can be: `positions`
+    ///
+    /// Example:
+    ///
+    /// fields=`positions`
     fields: Option<String>,
 }
 
@@ -68,7 +76,14 @@ impl GetAccountsRequest {
         Self { req, fields: None }
     }
 
-    pub fn fields(mut self, val: String) -> Self {
+    /// This allows one to determine which fields they want returned.
+    ///
+    /// Possible value in this String can be: `positions`
+    ///
+    /// Example:
+    ///
+    /// fields=`positions`
+    pub fn fields(&mut self, val: String) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -98,18 +113,22 @@ impl GetAccountsRequest {
     }
 }
 
+/// Get a specific account balance and positions for the logged in user.
 #[derive(Debug)]
 pub struct GetAccountRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
-    // This allows one to determine which fields they want returned. Possible value in this String can be:
-    // positions
-    // Example:
-    // fields=positions
+    /// This allows one to determine which fields they want returned.
+    ///
+    /// Possible value in this String can be: `positions`
+    ///
+    /// Example:
+    ///
+    /// fields=`positions`
     fields: Option<String>,
 }
 
@@ -133,7 +152,14 @@ impl GetAccountRequest {
         }
     }
 
-    pub fn fields(mut self, val: String) -> Self {
+    /// This allows one to determine which fields they want returned.
+    ///
+    /// Possible value in this String can be: `positions`
+    ///
+    /// Example:
+    ///
+    /// fields=`positions`
+    pub fn fields(&mut self, val: String) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -163,27 +189,36 @@ impl GetAccountRequest {
     }
 }
 
+/// Get all orders for a specific account.
 #[derive(Debug)]
 pub struct GetAccountOrdersRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
-    // The max number of orders to retrieve. Default is 3000.
+    /// The max number of orders to retrieve.
+    /// Default is `3000`.
     max_results: Option<i64>,
 
-    // Specifies that no orders entered before this time should be returned. Valid ISO-8601 formats are :
-    // yyyy-MM-dd'T'HH:mm:ss.SSSZ Date must be within 60 days from today's date. 'toEnteredTime' must also be set.
+    /// Specifies that no orders entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// `to_entered_time` must also be set.
+    // Valid ISO-8601 formats are :  yyyy-MM-dd'T'HH:mm:ss.SSSZ
     from_entered_time: chrono::DateTime<chrono::Utc>,
 
-    // Specifies that no orders entered after this time should be returned.Valid ISO-8601 formats are :
-    // yyyy-MM-dd'T'HH:mm:ss.SSSZ. 'fromEnteredTime' must also be set.
+    /// Specifies that no orders entered after this time should be returned.
+    ///
+    /// `from_entered_time` must also be set.
+    // Valid ISO-8601 formats are :  yyyy-MM-dd'T'HH:mm:ss.SSSZ.
     to_entered_time: chrono::DateTime<chrono::Utc>,
 
-    // Specifies that only orders of this status should be returned.
-    // Available values : AWAITING_PARENT_ORDER, AWAITING_CONDITION, AWAITING_STOP_CONDITION, AWAITING_MANUAL_REVIEW, ACCEPTED, AWAITING_UR_OUT, PENDING_ACTIVATION, QUEUED, WORKING, REJECTED, PENDING_CANCEL, CANCELED, PENDING_REPLACE, REPLACED, FILLED, EXPIRED, NEW, AWAITING_RELEASE_TIME, PENDING_ACKNOWLEDGEMENT, PENDING_RECALL, UNKNOWN
+    /// Specifies that only orders of this status should be returned.
+    ///
+    /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
     status: Option<String>,
 }
 
@@ -221,12 +256,17 @@ impl GetAccountOrdersRequest {
         }
     }
 
-    pub fn max_results(mut self, val: i64) -> Self {
+    /// The max number of orders to retrieve.
+    /// Default is `3000`.
+    pub fn max_results(&mut self, val: i64) -> &mut Self {
         self.max_results = Some(val);
         self
     }
 
-    pub fn status(mut self, val: String) -> Self {
+    /// Specifies that only orders of this status should be returned.
+    ///
+    /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
+    pub fn status(&mut self, val: String) -> &mut Self {
         self.status = Some(val);
         self
     }
@@ -262,12 +302,13 @@ impl GetAccountOrdersRequest {
     }
 }
 
+/// Place order for a specific account.
 #[derive(Debug)]
 pub struct PostAccountOrderRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     body: model::OrderRequest,
@@ -316,16 +357,17 @@ impl PostAccountOrderRequest {
     }
 }
 
+/// Get a specific order by its ID, for a specific account
 #[derive(Debug)]
 pub struct GetAccountOrderRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     #[allow(dead_code)]
-    // The ID of the order being retrieved.
+    /// The ID of the order being retrieved.
     order_id: i64,
 }
 
@@ -376,16 +418,17 @@ impl GetAccountOrderRequest {
     }
 }
 
+/// Cancel an order for a specific account
 #[derive(Debug)]
 pub struct DeleteAccountOrderRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     #[allow(dead_code)]
-    // The ID of the order being retrieved.
+    /// The ID of the order being retrieved.
     order_id: i64,
 }
 
@@ -435,16 +478,17 @@ impl DeleteAccountOrderRequest {
     }
 }
 
+/// Replace order for a specific account
 #[derive(Debug)]
 pub struct PutAccountOrderRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     #[allow(dead_code)]
-    // The ID of the order being retrieved.
+    /// The ID of the order being retrieved.
     order_id: i64,
 
     body: model::OrderRequest,
@@ -503,21 +547,33 @@ impl PutAccountOrderRequest {
     }
 }
 
+/// Get all orders for all accounts
 #[derive(Debug)]
 pub struct GetAccountsOrdersRequest {
     req: RequestBuilder,
 
-    // The max number of orders to retrieve. Default is 3000.
+    /// The max number of orders to retrieve.
+    ///
+    /// Default is `3000`.
     max_results: Option<i64>,
 
-    // Specifies that no orders entered before this time should be returned. Valid ISO-8601 formats are- yyyy-MM-dd'T'HH:mm:ss.SSSZ Date must be within 60 days from today's date. 'toEnteredTime' must also be set.
+    /// Specifies that no orders entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// `to_entered_time` must also be set.
+    // Valid ISO-8601 formats are- yyyy-MM-dd'T'HH:mm:ss.SSSZ
     from_entered_time: chrono::DateTime<chrono::Utc>,
 
-    // Specifies that no orders entered after this time should be returned.Valid ISO-8601 formats are - yyyy-MM-dd'T'HH:mm:ss.SSSZ. 'fromEnteredTime' must also be set.
+    /// Specifies that no orders entered after this time should be returned.
+    ///
+    /// `from_entered_time` must also be set.
+    // Valid ISO-8601 formats are - yyyy-MM-dd'T'HH:mm:ss.SSSZ.
     to_entered_time: chrono::DateTime<chrono::Utc>,
 
-    // Specifies that only orders of this status should be returned.
-    // Available values : AWAITING_PARENT_ORDER, AWAITING_CONDITION, AWAITING_STOP_CONDITION, AWAITING_MANUAL_REVIEW, ACCEPTED, AWAITING_UR_OUT, PENDING_ACTIVATION, QUEUED, WORKING, REJECTED, PENDING_CANCEL, CANCELED, PENDING_REPLACE, REPLACED, FILLED, EXPIRED, NEW, AWAITING_RELEASE_TIME, PENDING_ACKNOWLEDGEMENT, PENDING_RECALL, UNKNOWN
+    /// Specifies that only orders of this status should be returned.
+    ///
+    /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
     status: Option<String>,
 }
 
@@ -550,12 +606,18 @@ impl GetAccountsOrdersRequest {
         }
     }
 
-    pub fn max_results(mut self, val: i64) -> Self {
+    /// The max number of orders to retrieve.
+    ///
+    /// Default is `3000`.
+    pub fn max_results(&mut self, val: i64) -> &mut Self {
         self.max_results = Some(val);
         self
     }
 
-    pub fn status(mut self, val: String) -> Self {
+    /// Specifies that only orders of this status should be returned.
+    ///
+    /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
+    pub fn status(&mut self, val: String) -> &mut Self {
         self.status = Some(val);
         self
     }
@@ -591,12 +653,13 @@ impl GetAccountsOrdersRequest {
     }
 }
 
+/// Preview order for a specific account.
 #[derive(Debug)]
 pub struct PostAccountPreviewOrderRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     body: model::PreviewOrder,
@@ -647,27 +710,36 @@ impl PostAccountPreviewOrderRequest {
     }
 }
 
+/// Get all transactions information for a specific account.
 #[derive(Debug)]
 pub struct GetAccountTransactions {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
-    // Specifies that no transactions entered before this time should be returned. Valid ISO-8601 formats are :
-    // yyyy-MM-dd'T'HH:mm:ss.SSSZ Date must be within 60 days from today's date. 'endDate' must also be set.
+    /// Specifies that no transactions entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// [`Self::end_date`] must also be set.
+    // Valid ISO-8601 formats are : yyyy-MM-dd'T'HH:mm:ss.SSSZ
     start_date: chrono::DateTime<chrono::Utc>,
 
-    // Specifies that no transactions entered after this time should be returned.Valid ISO-8601 formats are :
-    // yyyy-MM-dd'T'HH:mm:ss.SSSZ. 'startDate' must also be set.
+    /// Specifies that no transactions entered after this time should be returned.
+    ///
+    /// [`Self::start_date`] must also be set.
+    // Valid ISO-8601 formats are : yyyy-MM-dd'T'HH:mm:ss.SSSZ.
     end_date: chrono::DateTime<chrono::Utc>,
 
-    // It filters all the transaction activities based on the symbol specified. NOTE: If there is any special character in the symbol, please send th encoded value.
+    /// It filters all the transaction activities based on the symbol specified.
+    // NOTE: If there is any special character in the symbol, please send th encoded value.
     symbol: Option<String>,
 
-    // Specifies that only transactions of this status should be returned.
-    // Available values : TRADE, RECEIVE_AND_DELIVER, DIVIDEND_OR_INTEREST, ACH_RECEIPT, ACH_DISBURSEMENT, CASH_RECEIPT, CASH_DISBURSEMENT, ELECTRONIC_FUND, WIRE_OUT, WIRE_IN, JOURNAL, MEMORANDUM, MARGIN_CALL, MONEY_MARKET, SMA_ADJUSTMENT
+    /// Specifies that only transactions of this status should be returned.
+    ///
+    /// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
     types: String,
 }
 
@@ -707,7 +779,8 @@ impl GetAccountTransactions {
         }
     }
 
-    pub fn symbol(mut self, val: String) -> Self {
+    /// It filters all the transaction activities based on the symbol specified.
+    pub fn symbol(&mut self, val: String) -> &mut Self {
         self.symbol = Some(val);
         self
     }
@@ -741,16 +814,17 @@ impl GetAccountTransactions {
     }
 }
 
+/// Get specific transaction information for a specific account
 #[derive(Debug)]
 pub struct GetAccountTransaction {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // The encrypted ID of the account
+    /// The encrypted ID of the account
     account_number: String,
 
     #[allow(dead_code)]
-    // The ID of the transaction being retrieved.
+    /// The ID of the transaction being retrieved.
     transaction_id: i64,
 }
 
@@ -786,6 +860,9 @@ impl GetAccountTransaction {
         self.req
     }
 
+    /// # Panics
+    ///
+    /// Will panic if no transaction found
     pub async fn send(self) -> Result<model::Transaction, Error> {
         let req = self.build();
         let rsp = req.send().await?;
@@ -801,6 +878,7 @@ impl GetAccountTransaction {
     }
 }
 
+/// Get user preference information for the logged in user.
 #[derive(Debug)]
 pub struct GetUserPreferenceRequest {
     req: RequestBuilder,
@@ -932,7 +1010,7 @@ mod tests {
         assert_eq!(req.fields, None);
 
         // check setter
-        req = req.fields(fields.clone());
+        req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
         dbg!(&req);
@@ -984,7 +1062,7 @@ mod tests {
         assert_eq!(req.fields, None);
 
         // check setter
-        req = req.fields(fields.clone());
+        req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
         dbg!(&req);
@@ -1059,9 +1137,9 @@ mod tests {
         assert_eq!(req.status, None);
 
         // check setter
-        req = req.max_results(max_results);
+        req.max_results(max_results);
         assert_eq!(req.max_results, Some(max_results));
-        req = req.status(status.clone());
+        req.status(status.clone());
         assert_eq!(req.status, Some(status));
 
         dbg!(&req);
@@ -1309,9 +1387,9 @@ mod tests {
         assert_eq!(req.status, None);
 
         // check setter
-        req = req.max_results(max_results);
+        req.max_results(max_results);
         assert_eq!(req.max_results, Some(max_results));
-        req = req.status(status.clone());
+        req.status(status.clone());
         assert_eq!(req.status, Some(status));
 
         dbg!(&req);
@@ -1435,7 +1513,7 @@ mod tests {
         assert_eq!(req.types, types);
 
         // check setter
-        req = req.symbol(symbol.clone());
+        req.symbol(symbol.clone());
         assert_eq!(req.symbol, Some(symbol));
 
         dbg!(&req);

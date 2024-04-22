@@ -29,9 +29,9 @@ pub struct QuoteFuture {
     pub bid_size: i64,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub bid_time: chrono::DateTime<chrono::Utc>,
-    pub close_price: i64,
+    pub close_price: f64,
     pub future_percent_change: f64,
-    pub high_price: i64,
+    pub high_price: f64,
     #[serde(rename = "lastMICId")]
     pub last_micid: Option<String>,
     pub last_price: f64,
@@ -67,7 +67,7 @@ pub struct ReferenceFuture {
     pub future_is_active: bool,
     pub future_multiplier: i64,
     pub future_price_format: String,
-    pub future_settlement_price: i64,
+    pub future_settlement_price: f64,
     pub future_trading_hours: String,
     pub product: String,
     // not in schama

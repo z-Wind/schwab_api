@@ -112,17 +112,21 @@ pub struct ReferenceEquity {
     pub otc_market_tier: Option<String>,
 }
 
-#[allow(clippy::struct_field_names)]
 #[serde_as]
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegularMarket {
-    pub regular_market_last_price: f64,
-    pub regular_market_last_size: i64,
-    pub regular_market_net_change: f64,
-    pub regular_market_percent_change: Option<f64>,
+    #[serde(rename = "regularMarketLastPrice")]
+    pub last_price: f64,
+    #[serde(rename = "regularMarketLastSize")]
+    pub last_size: i64,
+    #[serde(rename = "regularMarketNetChange")]
+    pub net_change: f64,
+    #[serde(rename = "regularMarketPercentChange")]
+    pub percent_change: Option<f64>,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
-    pub regular_market_trade_time: chrono::DateTime<chrono::Utc>,
+    #[serde(rename = "regularMarketTradeTime")]
+    pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
 #[cfg(test)]

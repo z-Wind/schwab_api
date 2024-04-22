@@ -80,7 +80,7 @@ pub struct ReferenceOption {
     pub last_trading_day: chrono::DateTime<chrono::Utc>,
     pub multiplier: i64,
     pub settlement_type: String,
-    pub strike_price: i64,
+    pub strike_price: f64,
     pub underlying: String,
     // not in schama
     pub uv_expiration_type: String,

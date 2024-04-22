@@ -1,3 +1,5 @@
+//! Structs and utilities for handling API response data.
+
 pub mod market_data;
 pub mod trader;
 

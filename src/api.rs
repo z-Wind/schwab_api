@@ -1,6 +1,8 @@
+//! Structs and utilities for handling API methods.
+
 mod endpoints;
-mod market_data;
-mod trader;
+pub mod market_data;
+pub mod trader;
 
 use reqwest::Client;
 use std::path::PathBuf;
@@ -8,6 +10,7 @@ use std::path::PathBuf;
 use super::token::TokenChecker;
 use crate::{error::Error, model};
 
+/// Interacting with the Schwab API.
 #[derive(Debug)]
 pub struct API {
     token_checker: TokenChecker,
@@ -101,6 +104,13 @@ impl API {
         ))
     }
 
+    /// `symbol`
+    ///
+    /// Index Symbol
+    ///
+    /// Available values : `$DJI`, `$COMPX`, `$SPX`, `NYSE`, `NASDAQ`, `OTCBB`, `INDEX_ALL`, `EQUITY_ALL`, `OPTION_ALL`, `OPTION_PUT`, `OPTION_CALL`
+    ///
+    /// Example : `$DJI`
     pub async fn get_movers(&self, symbol: String) -> Result<market_data::GetMoversRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
 
@@ -111,6 +121,11 @@ impl API {
         ))
     }
 
+    /// `markets`
+    ///
+    /// List of markets
+    ///
+    /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     pub async fn get_markets(
         &self,
         markets: Vec<String>,
@@ -124,6 +139,9 @@ impl API {
         ))
     }
 
+    /// `market_id`
+    ///
+    /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     pub async fn get_market(
         &self,
         market_id: String,
@@ -137,6 +155,11 @@ impl API {
         ))
     }
 
+    /// `projection`
+    ///
+    /// search by
+    ///
+    /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
     pub async fn get_instrucments(
         &self,
         symbol: String,
@@ -152,6 +175,9 @@ impl API {
         ))
     }
 
+    /// `cusip_id`
+    ///
+    /// cusip of a security
     pub async fn get_instrucment(
         &self,
         cusip_id: String,
@@ -193,6 +219,15 @@ impl API {
         ))
     }
 
+    /// `from_entered_time`
+    ///
+    /// Specifies that no orders entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// `to_entered_time`
+    ///
+    /// Specifies that no orders entered after this time should be returned.
     pub async fn get_account_orders(
         &self,
         account_number: String,
@@ -210,6 +245,9 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
     pub async fn post_account_order(
         &self,
         account_number: String,
@@ -225,6 +263,13 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
+    ///
+    /// `order_id`
+    ///
+    /// The ID of the order being retrieved.
     pub async fn get_account_order(
         &self,
         account_number: String,
@@ -240,6 +285,13 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
+    ///
+    /// `order_id`
+    ///
+    /// The ID of the order being retrieved.
     pub async fn delete_account_order(
         &self,
         account_number: String,
@@ -255,6 +307,13 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
+    ///
+    /// `order_id`
+    ///
+    /// The ID of the order being retrieved.
     pub async fn put_account_order(
         &self,
         account_number: String,
@@ -272,6 +331,15 @@ impl API {
         ))
     }
 
+    /// `from_entered_time`
+    ///
+    /// Specifies that no orders entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// `to_entered_time`
+    ///
+    /// Specifies that no orders entered after this time should be returned.
     pub async fn get_accounts_orders(
         &self,
         from_entered_time: chrono::DateTime<chrono::Utc>,
@@ -287,6 +355,9 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
     pub async fn post_accounts_preview_order(
         &self,
         account_number: String,
@@ -302,6 +373,25 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
+    ///
+    /// `start_date`
+    ///
+    /// Specifies that no transactions entered before this time should be returned.
+    ///
+    /// Date must be within 60 days from today's date.
+    ///
+    /// `end_date`
+    ///
+    /// Specifies that no transactions entered after this time should be returned.
+    ///
+    /// `types`
+    ///
+    /// Specifies that only transactions of this status should be returned.
+    ///
+    /// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
     pub async fn get_account_transactions(
         &self,
         account_number: String,
@@ -321,6 +411,13 @@ impl API {
         ))
     }
 
+    /// `account_number`
+    ///
+    /// The encrypted ID of the account
+    ///
+    /// `transaction_id`
+    ///
+    /// The ID of the transaction being retrieved.
     pub async fn get_account_transaction(
         &self,
         account_number: String,

@@ -1,3 +1,5 @@
+//! Represents all possible errors the Client might encounter.
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Standard I/O error: {0}")]

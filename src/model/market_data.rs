@@ -1,3 +1,5 @@
+//! Structs and utilities for handling [`crate::api::market_data`] data.
+
 pub mod candle_list;
 pub mod error_response;
 pub mod expiration_chain;

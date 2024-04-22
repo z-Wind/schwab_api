@@ -26,7 +26,7 @@ pub struct SecuritiesAccount {
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     pub short_quantity: i64,
-    pub average_price: i64,
+    pub average_price: f64,
     pub current_day_profit_loss: i64,
     pub current_day_profit_loss_percentage: i64,
     pub long_quantity: i64,
@@ -36,10 +36,10 @@ pub struct Position {
     pub instrument: AccountsInstrument,
     pub market_value: i64,
     pub maintenance_requirement: i64,
-    pub average_long_price: i64,
-    pub average_short_price: i64,
-    pub tax_lot_average_long_price: i64,
-    pub tax_lot_average_short_price: i64,
+    pub average_long_price: f64,
+    pub average_short_price: f64,
+    pub tax_lot_average_long_price: f64,
+    pub tax_lot_average_short_price: f64,
     pub long_open_profit_loss: i64,
     pub short_open_profit_loss: i64,
     pub previous_session_long_quantity: i64,

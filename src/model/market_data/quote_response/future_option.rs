@@ -23,8 +23,8 @@ pub struct QuoteFutureOption {
     pub bid_micid: String,
     pub bid_price: f64,
     pub bid_size: i64,
-    pub close_price: i64,
-    pub high_price: i64,
+    pub close_price: f64,
+    pub high_price: f64,
     #[serde(rename = "lastMICId")]
     pub last_micid: String,
     pub last_price: f64,

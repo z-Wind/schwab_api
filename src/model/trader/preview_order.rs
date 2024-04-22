@@ -28,7 +28,7 @@ pub struct OrderStrategy {
     pub filled_quantity: i64,
     pub order_type: String,
     pub order_value: i64,
-    pub price: i64,
+    pub price: f64,
     pub quantity: i64,
     pub remaining_quantity: i64,
     pub sell_non_marginable_first: bool,
@@ -50,10 +50,10 @@ pub struct OrderBalance {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderLeg {
-    pub ask_price: i64,
-    pub bid_price: i64,
-    pub last_price: i64,
-    pub mark_price: i64,
+    pub ask_price: f64,
+    pub bid_price: f64,
+    pub last_price: f64,
+    pub mark_price: f64,
     pub projected_commission: i64,
     pub quantity: i64,
     pub final_symbol: String,

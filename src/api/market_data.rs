@@ -1,3 +1,6 @@
+//! APIs to access Market Data
+//! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production)
+
 use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
@@ -6,20 +9,25 @@ use crate::model;
 
 use super::endpoints;
 
+/// Get Quotes by list of symbols.
 #[derive(Debug)]
 pub struct GetQuotesRequest {
     req: RequestBuilder,
 
     symbols: Vec<String>,
 
-    // Request for subset of data by passing coma separated list of root nodes,
-    // possible root nodes are quote, fundamental, extended, reference, regular. Sending quote, fundamental in request will return quote and fundamental data in response.
-    // Dont send this attribute for full response.
-    // Default value : all
+    /// Request for subset of data by passing coma separated list of root nodes, possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
+    ///
+    /// Sending quote, fundamental in request will return quote and fundamental data in response.
+    ///
+    /// Dont send this attribute for full response.
+    ///
+    /// Default value : all
     fields: Option<Vec<String>>,
 
-    // Include indicative symbol quotes for all ETF symbols in request.
-    // If ETF symbol ABC is in request and indicative=true API will return quotes for ABC and its corresponding indicative quote for $ABC.IV
+    /// Include indicative symbol quotes for all ETF symbols in request.
+    ///
+    /// If ETF symbol ABC is in request and indicative=true API will return quotes for ABC and its corresponding indicative quote for $ABC.IV
     indicative: Option<bool>,
 }
 
@@ -42,12 +50,22 @@ impl GetQuotesRequest {
         }
     }
 
-    pub fn fields(mut self, val: Vec<String>) -> Self {
+    /// Request for subset of data by passing coma separated list of root nodes, possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
+    ///
+    /// Sending quote, fundamental in request will return quote and fundamental data in response.
+    ///
+    /// Dont send this attribute for full response.
+    ///
+    /// Default value : `all`
+    pub fn fields(&mut self, val: Vec<String>) -> &mut Self {
         self.fields = Some(val);
         self
     }
 
-    pub fn indicative(mut self, val: bool) -> Self {
+    /// Include indicative symbol quotes for all ETF symbols in request.
+    ///
+    /// If ETF symbol ABC is in request and indicative=true API will return quotes for ABC and its corresponding indicative quote for $ABC.IV
+    pub fn indicative(&mut self, val: bool) -> &mut Self {
         self.indicative = Some(val);
         self
     }
@@ -80,16 +98,20 @@ impl GetQuotesRequest {
     }
 }
 
+/// Get Quote by single symbol.
 #[derive(Debug)]
 pub struct GetQuoteRequest {
     req: RequestBuilder,
 
     symbol: String,
 
-    // Request for subset of data by passing coma separated list of root nodes,
-    // possible root nodes are quote, fundamental, extended, reference, regular. Sending quote, fundamental in request will return quote and fundamental data in response.
-    // Dont send this attribute for full response.
-    // Default value : all
+    /// Request for subset of data by passing coma separated list of root nodes, possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
+    ///
+    /// Sending quote, fundamental in request will return quote and fundamental data in response.
+    ///
+    /// Dont send this attribute for full response.
+    ///
+    /// Default value : `all`
     fields: Option<Vec<String>>,
 }
 
@@ -113,7 +135,14 @@ impl GetQuoteRequest {
         }
     }
 
-    pub fn fields(mut self, val: Vec<String>) -> Self {
+    /// Request for subset of data by passing coma separated list of root nodes, possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
+    ///
+    /// Sending quote, fundamental in request will return quote and fundamental data in response.
+    ///
+    /// Dont send this attribute for full response.
+    ///
+    /// Default value : `all`
+    pub fn fields(&mut self, val: Vec<String>) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -127,6 +156,9 @@ impl GetQuoteRequest {
         req
     }
 
+    /// # Panics
+    ///
+    /// Will panic if no symbol found
     pub async fn send(self) -> Result<model::QuoteResponse, Error> {
         let symbol = self.symbol.clone();
         let req = self.build();
@@ -143,64 +175,81 @@ impl GetQuoteRequest {
     }
 }
 
+/// Get option chain for an optionable Symbol
 #[derive(Debug)]
 pub struct GetOptionChainsRequest {
     req: RequestBuilder,
 
     symbol: String,
 
-    // Contract Type
-    // Available values : CALL, PUT, ALL
+    /// Contract Type
+    ///
+    /// Available values : `CALL`, `PUT`, `ALL`
     contract_type: Option<String>,
 
-    // The Number of strikes to return above or below the at-the-money price
+    /// The Number of strikes to return above or below the at-the-money price
     strike_count: Option<i64>,
 
-    // Underlying quotes to be included
+    /// Underlying quotes to be included
     include_underlying_quote: Option<bool>,
 
-    // OptionChain strategy.
-    // Default is SINGLE.
-    // ANALYTICAL allows the use of volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values.
-    // Available values : SINGLE, ANALYTICAL, COVERED, VERTICAL, CALENDAR, STRANGLE, STRADDLE, BUTTERFLY, CONDOR, DIAGONAL, COLLAR, ROLL
+    /// OptionChain strategy.
+    ///
+    /// Default is `SINGLE`.
+    ///
+    /// `ANALYTICAL` allows the use of [`Self::volatility`], [`Self::underlying_price`], [`Self::interest_rate`], and [`Self::days_to_expiration`] params to calculate theoretical values.
+    ///
+    /// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
     strategy: Option<String>,
 
-    // Strike interval for spread strategy chains (see strategy param)
+    /// Strike interval for spread strategy chains (see [`Self::strategy`] param)
     interval: Option<f64>,
 
-    // Strike Price
+    /// Strike Price
     strike: Option<f64>,
 
-    // Range(ITM/NTM/OTM etc.)
+    /// Range(ITM/NTM/OTM etc.)
     range: Option<String>,
 
-    // From date(pattern: yyyy-MM-dd)
+    /// From date
+    // pattern: yyyy-MM-dd
     from_date: Option<chrono::NaiveDate>,
 
-    // To date (pattern: yyyy-MM-dd)
+    /// To date
+    // pattern: yyyy-MM-dd
     to_date: Option<chrono::NaiveDate>,
 
-    // Volatility to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
+    /// Volatility to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
     volatility: Option<f64>,
 
-    // Underlying price to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
+    /// Underlying price to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
     underlying_price: Option<f64>,
 
-    // Interest rate to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
+    /// Interest rate to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
     interest_rate: Option<f64>,
 
-    // Days to expiration to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param)
+    /// Days to expiration to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
     days_to_expiration: Option<i64>,
 
-    // Expiration month
-    // Available values : JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC, ALL
+    /// Expiration month
+    ///
+    /// Available values : `JAN`, `FEB`, `MAR`, `APR`, `MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, `DEC`, `ALL`
     exp_month: Option<String>,
 
-    // Option Type
+    /// Option Type
     option_type: Option<String>,
 
-    // Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
-    // Available values : PN, NP, PP
+    /// Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
+    ///
+    /// Available values : `PN`, `NP`, `PP`
     entitlement: Option<String>,
 }
 
@@ -237,84 +286,119 @@ impl GetOptionChainsRequest {
         }
     }
 
-    pub fn contract_type(mut self, val: String) -> Self {
+    /// Contract Type
+    /// Available values : CALL, PUT, ALL
+    pub fn contract_type(&mut self, val: String) -> &mut Self {
         self.contract_type = Some(val);
         self
     }
 
-    pub fn strike_count(mut self, val: i64) -> Self {
+    /// The Number of strikes to return above or below the at-the-money price
+    pub fn strike_count(&mut self, val: i64) -> &mut Self {
         self.strike_count = Some(val);
         self
     }
 
-    pub fn include_underlying_quote(mut self, val: bool) -> Self {
+    /// Underlying quotes to be included
+    pub fn include_underlying_quote(&mut self, val: bool) -> &mut Self {
         self.include_underlying_quote = Some(val);
         self
     }
 
-    pub fn strategy(mut self, val: String) -> Self {
+    /// `OptionChain` strategy.
+    ///
+    /// Default is `SINGLE`.
+    ///
+    /// `ANALYTICAL` allows the use of [`Self::volatility`], [`Self::underlying_price`], [`Self::interest_rate`], and [`Self::days_to_expiration`] params to calculate theoretical values.
+    ///
+    /// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
+    pub fn strategy(&mut self, val: String) -> &mut Self {
         self.strategy = Some(val);
         self
     }
 
-    pub fn interval(mut self, val: f64) -> Self {
+    /// Strike interval for spread strategy chains (see [`Self::strategy`] param)
+    pub fn interval(&mut self, val: f64) -> &mut Self {
         self.interval = Some(val);
         self
     }
 
-    pub fn strike(mut self, val: f64) -> Self {
+    /// Strike Price
+    pub fn strike(&mut self, val: f64) -> &mut Self {
         self.strike = Some(val);
         self
     }
 
-    pub fn range(mut self, val: String) -> Self {
+    /// Range(ITM/NTM/OTM etc.)
+    pub fn range(&mut self, val: String) -> &mut Self {
         self.range = Some(val);
         self
     }
 
     #[allow(clippy::wrong_self_convention)]
-    pub fn from_date(mut self, val: chrono::NaiveDate) -> Self {
+    /// From date
+    pub fn from_date(&mut self, val: chrono::NaiveDate) -> &mut Self {
         self.from_date = Some(val);
         self
     }
 
     #[allow(clippy::wrong_self_convention)]
-    pub fn to_date(mut self, val: chrono::NaiveDate) -> Self {
+    /// To date
+    pub fn to_date(&mut self, val: chrono::NaiveDate) -> &mut Self {
         self.to_date = Some(val);
         self
     }
 
-    pub fn volatility(mut self, val: f64) -> Self {
+    /// Volatility to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
+    pub fn volatility(&mut self, val: f64) -> &mut Self {
         self.volatility = Some(val);
         self
     }
 
-    pub fn underlying_price(mut self, val: f64) -> Self {
+    /// Underlying price to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
+    pub fn underlying_price(&mut self, val: f64) -> &mut Self {
         self.underlying_price = Some(val);
         self
     }
 
-    pub fn interest_rate(mut self, val: f64) -> Self {
+    /// Interest rate to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
+    pub fn interest_rate(&mut self, val: f64) -> &mut Self {
         self.interest_rate = Some(val);
         self
     }
 
-    pub fn days_to_expiration(mut self, val: i64) -> Self {
+    /// Days to expiration to use in calculations.
+    ///
+    /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
+    pub fn days_to_expiration(&mut self, val: i64) -> &mut Self {
         self.days_to_expiration = Some(val);
         self
     }
 
-    pub fn exp_month(mut self, val: String) -> Self {
+    /// Expiration month
+    ///
+    /// Available values : `JAN`, `FEB`, `MAR`, `APR`, `MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, `DEC`, `ALL`
+    pub fn exp_month(&mut self, val: String) -> &mut Self {
         self.exp_month = Some(val);
         self
     }
 
-    pub fn option_type(mut self, val: String) -> Self {
+    /// Option Type
+    pub fn option_type(&mut self, val: String) -> &mut Self {
         self.option_type = Some(val);
         self
     }
 
-    pub fn entitlement(mut self, val: String) -> Self {
+    /// Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
+    ///
+    /// Available values : `PN`, `NP`, `PP`
+    pub fn entitlement(&mut self, val: String) -> &mut Self {
         self.entitlement = Some(val);
         self
     }
@@ -389,6 +473,7 @@ impl GetOptionChainsRequest {
     }
 }
 
+/// Get option expiration chain for an optionable symbol
 #[derive(Debug)]
 pub struct GetOptionExpirationChainRequest {
     req: RequestBuilder,
@@ -430,71 +515,73 @@ impl GetOptionExpirationChainRequest {
     }
 }
 
+/// Get `PriceHistory` for a single symbol and date ranges.
 #[derive(Debug)]
 pub struct GetPriceHistoryRequest {
     req: RequestBuilder,
 
     symbol: String,
 
-    // The chart period being requested.
-    // Available values : day, month, year, ytd
+    /// The chart period being requested.
+    ///
+    /// Available values : `day`, `month`, `year`, `ytd`
     period_type: Option<String>,
 
-    // The number of chart period types.
-    //
-    // If the periodType is
-    // • day - valid values are 1, 2, 3, 4, 5, 10
-    // • month - valid values are 1, 2, 3, 6
-    // • year - valid values are 1, 2, 3, 5, 10, 15, 20
-    // • ytd - valid values are 1
-    //
-    // If the period is not specified and the periodType is
-    // • day - default period is 10.
-    // • month - default period is 1.
-    // • year - default period is 1.
-    // • ytd - default period is 1.
+    /// The number of chart period types.
+    ///
+    /// If the [`Self::period_type`] is
+    /// * `day` - valid values are `1`, `2`, `3`, `4`, `5`, `10`
+    /// * `month` - valid values are `1`, `2`, `3`, `6`
+    /// * `year` - valid values are `1`, `2`, `3`, `5`, `10`, `15`, `20`
+    /// * `ytd` - valid values are `1`
+    ///
+    /// If the [`Self::period`] is not specified and the [`Self::period_type`] is
+    /// * `day` - default period is `10`.
+    /// * `month` - default period is `1`.
+    /// * `year` - default period is `1`.
+    /// * `ytd` - default period is `1`.
     period: Option<i64>,
 
-    // The time frequencyType
-    //
-    // If the periodType is
-    // • day - valid value is minute
-    // • month - valid values are daily, weekly
-    // • year - valid values are daily, weekly, monthly
-    // • ytd - valid values are daily, weekly
-    //
-    // If frequencyType is not specified, default value depends on the periodType
-    // • day - defaulted to minute.
-    // • month - defaulted to weekly.
-    // • year - defaulted to monthly.
-    // • ytd - defaulted to weekly.
-    //
-    // Available values : minute, daily, weekly, monthly
+    /// The time [`Self::frequency_type`]
+    ///
+    /// If the [`Self::period_type`] is
+    /// * `day` - valid value is `minute`
+    /// * `month` - valid values are `daily`, `weekly`
+    /// * `year` - valid values are `daily`, `weekly`, `monthly`
+    /// * `ytd` - valid values are `daily`, `weekly`
+    ///
+    /// If [`Self::frequency_type`] is not specified, default value depends on the [`Self::period_type`]
+    /// * `day` - defaulted to `minute`.
+    /// * `month` - defaulted to `weekly`.
+    /// * `year` - defaulted to `monthly`.
+    /// * `ytd` - defaulted to `weekly`.
+    ///
+    /// Available values : `minute`, `daily`, `weekly`, `monthly`
     frequency_type: Option<String>,
 
-    // The time frequency duration
-    //
-    // If the frequencyType is
-    // • minute - valid values are 1, 5, 10, 15, 30
-    // • daily - valid value is 1
-    // • weekly - valid value is 1
-    // • monthly - valid value is 1
-    //
-    // If frequency is not specified, default value is 1
+    /// The time frequency duration
+    ///
+    /// If the [`Self::frequency_type`] is
+    /// * `minute` - valid values are `1`, `5`, `10`, `15`, `30`
+    /// * `daily` - valid value is `1`
+    /// * `weekly` - valid value is `1`
+    /// * `monthly` - valid value is `1`
+    ///
+    /// If [`Self::frequency`] is not specified, default value is `1`
     frequency: Option<i64>,
 
     // The start date, Time in milliseconds since the UNIX epoch eg 1451624400000
-    // If not specified startDate will be (endDate - period) excluding weekends and holidays.
+    /// If not specified [`Self::start_date`] will be ([`Self::end_date`] - [`Self::period`]) excluding weekends and holidays.
     start_date: Option<i64>,
 
     // The end date, Time in milliseconds since the UNIX epoch eg 1451624400000
-    // If not specified, the endDate will default to the market close of previous business day.
+    /// If not specified, the [`Self::end_date`] will default to the market close of previous business day.
     end_date: Option<i64>,
 
-    // Need extended hours data
+    /// Need extended hours data
     need_extended_hours_data: Option<bool>,
 
-    // Need previous close price/date
+    /// Need previous close price/date
     need_previous_close: Option<bool>,
 }
 
@@ -523,42 +610,86 @@ impl GetPriceHistoryRequest {
         }
     }
 
-    pub fn period_type(mut self, val: String) -> Self {
+    /// The chart period being requested.
+    ///
+    /// Available values : `day`, `month`, `year`, `ytd`
+    pub fn period_type(&mut self, val: String) -> &mut Self {
         self.period_type = Some(val);
         self
     }
 
-    pub fn period(mut self, val: i64) -> Self {
+    /// The number of chart period types.
+    ///
+    /// If the [`Self::period_type`] is
+    /// * day - valid values are 1, 2, 3, 4, 5, 10
+    /// * month - valid values are 1, 2, 3, 6
+    /// * year - valid values are 1, 2, 3, 5, 10, 15, 20
+    /// * ytd - valid values are 1
+    ///
+    /// If the [`Self::period`] is not specified and the [`Self::period_type`] is
+    /// * day - default period is 10.
+    /// * month - default period is 1.
+    /// * year - default period is 1.
+    /// * ytd - default period is 1.
+    pub fn period(&mut self, val: i64) -> &mut Self {
         self.period = Some(val);
         self
     }
 
-    pub fn frequency_type(mut self, val: String) -> Self {
+    /// The time [`Self::frequency_type`]
+    ///
+    /// If the [`Self::period_type`] is
+    /// * `day` - valid value is `minute`
+    /// * `month` - valid values are `daily`, `weekly`
+    /// * `year` - valid values are `daily`, `weekly`, `monthly`
+    /// * `ytd` - valid values are `daily`, `weekly`
+    ///
+    /// If [`Self::frequency_type`] is not specified, default value depends on the [`Self::period_type`]
+    /// * `day` - defaulted to `minute`.
+    /// * `month` - defaulted to `weekly`.
+    /// * `year` - defaulted to `monthly`.
+    /// * `ytd` - defaulted to `weekly`.
+    ///
+    /// Available values : `minute`, `daily`, `weekly`, `monthly`
+    pub fn frequency_type(&mut self, val: String) -> &mut Self {
         self.frequency_type = Some(val);
         self
     }
 
-    pub fn frequency(mut self, val: i64) -> Self {
+    /// The time frequency duration
+    ///
+    /// If the [`Self::frequency_type`] is
+    /// * `minute` - valid values are `1`, `5`, `10`, `15`, `30`
+    /// * `daily` - valid value is `1`
+    /// * `weekly` - valid value is `1`
+    /// * `monthly` - valid value is `1`
+    ///
+    /// If [`Self::frequency`] is not specified, default value is `1`
+    pub fn frequency(&mut self, val: i64) -> &mut Self {
         self.frequency = Some(val);
         self
     }
 
-    pub fn start_date(mut self, val: chrono::DateTime<chrono::Utc>) -> Self {
+    /// If not specified [`Self::start_date`] will be ([`Self::end_date`] - [`Self::period`]) excluding weekends and holidays.
+    pub fn start_date(&mut self, val: chrono::DateTime<chrono::Utc>) -> &mut Self {
         self.start_date = Some(val.timestamp_millis());
         self
     }
 
-    pub fn end_date(mut self, val: chrono::DateTime<chrono::Utc>) -> Self {
+    /// If not specified, the [`Self::end_date`] will default to the market close of previous business day.
+    pub fn end_date(&mut self, val: chrono::DateTime<chrono::Utc>) -> &mut Self {
         self.end_date = Some(val.timestamp_millis());
         self
     }
 
-    pub fn need_extended_hours_data(mut self, val: bool) -> Self {
+    /// Need extended hours data
+    pub fn need_extended_hours_data(&mut self, val: bool) -> &mut Self {
         self.need_extended_hours_data = Some(val);
         self
     }
 
-    pub fn need_previous_close(mut self, val: bool) -> Self {
+    /// Need previous close price/date
+    pub fn need_previous_close(&mut self, val: bool) -> &mut Self {
         self.need_previous_close = Some(val);
         self
     }
@@ -566,22 +697,22 @@ impl GetPriceHistoryRequest {
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[("symbol", self.symbol)]);
         if let Some(x) = self.period_type {
-            req = req.query(&[("periodType", x)]);
+            req = req.query(&[("[Self::period_type]", x)]);
         }
         if let Some(x) = self.period {
             req = req.query(&[("period", x)]);
         }
         if let Some(x) = self.frequency_type {
-            req = req.query(&[("frequencyType", x)]);
+            req = req.query(&[("[Self::frequency_type]", x)]);
         }
         if let Some(x) = self.frequency {
             req = req.query(&[("frequency", x)]);
         }
         if let Some(x) = self.start_date {
-            req = req.query(&[("startDate", x)]);
+            req = req.query(&[("[Self::start_date]", x)]);
         }
         if let Some(x) = self.end_date {
-            req = req.query(&[("endDate", x)]);
+            req = req.query(&[("[Self::end_date]", x)]);
         }
         if let Some(x) = self.need_extended_hours_data {
             req = req.query(&[("needExtendedHoursData", x)]);
@@ -609,23 +740,30 @@ impl GetPriceHistoryRequest {
     }
 }
 
+/// Get Movers for a specific index.
 #[derive(Debug)]
 pub struct GetMoversRequest {
     req: RequestBuilder,
 
-    // Index Symbol
-    // Available values : $DJI, $COMPX, $SPX, NYSE, NASDAQ, OTCBB, INDEX_ALL, EQUITY_ALL, OPTION_ALL, OPTION_PUT, OPTION_CALL
-    // Example : $DJI
+    /// Index Symbol
+    ///
+    /// Available values : `$DJI`, `$COMPX`, `$SPX`, `NYSE`, `NASDAQ`, `OTCBB`, `INDEX_ALL`, `EQUITY_ALL`, `OPTION_ALL`, `OPTION_PUT`, `OPTION_CALL`
+    ///
+    /// Example : `$DJI`
     symbol: String,
 
-    // Sort by a particular attribute
-    // Available values : VOLUME, TRADES, PERCENT_CHANGE_UP, PERCENT_CHANGE_DOWN
-    // Example : VOLUME
+    /// Sort by a particular attribute
+    ///
+    /// Available values : `VOLUME`, `TRADES`, `PERCENT_CHANGE_UP`, `PERCENT_CHANGE_DOWN`
+    ///
+    /// Example : `VOLUME`
     sort: Option<String>,
 
-    // To return movers with the specified directions of up or down
-    // Available values : 0, 1, 5, 10, 30, 60
-    // Default value : 0
+    /// To return movers with the specified directions of up or down
+    ///
+    /// Available values : `0`, `1`, `5`, `10`, `30`, `60`
+    ///
+    /// Default value : `0`
     frequency: Option<i64>,
 }
 
@@ -651,12 +789,22 @@ impl GetMoversRequest {
         }
     }
 
-    pub fn sort(mut self, val: String) -> Self {
+    /// Sort by a particular attribute
+    ///
+    /// Available values : `VOLUME`, `TRADES`, `PERCENT_CHANGE_UP`, `PERCENT_CHANGE_DOWN`
+    ///
+    /// Example : `VOLUME`
+    pub fn sort(&mut self, val: String) -> &mut Self {
         self.sort = Some(val);
         self
     }
 
-    pub fn frequency(mut self, val: i64) -> Self {
+    /// To return movers with the specified directions of up or down
+    ///
+    /// Available values : `0`, `1`, `5`, `10`, `30`, `60`
+    ///
+    /// Default value : `0`
+    pub fn frequency(&mut self, val: i64) -> &mut Self {
         self.frequency = Some(val);
         self
     }
@@ -689,15 +837,20 @@ impl GetMoversRequest {
     }
 }
 
+/// Get Market Hours for different markets.
 #[derive(Debug)]
 pub struct GetMarketsRequest {
     req: RequestBuilder,
 
-    // List of markets
-    // Available values : equity, option, bond, future, forex
+    /// List of markets
+    ///
+    /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     markets: Vec<String>,
 
-    // Valid date range is from currentdate to 1 year from today. It will default to current day if not entered. Date format:YYYY-MM-DD
+    /// Valid date range is from currentdate to 1 year from today.
+    ///
+    /// It will default to current day if not entered.
+    // Date format:YYYY-MM-DD
     date: Option<chrono::NaiveDate>,
 }
 
@@ -720,7 +873,10 @@ impl GetMarketsRequest {
         }
     }
 
-    pub fn date(mut self, val: chrono::NaiveDate) -> Self {
+    /// Valid date range is from currentdate to 1 year from today.
+    ///
+    /// It will default to current day if not entered.
+    pub fn date(&mut self, val: chrono::NaiveDate) -> &mut Self {
         self.date = Some(val);
         self
     }
@@ -750,15 +906,18 @@ impl GetMarketsRequest {
     }
 }
 
+/// Get Market Hours for a single market.
 #[derive(Debug)]
 pub struct GetMarketRequest {
     req: RequestBuilder,
 
-    // market id
-    // Available values : equity, option, bond, future, forex
+    /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     market_id: String,
 
-    // Valid date range is from currentdate to 1 year from today. It will default to current day if not entered. Date format:YYYY-MM-DD
+    /// Valid date range is from currentdate to 1 year from today.
+    ///
+    /// It will default to current day if not entered.
+    // Date format:YYYY-MM-DD
     date: Option<chrono::NaiveDate>,
 }
 
@@ -783,7 +942,10 @@ impl GetMarketRequest {
         }
     }
 
-    pub fn date(mut self, val: chrono::NaiveDate) -> Self {
+    /// Valid date range is from currentdate to 1 year from today.
+    ///
+    /// It will default to current day if not entered.
+    pub fn date(&mut self, val: chrono::NaiveDate) -> &mut Self {
         self.date = Some(val);
         self
     }
@@ -813,14 +975,16 @@ impl GetMarketRequest {
     }
 }
 
+/// Get Instruments by symbols and projections.
 #[derive(Debug)]
 pub struct GetInstrucmentsRequest {
     req: RequestBuilder,
 
     symbol: String,
 
-    // search by
-    // Available values : symbol-search, symbol-regex, desc-search, desc-regex, search, fundamental
+    /// search by
+    ///
+    /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
     projection: String,
 }
 
@@ -868,12 +1032,13 @@ impl GetInstrucmentsRequest {
     }
 }
 
+/// Get Instrument by specific cusip
 #[derive(Debug)]
 pub struct GetInstrucmentRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
-    // cusip of a security
+    /// cusip of a security
     cusip_id: String,
 }
 
@@ -967,9 +1132,9 @@ mod tests {
         assert_eq!(req.indicative, None);
 
         // check setter
-        req = req.fields(fields.clone());
+        req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
-        req = req.indicative(indicative);
+        req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
         dbg!(&req);
@@ -1077,7 +1242,7 @@ mod tests {
         assert_eq!(req.fields, None);
 
         // check setter
-        req = req.fields(fields.clone());
+        req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
         dbg!(&req);
@@ -1181,37 +1346,37 @@ mod tests {
         assert_eq!(req.entitlement, None);
 
         // check setter
-        req = req.contract_type(contract_type.clone());
+        req.contract_type(contract_type.clone());
         assert_eq!(req.contract_type, Some(contract_type));
-        req = req.strike_count(strike_count);
+        req.strike_count(strike_count);
         assert_eq!(req.strike_count, Some(strike_count));
-        req = req.include_underlying_quote(include_underlying_quote);
+        req.include_underlying_quote(include_underlying_quote);
         assert_eq!(req.include_underlying_quote, Some(include_underlying_quote));
-        req = req.strategy(strategy.clone());
+        req.strategy(strategy.clone());
         assert_eq!(req.strategy, Some(strategy));
-        req = req.interval(interval);
+        req.interval(interval);
         assert_eq!(req.interval, Some(interval));
-        req = req.strike(strike);
+        req.strike(strike);
         assert_eq!(req.strike, Some(strike));
-        req = req.range(range.clone());
+        req.range(range.clone());
         assert_eq!(req.range, Some(range));
-        req = req.from_date(from_date);
+        req.from_date(from_date);
         assert_eq!(req.from_date, Some(from_date));
-        req = req.to_date(to_date);
+        req.to_date(to_date);
         assert_eq!(req.to_date, Some(to_date));
-        req = req.volatility(volatility);
+        req.volatility(volatility);
         assert_eq!(req.volatility, Some(volatility));
-        req = req.underlying_price(underlying_price);
+        req.underlying_price(underlying_price);
         assert_eq!(req.underlying_price, Some(underlying_price));
-        req = req.interest_rate(interest_rate);
+        req.interest_rate(interest_rate);
         assert_eq!(req.interest_rate, Some(interest_rate));
-        req = req.days_to_expiration(days_to_expiration);
+        req.days_to_expiration(days_to_expiration);
         assert_eq!(req.days_to_expiration, Some(days_to_expiration));
-        req = req.exp_month(exp_month.clone());
+        req.exp_month(exp_month.clone());
         assert_eq!(req.exp_month, Some(exp_month));
-        req = req.option_type(option_type.clone());
+        req.option_type(option_type.clone());
         assert_eq!(req.option_type, Some(option_type));
-        req = req.entitlement(entitlement.clone());
+        req.entitlement(entitlement.clone());
         assert_eq!(req.entitlement, Some(entitlement));
 
         dbg!(&req);
@@ -1305,15 +1470,18 @@ mod tests {
             .mock("GET", "/pricehistory")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
-                Matcher::UrlEncoded("periodType".into(), period_type.clone()),
+                Matcher::UrlEncoded("[Self::period_type]".into(), period_type.clone()),
                 Matcher::UrlEncoded("period".into(), period.to_string()),
-                Matcher::UrlEncoded("frequencyType".into(), frequency_type.to_string()),
+                Matcher::UrlEncoded("[Self::frequency_type]".into(), frequency_type.to_string()),
                 Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
                 Matcher::UrlEncoded(
-                    "startDate".into(),
+                    "[Self::start_date]".into(),
                     start_date.timestamp_millis().to_string(),
                 ),
-                Matcher::UrlEncoded("endDate".into(), end_date.timestamp_millis().to_string()),
+                Matcher::UrlEncoded(
+                    "[Self::end_date]".into(),
+                    end_date.timestamp_millis().to_string(),
+                ),
                 Matcher::UrlEncoded(
                     "needExtendedHoursData".into(),
                     need_extended_hours_data.to_string(),
@@ -1349,21 +1517,21 @@ mod tests {
         assert_eq!(req.need_previous_close, None);
 
         // check setter
-        req = req.period_type(period_type.clone());
+        req.period_type(period_type.clone());
         assert_eq!(req.period_type, Some(period_type));
-        req = req.period(period);
+        req.period(period);
         assert_eq!(req.period, Some(period));
-        req = req.frequency_type(frequency_type.clone());
+        req.frequency_type(frequency_type.clone());
         assert_eq!(req.frequency_type, Some(frequency_type));
-        req = req.frequency(frequency);
+        req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
-        req = req.start_date(start_date);
+        req.start_date(start_date);
         assert_eq!(req.start_date, Some(start_date.timestamp_millis()));
-        req = req.end_date(end_date);
+        req.end_date(end_date);
         assert_eq!(req.end_date, Some(end_date.timestamp_millis()));
-        req = req.need_extended_hours_data(need_extended_hours_data);
+        req.need_extended_hours_data(need_extended_hours_data);
         assert_eq!(req.need_extended_hours_data, Some(need_extended_hours_data));
-        req = req.need_previous_close(need_previous_close);
+        req.need_previous_close(need_previous_close);
         assert_eq!(req.need_previous_close, Some(need_previous_close));
 
         dbg!(&req);
@@ -1417,9 +1585,9 @@ mod tests {
         assert_eq!(req.frequency, None);
 
         // check setter
-        req = req.sort(sort.clone());
+        req.sort(sort.clone());
         assert_eq!(req.sort, Some(sort));
-        req = req.frequency(frequency);
+        req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
 
         dbg!(&req);
@@ -1471,7 +1639,7 @@ mod tests {
         assert_eq!(req.date, None);
 
         // check setter
-        req = req.date(date);
+        req.date(date);
         assert_eq!(req.date, Some(date));
 
         dbg!(&req);
@@ -1554,7 +1722,7 @@ mod tests {
         assert_eq!(req.date, None);
 
         // check setter
-        req = req.date(date);
+        req.date(date);
         assert_eq!(req.date, Some(date));
 
         dbg!(&req);

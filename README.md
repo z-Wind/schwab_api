@@ -23,16 +23,12 @@ async fn main() {
     let secret = "your_secret".to_string();
     let callback_url = "https://127.0.0.1:8080".to_string();
     let certs_dir = "your_certs_dir";
-    let price = api::API::new(key, secret, callback_url, certs_dir)
-        .await
-        .unwrap()
-        .get_quote("VTI".to_string())
-        .await
-        .unwrap()
-        .send()
+    let api = api::API::new(key, secret, callback_url, certs_dir)
         .await
         .unwrap();
-    println!("{:?}", price);
+    let req = api.get_quote("VTI".to_string()).await.unwrap();
+    let rsp = req.send().await.unwrap();
+    println!("{:?}", rsp);
 }
 
 ```

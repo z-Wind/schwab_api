@@ -1,3 +1,5 @@
+//! Structs and utilities for handling [`crate::api::trader`] data.
+
 pub mod account_number;
 pub mod accounts;
 pub mod order;

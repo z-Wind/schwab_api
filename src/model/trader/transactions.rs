@@ -44,7 +44,7 @@ pub struct TransferItem {
     pub instrument: TransactionInstrument,
     pub amount: i64,
     pub cost: i64,
-    pub price: i64,
+    pub price: f64,
     pub fee_type: String,
     pub position_effect: String,
 }
