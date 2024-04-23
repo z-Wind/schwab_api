@@ -1,4 +1,5 @@
 /// specifies Endpoints for Schwab API
+use super::parameter::Market;
 
 const SERVER_TRADER: &str = "https://api.schwabapi.com/trader/v1";
 const SERVER_MARKETDATA: &str = "https://api.schwabapi.com/marketdata/v1";
@@ -294,7 +295,7 @@ pub(crate) enum EndpointMarketHour {
     // GET
     // /markets/{market_id}
     // Get Market Hours for a single market.
-    Market { market_id: String },
+    Market { market_id: Market },
 }
 
 impl EndpointMarketHour {
@@ -303,6 +304,8 @@ impl EndpointMarketHour {
         match self {
             EndpointMarketHour::Markets => "/markets".to_string(),
             EndpointMarketHour::Market { market_id } => {
+                let market_id = serde_json::to_value(market_id).expect("value");
+                let market_id = market_id.as_str().expect("value is a str");
                 format!("/markets/{market_id}")
             }
         }
@@ -489,9 +492,9 @@ mod tests {
         );
 
         assert_eq!(
-            "https://api.schwabapi.com/marketdata/v1/markets/XYZ",
+            "https://api.schwabapi.com/marketdata/v1/markets/equity",
             EndpointMarketHour::Market {
-                market_id: "XYZ".to_string()
+                market_id: Market::Equity,
             }
             .url()
         );

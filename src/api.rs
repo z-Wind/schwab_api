@@ -2,6 +2,7 @@
 
 mod endpoints;
 pub mod market_data;
+pub mod parameter;
 pub mod trader;
 
 use reqwest::Client;
@@ -9,6 +10,7 @@ use std::path::PathBuf;
 
 use super::token::TokenChecker;
 use crate::{error::Error, model};
+use parameter::{Market, Projection};
 
 /// Interacting with the Schwab API.
 #[derive(Debug)]
@@ -128,7 +130,7 @@ impl API {
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     pub async fn get_markets(
         &self,
-        markets: Vec<String>,
+        markets: Vec<Market>,
     ) -> Result<market_data::GetMarketsRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
 
@@ -144,7 +146,7 @@ impl API {
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
     pub async fn get_market(
         &self,
-        market_id: String,
+        market_id: Market,
     ) -> Result<market_data::GetMarketRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
 
@@ -163,7 +165,7 @@ impl API {
     pub async fn get_instrucments(
         &self,
         symbol: String,
-        projection: String,
+        projection: Projection,
     ) -> Result<market_data::GetInstrucmentsRequest, Error> {
         let access_token = self.token_checker.get_access_token().await?;
 
@@ -566,7 +568,7 @@ mod tests {
     async fn test_get_markets() {
         let api = client().await;
         dbg!(api
-            .get_markets(vec!["equity".to_string(), "option".to_string()])
+            .get_markets(vec![Market::Equity, Market::Option])
             .await
             .unwrap()
             .send()
@@ -582,7 +584,7 @@ mod tests {
     async fn test_get_market() {
         let api = client().await;
         dbg!(api
-            .get_market("equity".into())
+            .get_market(Market::Equity)
             .await
             .unwrap()
             .send()
@@ -598,7 +600,7 @@ mod tests {
     async fn test_get_instrucments() {
         let api = client().await;
         dbg!(api
-            .get_instrucments("VTI".into(), "symbol-search".into())
+            .get_instrucments("VTI".into(), Projection::SymbolSearch)
             .await
             .unwrap()
             .send()

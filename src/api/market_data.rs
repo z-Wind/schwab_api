@@ -4,6 +4,10 @@
 use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
+use super::parameter::{
+    ContractType, Entitlement, Field, FrequencyType, Market, Month, OptionChainStrategy,
+    PeriodType, Projection, SortAttribute,
+};
 use crate::api::Error;
 use crate::model;
 
@@ -23,7 +27,7 @@ pub struct GetQuotesRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : all
-    fields: Option<Vec<String>>,
+    fields: Option<Vec<Field>>,
 
     /// Include indicative symbol quotes for all ETF symbols in request.
     ///
@@ -57,7 +61,7 @@ impl GetQuotesRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    pub fn fields(&mut self, val: Vec<String>) -> &mut Self {
+    pub fn fields(&mut self, val: Vec<Field>) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -73,6 +77,11 @@ impl GetQuotesRequest {
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[("symbols", self.symbols.join(","))]);
         if let Some(x) = self.fields {
+            let x: Vec<String> = x
+                .into_iter()
+                .map(|f| serde_json::to_value(f).expect("value"))
+                .map(|v| v.as_str().expect("value is a str").to_string())
+                .collect();
             req = req.query(&[("fields", x.join(","))]);
         }
         if let Some(x) = self.indicative {
@@ -112,7 +121,7 @@ pub struct GetQuoteRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    fields: Option<Vec<String>>,
+    fields: Option<Vec<Field>>,
 }
 
 impl GetQuoteRequest {
@@ -142,7 +151,7 @@ impl GetQuoteRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    pub fn fields(&mut self, val: Vec<String>) -> &mut Self {
+    pub fn fields(&mut self, val: Vec<Field>) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -150,6 +159,11 @@ impl GetQuoteRequest {
     fn build(self) -> RequestBuilder {
         let mut req = self.req;
         if let Some(x) = self.fields {
+            let x: Vec<String> = x
+                .into_iter()
+                .map(|f| serde_json::to_value(f).expect("value"))
+                .map(|v| v.as_str().expect("value is a str").to_string())
+                .collect();
             req = req.query(&[("fields", x.join(","))]);
         }
 
@@ -185,7 +199,7 @@ pub struct GetOptionChainsRequest {
     /// Contract Type
     ///
     /// Available values : `CALL`, `PUT`, `ALL`
-    contract_type: Option<String>,
+    contract_type: Option<ContractType>,
 
     /// The Number of strikes to return above or below the at-the-money price
     strike_count: Option<i64>,
@@ -200,7 +214,7 @@ pub struct GetOptionChainsRequest {
     /// `ANALYTICAL` allows the use of [`Self::volatility`], [`Self::underlying_price`], [`Self::interest_rate`], and [`Self::days_to_expiration`] params to calculate theoretical values.
     ///
     /// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
-    strategy: Option<String>,
+    strategy: Option<OptionChainStrategy>,
 
     /// Strike interval for spread strategy chains (see [`Self::strategy`] param)
     interval: Option<f64>,
@@ -242,7 +256,7 @@ pub struct GetOptionChainsRequest {
     /// Expiration month
     ///
     /// Available values : `JAN`, `FEB`, `MAR`, `APR`, `MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, `DEC`, `ALL`
-    exp_month: Option<String>,
+    exp_month: Option<Month>,
 
     /// Option Type
     option_type: Option<String>,
@@ -250,7 +264,7 @@ pub struct GetOptionChainsRequest {
     /// Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
     ///
     /// Available values : `PN`, `NP`, `PP`
-    entitlement: Option<String>,
+    entitlement: Option<Entitlement>,
 }
 
 impl GetOptionChainsRequest {
@@ -288,7 +302,7 @@ impl GetOptionChainsRequest {
 
     /// Contract Type
     /// Available values : CALL, PUT, ALL
-    pub fn contract_type(&mut self, val: String) -> &mut Self {
+    pub fn contract_type(&mut self, val: ContractType) -> &mut Self {
         self.contract_type = Some(val);
         self
     }
@@ -312,7 +326,7 @@ impl GetOptionChainsRequest {
     /// `ANALYTICAL` allows the use of [`Self::volatility`], [`Self::underlying_price`], [`Self::interest_rate`], and [`Self::days_to_expiration`] params to calculate theoretical values.
     ///
     /// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
-    pub fn strategy(&mut self, val: String) -> &mut Self {
+    pub fn strategy(&mut self, val: OptionChainStrategy) -> &mut Self {
         self.strategy = Some(val);
         self
     }
@@ -384,7 +398,7 @@ impl GetOptionChainsRequest {
     /// Expiration month
     ///
     /// Available values : `JAN`, `FEB`, `MAR`, `APR`, `MAY`, `JUN`, `JUL`, `AUG`, `SEP`, `OCT`, `NOV`, `DEC`, `ALL`
-    pub fn exp_month(&mut self, val: String) -> &mut Self {
+    pub fn exp_month(&mut self, val: Month) -> &mut Self {
         self.exp_month = Some(val);
         self
     }
@@ -398,7 +412,7 @@ impl GetOptionChainsRequest {
     /// Applicable only if its retail token, entitlement of client PP-PayingPro, NP-NonPro and PN-NonPayingPro
     ///
     /// Available values : `PN`, `NP`, `PP`
-    pub fn entitlement(&mut self, val: String) -> &mut Self {
+    pub fn entitlement(&mut self, val: Entitlement) -> &mut Self {
         self.entitlement = Some(val);
         self
     }
@@ -525,7 +539,7 @@ pub struct GetPriceHistoryRequest {
     /// The chart period being requested.
     ///
     /// Available values : `day`, `month`, `year`, `ytd`
-    period_type: Option<String>,
+    period_type: Option<PeriodType>,
 
     /// The number of chart period types.
     ///
@@ -557,7 +571,7 @@ pub struct GetPriceHistoryRequest {
     /// * `ytd` - defaulted to `weekly`.
     ///
     /// Available values : `minute`, `daily`, `weekly`, `monthly`
-    frequency_type: Option<String>,
+    frequency_type: Option<FrequencyType>,
 
     /// The time frequency duration
     ///
@@ -613,7 +627,7 @@ impl GetPriceHistoryRequest {
     /// The chart period being requested.
     ///
     /// Available values : `day`, `month`, `year`, `ytd`
-    pub fn period_type(&mut self, val: String) -> &mut Self {
+    pub fn period_type(&mut self, val: PeriodType) -> &mut Self {
         self.period_type = Some(val);
         self
     }
@@ -651,7 +665,7 @@ impl GetPriceHistoryRequest {
     /// * `ytd` - defaulted to `weekly`.
     ///
     /// Available values : `minute`, `daily`, `weekly`, `monthly`
-    pub fn frequency_type(&mut self, val: String) -> &mut Self {
+    pub fn frequency_type(&mut self, val: FrequencyType) -> &mut Self {
         self.frequency_type = Some(val);
         self
     }
@@ -697,22 +711,22 @@ impl GetPriceHistoryRequest {
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[("symbol", self.symbol)]);
         if let Some(x) = self.period_type {
-            req = req.query(&[("[Self::period_type]", x)]);
+            req = req.query(&[("periodType", x)]);
         }
         if let Some(x) = self.period {
             req = req.query(&[("period", x)]);
         }
         if let Some(x) = self.frequency_type {
-            req = req.query(&[("[Self::frequency_type]", x)]);
+            req = req.query(&[("frequencyType", x)]);
         }
         if let Some(x) = self.frequency {
             req = req.query(&[("frequency", x)]);
         }
         if let Some(x) = self.start_date {
-            req = req.query(&[("[Self::start_date]", x)]);
+            req = req.query(&[("startDate", x)]);
         }
         if let Some(x) = self.end_date {
-            req = req.query(&[("[Self::end_date]", x)]);
+            req = req.query(&[("endDate", x)]);
         }
         if let Some(x) = self.need_extended_hours_data {
             req = req.query(&[("needExtendedHoursData", x)]);
@@ -757,7 +771,7 @@ pub struct GetMoversRequest {
     /// Available values : `VOLUME`, `TRADES`, `PERCENT_CHANGE_UP`, `PERCENT_CHANGE_DOWN`
     ///
     /// Example : `VOLUME`
-    sort: Option<String>,
+    sort: Option<SortAttribute>,
 
     /// To return movers with the specified directions of up or down
     ///
@@ -794,7 +808,7 @@ impl GetMoversRequest {
     /// Available values : `VOLUME`, `TRADES`, `PERCENT_CHANGE_UP`, `PERCENT_CHANGE_DOWN`
     ///
     /// Example : `VOLUME`
-    pub fn sort(&mut self, val: String) -> &mut Self {
+    pub fn sort(&mut self, val: SortAttribute) -> &mut Self {
         self.sort = Some(val);
         self
     }
@@ -845,7 +859,7 @@ pub struct GetMarketsRequest {
     /// List of markets
     ///
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
-    markets: Vec<String>,
+    markets: Vec<Market>,
 
     /// Valid date range is from currentdate to 1 year from today.
     ///
@@ -859,13 +873,13 @@ impl GetMarketsRequest {
         endpoints::EndpointMarketHour::Markets
     }
 
-    pub(crate) fn new(client: &Client, access_token: String, markets: Vec<String>) -> Self {
+    pub(crate) fn new(client: &Client, access_token: String, markets: Vec<Market>) -> Self {
         let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
 
         Self::new_with(req, markets)
     }
 
-    fn new_with(req: RequestBuilder, markets: Vec<String>) -> Self {
+    fn new_with(req: RequestBuilder, markets: Vec<Market>) -> Self {
         Self {
             req,
             markets,
@@ -882,7 +896,13 @@ impl GetMarketsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("markets", self.markets.join(","))]);
+        let markets: Vec<String> = self
+            .markets
+            .into_iter()
+            .map(|m| serde_json::to_value(m).expect("value"))
+            .map(|v| v.as_str().expect("value is a str").to_string())
+            .collect();
+        let mut req = self.req.query(&[("markets", markets.join(","))]);
         if let Some(x) = self.date {
             req = req.query(&[("date", x)]);
         }
@@ -912,7 +932,7 @@ pub struct GetMarketRequest {
     req: RequestBuilder,
 
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
-    market_id: String,
+    market_id: Market,
 
     /// Valid date range is from currentdate to 1 year from today.
     ///
@@ -922,19 +942,19 @@ pub struct GetMarketRequest {
 }
 
 impl GetMarketRequest {
-    fn endpoint(market_id: String) -> endpoints::EndpointMarketHour {
+    fn endpoint(market_id: Market) -> endpoints::EndpointMarketHour {
         endpoints::EndpointMarketHour::Market { market_id }
     }
 
-    pub(crate) fn new(client: &Client, access_token: String, market_id: String) -> Self {
+    pub(crate) fn new(client: &Client, access_token: String, market_id: Market) -> Self {
         let req = client
-            .get(Self::endpoint(market_id.clone()).url())
+            .get(Self::endpoint(market_id).url())
             .bearer_auth(access_token);
 
         Self::new_with(req, market_id)
     }
 
-    fn new_with(req: RequestBuilder, market_id: String) -> Self {
+    fn new_with(req: RequestBuilder, market_id: Market) -> Self {
         Self {
             req,
             market_id,
@@ -985,7 +1005,7 @@ pub struct GetInstrucmentsRequest {
     /// search by
     ///
     /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
-    projection: String,
+    projection: Projection,
 }
 
 impl GetInstrucmentsRequest {
@@ -997,13 +1017,13 @@ impl GetInstrucmentsRequest {
         client: &Client,
         access_token: String,
         symbol: String,
-        projection: String,
+        projection: Projection,
     ) -> Self {
         let req = client.get(Self::endpoint().url()).bearer_auth(access_token);
         Self::new_with(req, symbol, projection)
     }
 
-    fn new_with(req: RequestBuilder, symbol: String, projection: String) -> Self {
+    fn new_with(req: RequestBuilder, symbol: String, projection: Projection) -> Self {
         Self {
             req,
             symbol,
@@ -1013,7 +1033,8 @@ impl GetInstrucmentsRequest {
 
     fn build(self) -> RequestBuilder {
         self.req
-            .query(&[("symbol", self.symbol), ("projection", self.projection)])
+            .query(&[("symbol", self.symbol)])
+            .query(&[("projection", self.projection)])
     }
 
     pub async fn send(self) -> Result<model::Instruments, Error> {
@@ -1097,7 +1118,11 @@ mod tests {
 
         // define parameter
         let symbols = vec!["symbol1".to_string(), "symbol2".to_string()];
-        let fields = vec!["reference".to_string(), "regular".to_string()];
+        let fields = vec![
+            Field::Reference,
+            Field::Regular,
+            Field::Extra("Extra".to_string()),
+        ];
         let indicative = true;
 
         // Create a mock
@@ -1105,7 +1130,7 @@ mod tests {
             .mock("GET", "/quotes")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbols".into(), symbols.join(",")),
-                Matcher::UrlEncoded("fields".into(), fields.join(",")),
+                Matcher::UrlEncoded("fields".into(), "reference,regular,Extra".into()),
                 Matcher::UrlEncoded("indicative".into(), indicative.to_string()),
             ]))
             // .match_query(Matcher::Any)
@@ -1155,12 +1180,15 @@ mod tests {
 
         // define parameter
         let symbol = "AAPL".to_string();
-        let fields = vec!["reference".to_string(), "regular".to_string()];
+        let fields = vec![Field::Reference, Field::Regular];
 
         // Create a mock
         let mock = server
             .mock("GET", "/AAPL/quotes")
-            .match_query(Matcher::UrlEncoded("fields".into(), fields.join(",")))
+            .match_query(Matcher::UrlEncoded(
+                "fields".into(),
+                "reference,regular".into(),
+            ))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(
@@ -1267,10 +1295,10 @@ mod tests {
 
         // define parameter
         let symbol = "string".to_string();
-        let contract_type = "CALL".to_string();
+        let contract_type = ContractType::Call;
         let strike_count = 1;
         let include_underlying_quote = true;
-        let strategy = "SINGLE".to_string();
+        let strategy = OptionChainStrategy::Single;
         let interval = 1.1;
         let strike = 2.2;
         let range = "ITM".to_string();
@@ -1280,22 +1308,22 @@ mod tests {
         let underlying_price = 4.4;
         let interest_rate = 5.5;
         let days_to_expiration = 2;
-        let exp_month = "JAN".to_string();
+        let exp_month = Month::Jan;
         let option_type = "option_type".to_string();
-        let entitlement = "PN".to_string();
+        let entitlement = Entitlement::PN;
 
         // Create a mock
         let mock = server
             .mock("GET", "/chains")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
-                Matcher::UrlEncoded("contractType".into(), contract_type.clone()),
+                Matcher::UrlEncoded("contractType".into(), "CALL".into()),
                 Matcher::UrlEncoded("strikeCount".into(), strike_count.to_string()),
                 Matcher::UrlEncoded(
                     "includeUnderlyingQuote".into(),
                     include_underlying_quote.to_string(),
                 ),
-                Matcher::UrlEncoded("strategy".into(), strategy.clone()),
+                Matcher::UrlEncoded("strategy".into(), "SINGLE".into()),
                 Matcher::UrlEncoded("interval".into(), interval.to_string()),
                 Matcher::UrlEncoded("strike".into(), strike.to_string()),
                 Matcher::UrlEncoded("range".into(), range.clone()),
@@ -1305,9 +1333,9 @@ mod tests {
                 Matcher::UrlEncoded("underlyingPrice".into(), underlying_price.to_string()),
                 Matcher::UrlEncoded("interestRate".into(), interest_rate.to_string()),
                 Matcher::UrlEncoded("daysToExpiration".into(), days_to_expiration.to_string()),
-                Matcher::UrlEncoded("expMonth".into(), exp_month.clone()),
+                Matcher::UrlEncoded("expMonth".into(), "JAN".into()),
                 Matcher::UrlEncoded("optionType".into(), option_type.clone()),
-                Matcher::UrlEncoded("entitlement".into(), entitlement.clone()),
+                Matcher::UrlEncoded("entitlement".into(), "PN".into()),
             ]))
             // .match_query(Matcher::Any)
             .with_status(200)
@@ -1446,9 +1474,9 @@ mod tests {
 
         // define parameter
         let symbol = "AAPL".to_string();
-        let period_type = "day".to_string();
+        let period_type = PeriodType::Day;
         let period = 1;
-        let frequency_type = "minute".to_string();
+        let frequency_type = FrequencyType::Minute;
         let frequency = 2;
         let start_date = chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
             .unwrap()
@@ -1470,18 +1498,15 @@ mod tests {
             .mock("GET", "/pricehistory")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
-                Matcher::UrlEncoded("[Self::period_type]".into(), period_type.clone()),
+                Matcher::UrlEncoded("periodType".into(), "day".into()),
                 Matcher::UrlEncoded("period".into(), period.to_string()),
-                Matcher::UrlEncoded("[Self::frequency_type]".into(), frequency_type.to_string()),
+                Matcher::UrlEncoded("frequencyType".into(), "minute".into()),
                 Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
                 Matcher::UrlEncoded(
-                    "[Self::start_date]".into(),
+                    "startDate".into(),
                     start_date.timestamp_millis().to_string(),
                 ),
-                Matcher::UrlEncoded(
-                    "[Self::end_date]".into(),
-                    end_date.timestamp_millis().to_string(),
-                ),
+                Matcher::UrlEncoded("endDate".into(), end_date.timestamp_millis().to_string()),
                 Matcher::UrlEncoded(
                     "needExtendedHoursData".into(),
                     need_extended_hours_data.to_string(),
@@ -1552,14 +1577,14 @@ mod tests {
 
         // define parameter
         let symbol = "$DJI".to_string();
-        let sort = "VOLUME".to_string();
+        let sort = SortAttribute::Volume;
         let frequency = 1;
 
         // Create a mock
         let mock = server
             .mock("GET", "/movers/$DJI")
             .match_query(Matcher::AllOf(vec![
-                Matcher::UrlEncoded("sort".into(), sort.clone()),
+                Matcher::UrlEncoded("sort".into(), "VOLUME".into()),
                 Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
             ]))
             // .match_query(Matcher::Any)
@@ -1607,14 +1632,14 @@ mod tests {
         let url = server.url();
 
         // define parameter
-        let markets = vec!["equity".to_string(), "option".to_string()];
+        let markets = vec![Market::Equity, Market::Option];
         let date = chrono::NaiveDate::from_ymd_opt(2015, 3, 14).unwrap();
 
         // Create a mock
         let mock = server
             .mock("GET", "/markets")
             .match_query(Matcher::AllOf(vec![
-                Matcher::UrlEncoded("markets".into(), markets.clone().join(",")),
+                Matcher::UrlEncoded("markets".into(), "equity,option".into()),
                 Matcher::UrlEncoded("date".into(), date.to_string()),
             ]))
             // .match_query(Matcher::Any)
@@ -1659,7 +1684,7 @@ mod tests {
         let url = server.url();
 
         // define parameter
-        let market_id = "equity".to_string();
+        let market_id = Market::Equity;
         let date = chrono::NaiveDate::from_ymd_opt(2015, 3, 14).unwrap();
 
         // Create a mock
@@ -1743,14 +1768,14 @@ mod tests {
 
         // define parameter
         let symbol = "AAPL".to_string();
-        let projection = "symbol-search".to_string();
+        let projection = Projection::SymbolSearch;
 
         // Create a mock
         let mock = server
             .mock("GET", "/instrutments")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
-                Matcher::UrlEncoded("projection".into(), projection.clone()),
+                Matcher::UrlEncoded("projection".into(), "symbol-search".into()),
             ]))
             // .match_query(Matcher::Any)
             .with_status(200)
