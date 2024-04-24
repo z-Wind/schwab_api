@@ -5,8 +5,8 @@ use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
 use super::parameter::{
-    ContractType, Entitlement, Field, FrequencyType, Market, Month, OptionChainStrategy,
-    PeriodType, Projection, SortAttribute,
+    ContractType, Entitlement, FrequencyType, Market, Month, OptionChainStrategy, PeriodType,
+    Projection, QuoteField, SortAttribute,
 };
 use crate::api::Error;
 use crate::model;
@@ -27,7 +27,7 @@ pub struct GetQuotesRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : all
-    fields: Option<Vec<Field>>,
+    fields: Option<Vec<QuoteField>>,
 
     /// Include indicative symbol quotes for all ETF symbols in request.
     ///
@@ -61,7 +61,7 @@ impl GetQuotesRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    pub fn fields(&mut self, val: Vec<Field>) -> &mut Self {
+    pub fn fields(&mut self, val: Vec<QuoteField>) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -121,7 +121,7 @@ pub struct GetQuoteRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    fields: Option<Vec<Field>>,
+    fields: Option<Vec<QuoteField>>,
 }
 
 impl GetQuoteRequest {
@@ -151,7 +151,7 @@ impl GetQuoteRequest {
     /// Dont send this attribute for full response.
     ///
     /// Default value : `all`
-    pub fn fields(&mut self, val: Vec<Field>) -> &mut Self {
+    pub fn fields(&mut self, val: Vec<QuoteField>) -> &mut Self {
         self.fields = Some(val);
         self
     }
@@ -1119,9 +1119,9 @@ mod tests {
         // define parameter
         let symbols = vec!["symbol1".to_string(), "symbol2".to_string()];
         let fields = vec![
-            Field::Reference,
-            Field::Regular,
-            Field::Extra("Extra".to_string()),
+            QuoteField::Reference,
+            QuoteField::Regular,
+            QuoteField::Extra("Extra".to_string()),
         ];
         let indicative = true;
 
@@ -1180,7 +1180,7 @@ mod tests {
 
         // define parameter
         let symbol = "AAPL".to_string();
-        let fields = vec![Field::Reference, Field::Regular];
+        let fields = vec![QuoteField::Reference, QuoteField::Regular];
 
         // Create a mock
         let mock = server
@@ -1374,13 +1374,13 @@ mod tests {
         assert_eq!(req.entitlement, None);
 
         // check setter
-        req.contract_type(contract_type.clone());
+        req.contract_type(contract_type);
         assert_eq!(req.contract_type, Some(contract_type));
         req.strike_count(strike_count);
         assert_eq!(req.strike_count, Some(strike_count));
         req.include_underlying_quote(include_underlying_quote);
         assert_eq!(req.include_underlying_quote, Some(include_underlying_quote));
-        req.strategy(strategy.clone());
+        req.strategy(strategy);
         assert_eq!(req.strategy, Some(strategy));
         req.interval(interval);
         assert_eq!(req.interval, Some(interval));
@@ -1400,11 +1400,11 @@ mod tests {
         assert_eq!(req.interest_rate, Some(interest_rate));
         req.days_to_expiration(days_to_expiration);
         assert_eq!(req.days_to_expiration, Some(days_to_expiration));
-        req.exp_month(exp_month.clone());
+        req.exp_month(exp_month);
         assert_eq!(req.exp_month, Some(exp_month));
         req.option_type(option_type.clone());
         assert_eq!(req.option_type, Some(option_type));
-        req.entitlement(entitlement.clone());
+        req.entitlement(entitlement);
         assert_eq!(req.entitlement, Some(entitlement));
 
         dbg!(&req);
@@ -1542,11 +1542,11 @@ mod tests {
         assert_eq!(req.need_previous_close, None);
 
         // check setter
-        req.period_type(period_type.clone());
+        req.period_type(period_type);
         assert_eq!(req.period_type, Some(period_type));
         req.period(period);
         assert_eq!(req.period, Some(period));
-        req.frequency_type(frequency_type.clone());
+        req.frequency_type(frequency_type);
         assert_eq!(req.frequency_type, Some(frequency_type));
         req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
@@ -1610,7 +1610,7 @@ mod tests {
         assert_eq!(req.frequency, None);
 
         // check setter
-        req.sort(sort.clone());
+        req.sort(sort);
         assert_eq!(req.sort, Some(sort));
         req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
@@ -1738,9 +1738,9 @@ mod tests {
         let client = Client::new();
         let req = client.get(format!(
             "{url}{}",
-            GetMarketRequest::endpoint(market_id.clone()).url_endpoint()
+            GetMarketRequest::endpoint(market_id).url_endpoint()
         ));
-        let mut req = GetMarketRequest::new_with(req, market_id.clone());
+        let mut req = GetMarketRequest::new_with(req, market_id);
 
         // check initial value
         assert_eq!(req.market_id, market_id);
@@ -1792,7 +1792,7 @@ mod tests {
             "{url}{}",
             GetInstrucmentsRequest::endpoint().url_endpoint()
         ));
-        let req = GetInstrucmentsRequest::new_with(req, symbol.clone(), projection.clone());
+        let req = GetInstrucmentsRequest::new_with(req, symbol.clone(), projection);
 
         // check initial value
         assert_eq!(req.symbol, symbol);

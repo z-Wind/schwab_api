@@ -7,7 +7,7 @@ use serde::Serialize;
 /// possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum Field {
+pub enum QuoteField {
     Quote,
     Fundamental,
     Extended,
@@ -142,4 +142,56 @@ pub enum Projection {
     DescRegex,
     Search,
     Fundamental,
+}
+
+/// Specifies that only orders of this status should be returned.
+///
+/// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Status {
+    AwaitingParentOrder,
+    AwaitingCondition,
+    AwaitingStopCondition,
+    AwaitingManualReview,
+    Accepted,
+    AwaitingUrOut,
+    PendingActivation,
+    Queued,
+    Working,
+    Rejected,
+    PendingCancel,
+    Canceled,
+    PendingReplace,
+    Replaced,
+    Filled,
+    Expired,
+    New,
+    AwaitingReleaseTime,
+    PendingAcknowledgement,
+    PendingRecall,
+    Unknown,
+}
+
+/// Specifies that only transactions of this status should be returned.
+///
+/// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionType {
+    Trade,
+    ReceiveAndDeliver,
+    DividendOrInterest,
+    AchReceipt,
+    AchDisbursement,
+    CashReceipt,
+    CashDisbursement,
+    ElectronicFund,
+    WireOut,
+    WireIn,
+    Journal,
+    Memorandum,
+    MarginCall,
+    MoneyMarket,
+    SmaAdjustment,
 }

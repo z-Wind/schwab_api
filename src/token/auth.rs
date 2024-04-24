@@ -14,16 +14,16 @@ use crate::error::Error;
 use crate::token::local_server;
 use crate::token::Token;
 
+type RequestTokenError = BasicRequestTokenError<oauth2::reqwest::Error<reqwest::Error>>;
+
 #[derive(Debug)]
-pub(crate) struct Authorizer {
+pub(super) struct Authorizer {
     client: BasicClient,
     certs_dir: PathBuf,
 }
 
-type RequestTokenError = BasicRequestTokenError<oauth2::reqwest::Error<reqwest::Error>>;
-
 impl Authorizer {
-    pub(crate) fn new(
+    pub(super) fn new(
         app_key: String,
         secret: String,
         redirect_url: String,
@@ -42,7 +42,7 @@ impl Authorizer {
         Authorizer { client, certs_dir }
     }
 
-    pub(crate) async fn authorize(&self) -> Result<Token, RequestTokenError> {
+    async fn authorize(&self) -> Result<Token, RequestTokenError> {
         let (auth_url, csrf_token) = self.auth_code_url();
 
         match open::that(auth_url.as_ref()) {
@@ -117,7 +117,7 @@ impl Authorizer {
             .await
     }
 
-    pub(crate) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
+    pub(super) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
         let token = self
             .authorize()
             .await

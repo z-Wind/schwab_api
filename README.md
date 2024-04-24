@@ -15,22 +15,31 @@ Currently, the API only supports individual developers.
 
 ## Example
 ```rust
+use std::path::PathBuf;
+
 use schwab_api::api;
+use schwab_api::token::TokenChecker;
 
 #[tokio::main]
 async fn main() {
     let key = "your_app_key".to_string();
     let secret = "your_secret".to_string();
     let callback_url = "https://127.0.0.1:8080".to_string();
-    let certs_dir = "your_certs_dir";
-    let api = api::API::new(key, secret, callback_url, certs_dir)
+    let path = dirs::home_dir()
+        .expect("home dir")
+        .join(".credentials")
+        .join("Schwab-rust.json");
+    let certs_dir = PathBuf::from("your_certs_dir");
+    let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir)
         .await
         .unwrap();
+
+    let api = api::API::new(token_checker).unwrap();
+
     let req = api.get_quote("VTI".to_string()).await.unwrap();
     let rsp = req.send().await.unwrap();
     println!("{:?}", rsp);
 }
-
 ```
 
 ## Installation

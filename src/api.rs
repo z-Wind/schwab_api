@@ -6,49 +6,31 @@ pub mod parameter;
 pub mod trader;
 
 use reqwest::Client;
-use std::path::PathBuf;
 
-use super::token::TokenChecker;
+use crate::token::Tokener;
 use crate::{error::Error, model};
-use parameter::{Market, Projection};
+use parameter::{Market, Projection, TransactionType};
 
 /// Interacting with the Schwab API.
 #[derive(Debug)]
-pub struct API {
-    token_checker: TokenChecker,
+pub struct API<T: Tokener> {
+    tokener: T,
     client: Client,
 }
 
-impl API {
-    /// # Panics
-    ///
-    /// Will panic if no home dir
-    pub async fn new(
-        key: String,
-        secret: String,
-        callback_url: String,
-        certs_dir: &str,
-    ) -> Result<Self, Error> {
-        let path = dirs::home_dir()
-            .expect("home dir")
-            .join(".credentials")
-            .join("Schwab-rust.json");
-        let certs_dir = PathBuf::from(certs_dir);
-
-        let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir).await?;
+impl<T: Tokener> API<T> {
+    /// Create API Struct
+    pub fn new(tokener: T) -> Result<Self, Error> {
         let client = Client::new();
 
-        Ok(API {
-            token_checker,
-            client,
-        })
+        Ok(API { tokener, client })
     }
 
     pub async fn get_quotes(
         &self,
         symbols: Vec<String>,
     ) -> Result<market_data::GetQuotesRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuotesRequest::new(
             &self.client,
@@ -58,7 +40,7 @@ impl API {
     }
 
     pub async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuoteRequest::new(
             &self.client,
@@ -71,7 +53,7 @@ impl API {
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionChainsRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionChainsRequest::new(
             &self.client,
@@ -84,7 +66,7 @@ impl API {
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionExpirationChainRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionExpirationChainRequest::new(
             &self.client,
@@ -97,7 +79,7 @@ impl API {
         &self,
         symbol: String,
     ) -> Result<market_data::GetPriceHistoryRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetPriceHistoryRequest::new(
             &self.client,
@@ -114,7 +96,7 @@ impl API {
     ///
     /// Example : `$DJI`
     pub async fn get_movers(&self, symbol: String) -> Result<market_data::GetMoversRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMoversRequest::new(
             &self.client,
@@ -132,7 +114,7 @@ impl API {
         &self,
         markets: Vec<Market>,
     ) -> Result<market_data::GetMarketsRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketsRequest::new(
             &self.client,
@@ -148,7 +130,7 @@ impl API {
         &self,
         market_id: Market,
     ) -> Result<market_data::GetMarketRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketRequest::new(
             &self.client,
@@ -167,7 +149,7 @@ impl API {
         symbol: String,
         projection: Projection,
     ) -> Result<market_data::GetInstrucmentsRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrucmentsRequest::new(
             &self.client,
@@ -184,7 +166,7 @@ impl API {
         &self,
         cusip_id: String,
     ) -> Result<market_data::GetInstrucmentRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrucmentRequest::new(
             &self.client,
@@ -194,7 +176,7 @@ impl API {
     }
 
     pub async fn get_account_numbers(&self) -> Result<trader::GetAccountNumbersRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountNumbersRequest::new(
             &self.client,
@@ -203,7 +185,7 @@ impl API {
     }
 
     pub async fn get_accounts(&self) -> Result<trader::GetAccountsRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsRequest::new(&self.client, access_token))
     }
@@ -212,7 +194,7 @@ impl API {
         &self,
         account_number: String,
     ) -> Result<trader::GetAccountRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountRequest::new(
             &self.client,
@@ -236,7 +218,7 @@ impl API {
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountOrdersRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrdersRequest::new(
             &self.client,
@@ -255,7 +237,7 @@ impl API {
         account_number: String,
         body: model::OrderRequest,
     ) -> Result<trader::PostAccountOrderRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountOrderRequest::new(
             &self.client,
@@ -277,7 +259,7 @@ impl API {
         account_number: String,
         order_id: i64,
     ) -> Result<trader::GetAccountOrderRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrderRequest::new(
             &self.client,
@@ -299,7 +281,7 @@ impl API {
         account_number: String,
         order_id: i64,
     ) -> Result<trader::DeleteAccountOrderRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::DeleteAccountOrderRequest::new(
             &self.client,
@@ -322,7 +304,7 @@ impl API {
         order_id: i64,
         body: model::OrderRequest,
     ) -> Result<trader::PutAccountOrderRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PutAccountOrderRequest::new(
             &self.client,
@@ -347,7 +329,7 @@ impl API {
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountsOrdersRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsOrdersRequest::new(
             &self.client,
@@ -365,7 +347,7 @@ impl API {
         account_number: String,
         body: model::PreviewOrder,
     ) -> Result<trader::PostAccountPreviewOrderRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountPreviewOrderRequest::new(
             &self.client,
@@ -399,9 +381,9 @@ impl API {
         account_number: String,
         start_date: chrono::DateTime<chrono::Utc>,
         end_date: chrono::DateTime<chrono::Utc>,
-        types: String,
+        types: TransactionType,
     ) -> Result<trader::GetAccountTransactions, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransactions::new(
             &self.client,
@@ -425,7 +407,7 @@ impl API {
         account_number: String,
         transaction_id: i64,
     ) -> Result<trader::GetAccountTransaction, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransaction::new(
             &self.client,
@@ -436,7 +418,7 @@ impl API {
     }
 
     pub async fn get_user_preference(&self) -> Result<trader::GetUserPreferenceRequest, Error> {
-        let access_token = self.token_checker.get_access_token().await?;
+        let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetUserPreferenceRequest::new(
             &self.client,
@@ -449,19 +431,34 @@ impl API {
 mod tests {
     use super::*;
 
-    async fn client() -> API {
+    use std::path::PathBuf;
+
+    use crate::token::TokenChecker;
+
+    async fn client() -> API<TokenChecker> {
         #[allow(clippy::option_env_unwrap)]
-        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
+        let key = option_env!("SCHWAB_API_KEY")
+            .expect("There should be SCHWAB API KEY")
+            .to_string();
         #[allow(clippy::option_env_unwrap)]
-        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
-        API::new(
-            client_id.to_string(),
-            secret.to_string(),
-            "https://127.0.0.1:8080".to_string(),
-            concat!(env!("CARGO_MANIFEST_DIR"), "tests/certs"),
-        )
-        .await
-        .unwrap()
+        let secret = option_env!("SCHWAB_SECRET")
+            .expect("There should be SCHWAB SECRET")
+            .to_string();
+
+        let path = dirs::home_dir()
+            .expect("home dir")
+            .join(".credentials")
+            .join("Schwab-rust.json");
+
+        let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "tests/certs"));
+
+        let callback_url = "https://127.0.0.1:8080".to_string();
+
+        let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir)
+            .await
+            .unwrap();
+
+        API::new(token_checker).unwrap()
     }
 
     #[cfg_attr(
@@ -827,7 +824,7 @@ mod tests {
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                "TRADE".to_string()
+                TransactionType::Trade,
             )
             .await
             .unwrap()

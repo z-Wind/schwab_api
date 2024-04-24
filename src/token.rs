@@ -12,6 +12,10 @@ use tokio::sync::Mutex;
 use crate::error::Error;
 use auth::Authorizer;
 
+pub trait Tokener {
+    fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;
+}
+
 const MINUTE: u64 = 60;
 const HOUR: u64 = 60 * MINUTE;
 const DAY: u64 = 24 * HOUR;
@@ -19,14 +23,14 @@ const ACCESS_TOKEN_LIFETIME: u64 = 25 * MINUTE; // 25 Minutes instead of 30 min
 const REFRESH_TOKEN_LIFETIME: u64 = 60 * DAY; // 60 days instead of 90 days
 
 #[derive(Debug)]
-pub(crate) struct TokenChecker {
+pub struct TokenChecker {
     path: PathBuf,
     authorizer: Authorizer,
     token: Mutex<Token>,
 }
 
 impl TokenChecker {
-    pub(crate) async fn new(
+    pub async fn new(
         path: PathBuf,
         client_id: String,
         secret: String,
@@ -48,12 +52,6 @@ impl TokenChecker {
         checker.check_or_update().await?;
 
         Ok(checker)
-    }
-
-    pub(crate) async fn get_access_token(&self) -> Result<String, Error> {
-        self.check_or_update().await?;
-        let access_token = self.token.lock().await.access.clone();
-        Ok(access_token)
     }
 
     async fn check_or_update(&self) -> Result<(), Error> {
@@ -86,9 +84,17 @@ impl TokenChecker {
     }
 }
 
+impl Tokener for TokenChecker {
+    async fn get_access_token(&self) -> Result<String, Error> {
+        self.check_or_update().await?;
+        let access_token = self.token.lock().await.access.clone();
+        Ok(access_token)
+    }
+}
+
 // Define a struct to hold the OAuth2 token
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub(crate) struct Token {
+struct Token {
     refresh: String,
     refresh_expires_in: u64,
     access: String,

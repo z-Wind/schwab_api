@@ -4,6 +4,7 @@
 use reqwest::{Client, RequestBuilder, StatusCode};
 
 use super::endpoints;
+use super::parameter::{Status, TransactionType};
 use crate::api::Error;
 use crate::model;
 
@@ -219,7 +220,7 @@ pub struct GetAccountOrdersRequest {
     /// Specifies that only orders of this status should be returned.
     ///
     /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
-    status: Option<String>,
+    status: Option<Status>,
 }
 
 impl GetAccountOrdersRequest {
@@ -266,7 +267,7 @@ impl GetAccountOrdersRequest {
     /// Specifies that only orders of this status should be returned.
     ///
     /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
-    pub fn status(&mut self, val: String) -> &mut Self {
+    pub fn status(&mut self, val: Status) -> &mut Self {
         self.status = Some(val);
         self
     }
@@ -574,7 +575,7 @@ pub struct GetAccountsOrdersRequest {
     /// Specifies that only orders of this status should be returned.
     ///
     /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
-    status: Option<String>,
+    status: Option<Status>,
 }
 
 impl GetAccountsOrdersRequest {
@@ -617,7 +618,7 @@ impl GetAccountsOrdersRequest {
     /// Specifies that only orders of this status should be returned.
     ///
     /// Available values : `AWAITING_PARENT_ORDER`, `AWAITING_CONDITION`, `AWAITING_STOP_CONDITION`, `AWAITING_MANUAL_REVIEW`, `ACCEPTED`, `AWAITING_UR_OUT`, `PENDING_ACTIVATION`, `QUEUED`, `WORKING`, `REJECTED`, `PENDING_CANCEL`, `CANCELED`, `PENDING_REPLACE`, `REPLACED`, `FILLED`, `EXPIRED`, `NEW`, `AWAITING_RELEASE_TIME`, `PENDING_ACKNOWLEDGEMENT`, `PENDING_RECALL`, `UNKNOWN`
-    pub fn status(&mut self, val: String) -> &mut Self {
+    pub fn status(&mut self, val: Status) -> &mut Self {
         self.status = Some(val);
         self
     }
@@ -740,7 +741,7 @@ pub struct GetAccountTransactions {
     /// Specifies that only transactions of this status should be returned.
     ///
     /// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
-    types: String,
+    types: TransactionType,
 }
 
 impl GetAccountTransactions {
@@ -754,7 +755,7 @@ impl GetAccountTransactions {
         account_number: String,
         start_date: chrono::DateTime<chrono::Utc>,
         end_date: chrono::DateTime<chrono::Utc>,
-        types: String,
+        types: TransactionType,
     ) -> Self {
         let req = client
             .get(Self::endpoint(account_number.clone()).url())
@@ -767,7 +768,7 @@ impl GetAccountTransactions {
         account_number: String,
         start_date: chrono::DateTime<chrono::Utc>,
         end_date: chrono::DateTime<chrono::Utc>,
-        types: String,
+        types: TransactionType,
     ) -> Self {
         Self {
             req,
@@ -789,8 +790,8 @@ impl GetAccountTransactions {
         let mut req = self.req.query(&[
             ("startDate", self.start_date.to_string()),
             ("endDate", self.end_date.to_string()),
-            ("types", self.types.to_string()),
         ]);
+        req = req.query(&[("types", self.types)]);
         if let Some(x) = self.symbol {
             req = req.query(&[("symbol", x)]);
         }
@@ -1096,7 +1097,7 @@ mod tests {
             .unwrap()
             .and_local_timezone(chrono::Utc)
             .unwrap();
-        let status = "AWAITING_PARENT_ORDER".to_string();
+        let status = Status::AwaitingParentOrder;
 
         // Create a mock
         let mock = server
@@ -1105,7 +1106,7 @@ mod tests {
                 Matcher::UrlEncoded("maxResults".into(), max_results.to_string()),
                 Matcher::UrlEncoded("fromEnteredTime".into(), from_entered_time.to_string()),
                 Matcher::UrlEncoded("toEnteredTime".into(), to_entered_time.to_string()),
-                Matcher::UrlEncoded("status".into(), status.to_string()),
+                Matcher::UrlEncoded("status".into(), "AWAITING_PARENT_ORDER".into()),
             ]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1139,7 +1140,7 @@ mod tests {
         // check setter
         req.max_results(max_results);
         assert_eq!(req.max_results, Some(max_results));
-        req.status(status.clone());
+        req.status(status);
         assert_eq!(req.status, Some(status));
 
         dbg!(&req);
@@ -1352,7 +1353,7 @@ mod tests {
             .unwrap()
             .and_local_timezone(chrono::Utc)
             .unwrap();
-        let status = "AWAITING_PARENT_ORDER".to_string();
+        let status = Status::AwaitingParentOrder;
 
         // Create a mock
         let mock = server
@@ -1361,7 +1362,7 @@ mod tests {
                 Matcher::UrlEncoded("maxResults".into(), max_results.to_string()),
                 Matcher::UrlEncoded("fromEnteredTime".into(), from_entered_time.to_string()),
                 Matcher::UrlEncoded("toEnteredTime".into(), to_entered_time.to_string()),
-                Matcher::UrlEncoded("status".into(), status.to_string()),
+                Matcher::UrlEncoded("status".into(), "AWAITING_PARENT_ORDER".into()),
             ]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1389,7 +1390,7 @@ mod tests {
         // check setter
         req.max_results(max_results);
         assert_eq!(req.max_results, Some(max_results));
-        req.status(status.clone());
+        req.status(status);
         assert_eq!(req.status, Some(status));
 
         dbg!(&req);
@@ -1471,7 +1472,7 @@ mod tests {
             .and_local_timezone(chrono::Utc)
             .unwrap();
         let symbol = "VTI".to_string();
-        let types = "TRADE".to_string();
+        let types = TransactionType::ReceiveAndDeliver;
 
         // Create a mock
         let mock = server
@@ -1480,7 +1481,7 @@ mod tests {
                 Matcher::UrlEncoded("startDate".into(), start_date.to_string()),
                 Matcher::UrlEncoded("endDate".into(), end_date.to_string()),
                 Matcher::UrlEncoded("symbol".into(), symbol.to_string()),
-                Matcher::UrlEncoded("types".into(), types.to_string()),
+                Matcher::UrlEncoded("types".into(), "RECEIVE_AND_DELIVER".into()),
             ]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1502,7 +1503,7 @@ mod tests {
             account_number.clone(),
             start_date,
             end_date,
-            types.clone(),
+            types,
         );
 
         // check initial value
