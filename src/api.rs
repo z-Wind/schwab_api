@@ -468,13 +468,29 @@ mod tests {
     #[tokio::test]
     async fn test_get_quotes() {
         let api = client().await;
-        dbg!(api
-            .get_quotes(vec!["VTI".into(), "VBR".into()])
+        let req = api
+            .get_quotes(vec![
+                // Bond
+                "^IRX".into(),
+                // EQUITY
+                "AAPL".into(),
+                // FOREX
+                "EUR/USD".into(),
+                // FUTURE
+                "/ESZ21".into(),
+                // FUTURE_OPTION
+                "ESM24.CME".into(),
+                // INDEX
+                "$SPX".into(),
+                // MUTUAL_FUND
+                "AAAIX".into(),
+                // OPTION
+                "AMZN  220617C03170000".into(),
+            ])
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -483,14 +499,31 @@ mod tests {
     )]
     #[tokio::test]
     async fn test_get_quote() {
-        let api = client().await;
-        dbg!(api
-            .get_quote("VTI".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let symbols = vec![
+            // Bond
+            "^IRX".to_string(),
+            // EQUITY
+            "AAPL".to_string(),
+            // FOREX
+            "EUR/USD".to_string(),
+            // FUTURE
+            "/ESZ21".to_string(),
+            // FUTURE_OPTION
+            "ESM24.CME".to_string(),
+            // INDEX
+            "$SPX".to_string(),
+            // MUTUAL_FUND
+            "AAAIX".to_string(),
+            // OPTION
+            "AMZN  220617C03170000".to_string(),
+        ];
+
+        for symbol in symbols {
+            let api = client().await;
+            let req = api.get_quote(symbol).await.unwrap();
+            let rsp = req.send().await.unwrap();
+            dbg!(rsp);
+        }
     }
 
     #[cfg_attr(
@@ -500,13 +533,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_option_chains() {
         let api = client().await;
-        dbg!(api
-            .get_option_chains("AAPL".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let mut req = api.get_option_chains("AAPL".into()).await.unwrap();
+        req.days_to_expiration(3)
+            .exp_month(parameter::Month::Apr)
+            .contract_type(parameter::ContractType::Put);
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -516,13 +548,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_option_expiration_chain() {
         let api = client().await;
-        dbg!(api
-            .get_option_chains("AAPL".into())
+        let req = api
+            .get_option_expiration_chain("AAPL".into())
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -532,13 +563,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_price_history() {
         let api = client().await;
-        dbg!(api
-            .get_price_history("AAPL".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_price_history("AAPL".into()).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -548,13 +575,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_movers() {
         let api = client().await;
-        dbg!(api
-            .get_movers("$DJI".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_movers("$DJI".into()).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -564,13 +587,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_markets() {
         let api = client().await;
-        dbg!(api
+        let req = api
             .get_markets(vec![Market::Equity, Market::Option])
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -580,13 +602,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_market() {
         let api = client().await;
-        dbg!(api
-            .get_market(Market::Equity)
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_market(Market::Equity).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -596,13 +614,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_instrucments() {
         let api = client().await;
-        dbg!(api
+        let req = api
             .get_instrucments("VTI".into(), Projection::SymbolSearch)
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -612,13 +629,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_instrucment() {
         let api = client().await;
-        dbg!(api
-            .get_instrucment("037833100".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_instrucment("037833100".into()).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -628,13 +641,16 @@ mod tests {
     #[tokio::test]
     async fn test_get_account_numbers() {
         let api = client().await;
-        dbg!(api
-            .get_account_numbers()
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_account_numbers().await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
+    }
+
+    async fn account_number() -> String {
+        let api = client().await;
+        let req = api.get_account_numbers().await.unwrap();
+        let rsp = req.send().await.unwrap();
+        rsp[0].account_number.clone()
     }
 
     #[cfg_attr(
@@ -644,7 +660,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_accounts() {
         let api = client().await;
-        dbg!(api.get_accounts().await.unwrap().send().await.unwrap());
+        let req = api.get_accounts().await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -654,13 +672,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_account() {
         let api = client().await;
-        dbg!(api
-            .get_account("account_number".into())
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_account(account_number().await).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -670,9 +684,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_account_orders() {
         let api = client().await;
-        dbg!(api
+        let req = api
             .get_account_orders(
-                "account_number".into(),
+                account_number().await,
                 chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
@@ -684,13 +698,12 @@ mod tests {
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
-                    .unwrap()
+                    .unwrap(),
             )
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -700,13 +713,11 @@ mod tests {
     #[tokio::test]
     async fn test_post_account_order() {
         let api = client().await;
-        dbg!(api
-            .post_account_order("account_number".into(), model::OrderRequest::default())
+        let req = api
+            .post_account_order(account_number().await, model::OrderRequest::default())
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        req.send().await.unwrap();
     }
 
     #[cfg_attr(
@@ -716,13 +727,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_account_order() {
         let api = client().await;
-        dbg!(api
-            .get_account_order("account_number".into(), 0)
+        let req = api
+            .get_account_order(account_number().await, 0)
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -732,13 +742,11 @@ mod tests {
     #[tokio::test]
     async fn test_delete_account_order() {
         let api = client().await;
-        dbg!(api
-            .delete_account_order("account_number".into(), 0)
+        let req = api
+            .delete_account_order(account_number().await, 0)
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        req.send().await.unwrap();
     }
 
     #[cfg_attr(
@@ -748,13 +756,11 @@ mod tests {
     #[tokio::test]
     async fn test_put_account_order() {
         let api = client().await;
-        dbg!(api
-            .put_account_order("account_number".into(), 0, model::OrderRequest::default())
+        let req = api
+            .put_account_order(account_number().await, 0, model::OrderRequest::default())
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        req.send().await.unwrap();
     }
 
     #[cfg_attr(
@@ -764,7 +770,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_accounts_orders() {
         let api = client().await;
-        dbg!(api
+        let req = api
             .get_accounts_orders(
                 chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
                     .unwrap()
@@ -777,13 +783,12 @@ mod tests {
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
-                    .unwrap()
+                    .unwrap(),
             )
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -793,13 +798,12 @@ mod tests {
     #[tokio::test]
     async fn test_post_accounts_preview_order() {
         let api = client().await;
-        dbg!(api
-            .post_accounts_preview_order("account_number".into(), model::PreviewOrder::default())
+        let req = api
+            .post_accounts_preview_order(account_number().await, model::PreviewOrder::default())
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -809,9 +813,9 @@ mod tests {
     #[tokio::test]
     async fn test_get_account_transactions() {
         let api = client().await;
-        dbg!(api
+        let req = api
             .get_account_transactions(
-                "account_number".into(),
+                account_number().await,
                 chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
@@ -827,10 +831,9 @@ mod tests {
                 TransactionType::Trade,
             )
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -840,13 +843,12 @@ mod tests {
     #[tokio::test]
     async fn test_get_account_transaction() {
         let api = client().await;
-        dbg!(api
-            .get_account_transaction("account_number".into(), 0)
+        let req = api
+            .get_account_transaction(account_number().await, 0)
             .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
@@ -856,12 +858,8 @@ mod tests {
     #[tokio::test]
     async fn test_get_user_preference() {
         let api = client().await;
-        dbg!(api
-            .get_user_preference()
-            .await
-            .unwrap()
-            .send()
-            .await
-            .unwrap());
+        let req = api.get_user_preference().await.unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 }
