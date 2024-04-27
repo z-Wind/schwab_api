@@ -1,3 +1,5 @@
+//! Structs and utilities for Authorization.
+
 pub(crate) mod auth;
 pub(crate) mod local_server;
 

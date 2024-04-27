@@ -2,13 +2,16 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 
+use super::quote_response::option::ExpirationType;
+use super::quote_response::option::SettlementType;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionChain {
     pub symbol: String,
     pub status: String,
     pub underlying: Underlying,
-    pub strategy: String,
+    pub strategy: Strategy,
     pub interval: i64,
     pub is_delayed: bool,
     pub is_index: bool,
@@ -31,7 +34,7 @@ pub struct Underlying {
     pub close: i64,
     pub delayed: bool,
     pub description: String,
-    pub exchange_name: String,
+    pub exchange_name: ExchangeName,
     pub fifty_two_week_high: i64,
     pub fifty_two_week_low: i64,
     pub high_price: f64,
@@ -52,7 +55,7 @@ pub struct Underlying {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionContract {
-    pub put_call: String,
+    pub put_call: PutCall,
     pub symbol: String,
     pub description: String,
     pub exchange_name: String,
@@ -89,10 +92,10 @@ pub struct OptionContract {
     pub strike_price: f64,
     pub expiration_date: String,
     pub days_to_expiration: i64,
-    pub expiration_type: String,
+    pub expiration_type: ExpirationType,
     pub last_trading_day: i64,
     pub multiplier: i64,
-    pub settlement_type: String,
+    pub settlement_type: SettlementType,
     pub deliverable_note: String,
     pub is_index_option: bool,
     pub percent_change: i64,
@@ -110,6 +113,49 @@ pub struct OptionDeliverable {
     pub asset_type: String,
     pub deliverable_units: String,
     pub currency_type: String,
+}
+
+/// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum Strategy {
+    #[default]
+    Single,
+    Analytical,
+    Covered,
+    Vertical,
+    Calendar,
+    Strangle,
+    Straddle,
+    Butterfly,
+    Condor,
+    Diagonal,
+    Collar,
+    Roll,
+}
+
+/// Available values : IND, ASE, NYS, NAS, NAP, PAC, OPR, BATS
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum ExchangeName {
+    #[default]
+    Ind,
+    Ase,
+    Nys,
+    Nas,
+    Nap,
+    Pac,
+    Opr,
+    Bats,
+}
+
+/// Available values : `PUT`, `CALL`
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum PutCall {
+    #[default]
+    Put,
+    Call,
 }
 
 #[cfg(test)]

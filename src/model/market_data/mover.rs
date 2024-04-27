@@ -7,15 +7,28 @@ pub struct Mover {
     pub screeners: Vec<Screener>,
 }
 
+/// Security info of most moved with in an index
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Screener {
-    pub change: i64,
+    /// percent or value changed, by default its percent changed
+    pub change: f64,
+    /// Name of security
     pub description: String,
-    pub direction: String,
-    pub last: i64,
+    pub direction: Direction,
+    /// what was last quoted price
+    pub last: f64,
+    /// schwab security symbol
     pub symbol: String,
     pub total_volume: i64,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Direction {
+    #[default]
+    Up,
+    Down,
 }
 
 #[cfg(test)]

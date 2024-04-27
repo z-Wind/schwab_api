@@ -8,7 +8,7 @@ pub type Markets = HashMap<String, HashMap<String, Hours>>;
 #[serde(rename_all = "camelCase")]
 pub struct Hours {
     pub date: String,
-    pub market_type: String,
+    pub market_type: MarketType,
     pub exchange: Option<String>,
     pub category: Option<String>,
     pub product: String,
@@ -17,11 +17,30 @@ pub struct Hours {
     pub session_hours: HashMap<String, Vec<Interval>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Interval {
-    pub start: String,
-    pub end: String,
+    pub start: chrono::DateTime<chrono::Utc>,
+    pub end: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MarketType {
+    Bond,
+    Equity,
+    Etf,
+    Extended,
+    Forex,
+    Future,
+    FutureOption,
+    Fundamental,
+    Index,
+    Indicator,
+    MutualFund,
+    Option,
+    #[default]
+    Unknown,
 }
 
 #[cfg(test)]

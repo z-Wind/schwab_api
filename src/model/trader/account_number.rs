@@ -1,11 +1,11 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-pub type AccountNumbers = Vec<AccountNumber>;
+pub type AccountNumbers = Vec<AccountNumberHash>;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AccountNumber {
+pub struct AccountNumberHash {
     pub account_number: String,
     pub hash_value: String,
 }

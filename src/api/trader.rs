@@ -922,6 +922,8 @@ impl GetUserPreferenceRequest {
 mod tests {
     use super::*;
 
+    use crate::model::trader::accounts::SecuritiesAccount;
+
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
@@ -1018,7 +1020,10 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result[0].securities_account.type_field, "CASH");
+        assert!(matches!(
+            result[0].securities_account,
+            SecuritiesAccount::Cash(_)
+        ));
     }
 
     #[tokio::test]
@@ -1070,7 +1075,10 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.securities_account.type_field, "CASH");
+        assert!(matches!(
+            result.securities_account,
+            SecuritiesAccount::Cash(_)
+        ));
     }
 
     #[tokio::test]
@@ -1239,7 +1247,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.session, "NORMAL");
+        assert_eq!(result.session, model::trader::order::Session::Normal);
     }
 
     #[tokio::test]

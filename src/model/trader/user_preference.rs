@@ -15,12 +15,14 @@ pub struct UserPreference {
 #[serde(rename_all = "camelCase")]
 pub struct UserPreferenceAccount {
     pub account_number: String,
+    /// default: false
     pub primary_account: bool,
     #[serde(rename = "type")]
     pub type_field: String,
     pub nick_name: String,
-    pub account_color: String,
+    pub account_color: UserPreferenceAccountColor,
     pub display_acct_id: String,
+    /// default: false
     pub auto_position_effect: bool,
 }
 
@@ -34,11 +36,22 @@ pub struct StreamerInfo {
     pub schwab_client_function_id: String,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
-    #[serde(rename = "level2Permissions")]
-    pub level2permissions: bool,
+    /// default: false
+    pub level_2_permissions: bool,
+    pub mkt_data_permission: Option<String>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum UserPreferenceAccountColor {
+    #[default]
+    Green,
+    Blue,
+    #[serde(untagged)]
+    Other(String),
 }
 
 #[cfg(test)]

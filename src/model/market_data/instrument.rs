@@ -14,13 +14,17 @@ pub struct InstrumentResponse {
     pub symbol: String,
     pub description: String,
     pub exchange: String,
-    pub asset_type: String,
+    pub asset_type: InstrumentAssetType,
     pub bond_factor: Option<String>,
     pub bond_multiplier: Option<String>,
     pub bond_price: Option<f64>,
     pub fundamental: Option<FundamentalInst>,
     pub instrument_info: Option<Instrument>,
     pub bond_instrument_info: Option<Bond>,
+
+    /// writeOnly: true
+    #[serde(rename = "type")]
+    pub type_filed: Option<InstrumentAssetType>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -102,7 +106,11 @@ pub struct Instrument {
     pub symbol: String,
     pub description: String,
     pub exchange: String,
-    pub asset_type: String,
+    pub asset_type: InstrumentAssetType,
+
+    /// writeOnly: true
+    #[serde(rename = "type")]
+    pub type_filed: Option<InstrumentAssetType>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -112,10 +120,33 @@ pub struct Bond {
     pub symbol: String,
     pub description: String,
     pub exchange: String,
-    pub asset_type: String,
+    pub asset_type: InstrumentAssetType,
     pub bond_factor: String,
     pub bond_multiplier: String,
     pub bond_price: f64,
+
+    /// writeOnly: true
+    #[serde(rename = "type")]
+    pub type_filed: Option<InstrumentAssetType>,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InstrumentAssetType {
+    Bond,
+    Equity,
+    Etf,
+    Extended,
+    Forex,
+    Future,
+    FutureOption,
+    Fundamental,
+    Index,
+    Indicator,
+    MutualFund,
+    Option,
+    #[default]
+    Unknown,
 }
 
 #[cfg(test)]

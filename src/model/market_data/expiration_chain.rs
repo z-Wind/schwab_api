@@ -1,21 +1,26 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use super::quote_response::option::ExpirationType;
+use super::quote_response::option::SettlementType;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpirationChain {
     pub expiration_list: Vec<Expiration>,
 }
 
+/// expiration type
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Expiration {
     pub days_to_expiration: i64,
     pub expiration: Option<String>,
-    pub expiration_type: String,
+    pub expiration_type: ExpirationType,
     pub standard: bool,
-    pub settlement_type: Option<String>,
+    pub settlement_type: Option<SettlementType>,
     pub option_roots: Option<String>,
+
     // not in schama
     pub expiration_date: chrono::NaiveDate,
 }

@@ -1,6 +1,13 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use super::accounts::AssetType;
+use super::order::ComplexOrderStrategyType;
+use super::order::Duration;
+use super::order::OrderStrategyType;
+use super::order::OrderType;
+use super::order::Session;
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreviewOrder {
@@ -14,37 +21,37 @@ pub struct PreviewOrder {
 #[serde(rename_all = "camelCase")]
 pub struct OrderStrategy {
     pub account_number: String,
-    pub advanced_order_type: String,
-    pub close_time: String,
-    pub entered_time: String,
+    pub advanced_order_type: AdvancedOrderType,
+    pub close_time: chrono::DateTime<chrono::Utc>,
+    pub entered_time: chrono::DateTime<chrono::Utc>,
     pub order_balance: OrderBalance,
-    pub order_strategy_type: String,
+    pub order_strategy_type: OrderStrategyType,
     pub order_version: i64,
-    pub session: String,
-    pub status: String,
+    pub session: Session,
+    pub status: APIOrderStatus,
     pub all_or_none: bool,
     pub discretionary: bool,
-    pub duration: String,
+    pub duration: Duration,
     pub filled_quantity: i64,
-    pub order_type: String,
+    pub order_type: OrderType,
     pub order_value: i64,
     pub price: f64,
     pub quantity: i64,
     pub remaining_quantity: i64,
     pub sell_non_marginable_first: bool,
-    pub settlement_instruction: String,
-    pub strategy: String,
-    pub amount_indicator: String,
+    pub settlement_instruction: SettlementInstruction,
+    pub strategy: ComplexOrderStrategyType,
+    pub amount_indicator: AmountIndicator,
     pub order_legs: Vec<OrderLeg>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBalance {
-    pub order_value: i64,
-    pub projected_available_fund: i64,
-    pub projected_buying_power: i64,
-    pub projected_commission: i64,
+    pub order_value: f64,
+    pub projected_available_fund: f64,
+    pub projected_buying_power: f64,
+    pub projected_commission: f64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -54,12 +61,12 @@ pub struct OrderLeg {
     pub bid_price: f64,
     pub last_price: f64,
     pub mark_price: f64,
-    pub projected_commission: i64,
-    pub quantity: i64,
+    pub projected_commission: f64,
+    pub quantity: f64,
     pub final_symbol: String,
     pub leg_id: i64,
-    pub asset_type: String,
-    pub instruction: String,
+    pub asset_type: AssetType,
+    pub instruction: Instruction,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -78,16 +85,16 @@ pub struct OrderValidationDetail {
     pub validation_rule_name: String,
     pub message: String,
     pub activity_message: String,
-    pub original_severity: String,
+    pub original_severity: APIRuleAction,
     pub override_name: String,
-    pub override_severity: String,
+    pub override_severity: APIRuleAction,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommissionAndFee {
     pub commission: Commission,
-    pub fee: Fee,
+    pub fee: Fees,
     pub true_commission: Commission,
 }
 
@@ -103,17 +110,17 @@ pub struct CommissionLeg {
     pub commission_values: Vec<CommissionValue>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommissionValue {
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: FeeType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Fee {
+pub struct Fees {
     pub fee_legs: Vec<FeeLeg>,
 }
 
@@ -123,12 +130,133 @@ pub struct FeeLeg {
     pub fee_values: Vec<FeeValue>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeeValue {
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: FeeType,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum AmountIndicator {
+    #[default]
+    Dollars,
+    Shares,
+    AllShares,
+    Percentage,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SettlementInstruction {
+    #[default]
+    Regular,
+    Cash,
+    NextDay,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum AdvancedOrderType {
+    #[default]
+    None,
+    Oto,
+    Oco,
+    Otoco,
+    Ot2oco,
+    Ot3oco,
+    BlastAll,
+    Ota,
+    Pair,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum APIOrderStatus {
+    #[default]
+    AwaitingParentOrder,
+    AwaitingCondition,
+    AwaitingStopCondition,
+    AwaitingManualReview,
+    Accepted,
+    AwaitingUrOut,
+    PendingActivation,
+    Queued,
+    Working,
+    Rejected,
+    PendingCancel,
+    Canceled,
+    PendingReplace,
+    Replaced,
+    Filled,
+    Expired,
+    New,
+    AwaitingReleaseTime,
+    PendingAcknowledgement,
+    PendingRecall,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Instruction {
+    #[default]
+    Buy,
+    Sell,
+    BuyToCover,
+    SellShort,
+    BuyToOpen,
+    BuyToClose,
+    SellToOpen,
+    SellToClose,
+    Exchange,
+    SellShortExempt,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum APIRuleAction {
+    #[default]
+    Accept,
+    Alert,
+    Reject,
+    Review,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum FeeType {
+    #[default]
+    Commission,
+    SecFee,
+    StrFee,
+    RFee,
+    CdscFee,
+    OptRegFee,
+    AdditionalFee,
+    MiscellaneousFee,
+    Ftt,
+    FuturesClearingFee,
+    FuturesDeskOfficeFee,
+    FuturesExchangeFee,
+    FuturesGlobexFee,
+    FuturesNfaFee,
+    FuturesPitBrokerageFee,
+    FuturesTransactionFee,
+    LowProceedsCommission,
+    BaseCharge,
+    GeneralCharge,
+    GstFee,
+    TafFee,
+    IndexOptionFee,
+    TefraTax,
+    StateTax,
+    Unknown,
 }
 
 #[cfg(test)]

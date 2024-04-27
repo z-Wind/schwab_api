@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use super::accounts::AssetType;
+
 pub type Root = Vec<Transaction>;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -12,15 +14,16 @@ pub struct Transaction {
     pub description: String,
     pub account_number: String,
     #[serde(rename = "type")]
-    pub type_field: String,
-    pub status: String,
-    pub sub_account: String,
-    pub trade_date: String,
-    pub settlement_date: String,
+    pub type_field: TransactionType,
+    pub status: TransactionStatus,
+    pub sub_account: TransactionSubAccount,
+    pub trade_date: chrono::DateTime<chrono::Utc>,
+    pub settlement_date: chrono::DateTime<chrono::Utc>,
     pub position_id: i64,
     pub order_id: i64,
-    pub net_amount: i64,
-    pub activity_type: String,
+    pub net_amount: f64,
+    pub activity_type: TransactionActivityType,
+    /// xml: OrderedMap { "name": "transferItems", "wrapped": true }
     pub transfer_items: Vec<TransferItem>,
 }
 
@@ -30,7 +33,7 @@ pub struct UserDetails {
     pub cd_domain_id: String,
     pub login: String,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: UserDetailsType,
     pub user_id: i64,
     pub system_user_name: String,
     pub first_name: String,
@@ -42,96 +45,80 @@ pub struct UserDetails {
 #[serde(rename_all = "camelCase")]
 pub struct TransferItem {
     pub instrument: TransactionInstrument,
-    pub amount: i64,
-    pub cost: i64,
+    pub amount: f64,
+    pub cost: f64,
     pub price: f64,
-    pub fee_type: String,
-    pub position_effect: String,
+    pub fee_type: TransferItemFeeType,
+    pub position_effect: TransferItemPositionEffect,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", untagged)]
 pub enum TransactionInstrument {
-    Equity(TransactionEquity),
-    Option(TransactionOption),
-    Index(Index),
-    MutualFund(TransactionMutualFund),
-    CashEquivalent(TransactionCashEquivalent),
-    FixedIncome(TransactionFixedIncome),
-    Currency(Currency),
+    TransactionCashEquivalent(TransactionCashEquivalent),
     CollectiveInvestment(CollectiveInvestment),
+    Currency(Currency),
+    TransactionEquity(TransactionEquity),
+    TransactionFixedIncome(TransactionFixedIncome),
     Forex(Forex),
     Future(Future),
+    Index(Index),
+    TransactionMutualFund(TransactionMutualFund),
+    TransactionOption(TransactionOption),
     Product(Product),
 }
 
 impl Default for TransactionInstrument {
     fn default() -> Self {
-        Self::Equity(TransactionEquity::default())
+        Self::TransactionEquity(TransactionEquity::default())
     }
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionCashEquivalent {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TransactionCashEquivalentType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CollectiveInvestment {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: CollectiveInvestmentType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Currency {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionEquity {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TransactionEquityType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionFixedIncome {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TransactionFixedIncomeType,
     pub maturity_date: chrono::DateTime<chrono::Utc>,
     pub factor: f64,
     pub multiplier: f64,
@@ -141,50 +128,54 @@ pub struct TransactionFixedIncome {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Forex {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: ForexType,
     pub base_currency: Currency,
     pub counter_currency: Currency,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Future {
+    /// default: false
     pub active_contract: bool,
+    #[serde(rename = "type")]
+    pub type_field: FutureType,
     pub expiration_date: chrono::DateTime<chrono::Utc>,
     pub last_trading_date: chrono::DateTime<chrono::Utc>,
     pub first_notice_date: chrono::DateTime<chrono::Utc>,
     pub multiplier: f64,
+
+    #[serde(flatten)]
+    pub transaction_instrument: Box<TransactionInstrument>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Index {
+    /// default: false
     pub active_contract: bool,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: IndexType,
+
+    #[serde(flatten)]
+    pub transaction_instrument: Box<TransactionInstrument>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionMutualFund {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     pub fund_family_name: String,
     pub fund_family_symbol: String,
     pub fund_group: String,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TransactionMutualFundType,
     pub exchange_cutoff_time: chrono::DateTime<chrono::Utc>,
     pub purchase_cutoff_time: chrono::DateTime<chrono::Utc>,
     pub redemption_cutoff_time: chrono::DateTime<chrono::Utc>,
@@ -193,22 +184,20 @@ pub struct TransactionMutualFund {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionOption {
-    pub asset_type: Option<String>,
-    pub cusip: String,
-    pub symbol: String,
-    pub description: String,
-    pub instrument_id: i64,
-    pub net_change: i64,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     pub expiration_date: chrono::DateTime<chrono::Utc>,
+    /// xml: OrderedMap { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<TransactionAPIOptionDeliverable>,
     pub option_premium_multiplier: i64,
-    pub put_call: String,
+    pub put_call: TransactionOptionPullCall,
     pub strike_price: f64,
     #[serde(rename = "type")]
-    pub type_field: String,
+    pub type_field: TransactionOptionType,
     pub underlying_symbol: String,
     pub underlying_cusip: String,
-    pub deliverable: String,
+    pub deliverable: Box<TransactionInstrument>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -218,21 +207,270 @@ pub struct TransactionAPIOptionDeliverable {
     pub strike_percent: i64,
     pub deliverable_number: i64,
     pub deliverable_units: f64,
-    pub deliverable: String,
-    pub asset_type: String,
+    pub deliverable: TransactionInstrument,
+    pub asset_type: AssetType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {
-    pub asset_type: Option<String>,
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
+    #[serde(rename = "type")]
+    pub type_field: ProductType,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionBaseInstrument {
+    pub asset_type: Option<TransactionAssetType>,
     pub cusip: String,
     pub symbol: String,
     pub description: String,
     pub instrument_id: i64,
-    pub net_change: i64,
-    #[serde(rename = "type")]
-    pub type_field: String,
+    pub net_change: f64,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionAssetType {
+    #[default]
+    Equity,
+    Option,
+    Index,
+    MutualFund,
+    CashEquivalent,
+    FixedIncome,
+    Currency,
+    CollectiveInvestment,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionCashEquivalentType {
+    #[default]
+    SweepVehicle,
+    Savings,
+    MoneyMarketFund,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CollectiveInvestmentType {
+    #[default]
+    UnitInvestmentTrust,
+    ExchangeTradedFund,
+    ClosedEndFund,
+    Index,
+    Units,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionEquityType {
+    #[default]
+    CommonStock,
+    PreferredStock,
+    DepositoryReceipt,
+    PreferredDepositoryReceipt,
+    RestrictedStock,
+    ComponentUnit,
+    Right,
+    Warrant,
+    ConvertiblePreferredStock,
+    ConvertibleStock,
+    LimitedPartnership,
+    WhenIssued,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionFixedIncomeType {
+    #[default]
+    BondUnit,
+    CertificateOfDeposit,
+    ConvertibleBond,
+    CollateralizedMortgageObligation,
+    CorporateBond,
+    GovernmentMortgage,
+    GnmaBonds,
+    MunicipalAssessmentDistrict,
+    MunicipalBond,
+    OtherGovernment,
+    ShortTermPaper,
+    UsTreasuryBond,
+    UsTreasuryBill,
+    UsTreasuryNote,
+    UsTreasuryZeroCoupon,
+    AgencyBond,
+    WhenAsAndIfIssuedBond,
+    AssetBackedSecurity,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ForexType {
+    #[default]
+    Standard,
+    Nbbo,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum FutureType {
+    #[default]
+    Standard,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum IndexType {
+    #[default]
+    BroadBased,
+    NarrowBased,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionMutualFundType {
+    #[default]
+    NotApplicable,
+    OpenEndNonTaxable,
+    OpenEndTaxable,
+    NoLoadNonTaxable,
+    NoLoadTaxable,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionOptionPullCall {
+    #[default]
+    Put,
+    Call,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ProductType {
+    #[default]
+    Tbd,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionOptionType {
+    #[default]
+    Vanilla,
+    Binary,
+    Barrier,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionType {
+    #[default]
+    Trade,
+    ReceiveAndDeliver,
+    DividendOrInterest,
+    AchReceipt,
+    AchDisbursement,
+    CashReceipt,
+    CashDisbursement,
+    ElectronicFund,
+    WireOut,
+    WireIn,
+    Journal,
+    Memorandum,
+    MarginCall,
+    MoneyMarket,
+    SmaAdjustment,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionStatus {
+    #[default]
+    Valid,
+    Invalid,
+    Pending,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionSubAccount {
+    #[default]
+    Cash,
+    Margin,
+    Short,
+    Div,
+    Income,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransactionActivityType {
+    #[default]
+    ActivityCorrection,
+    Execution,
+    OrderAction,
+    Transfer,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum UserDetailsType {
+    #[default]
+    AdvisorUser,
+    BrokerUser,
+    ClientUser,
+    SystemUser,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransferItemFeeType {
+    #[default]
+    Commission,
+    SecFee,
+    StrFee,
+    RFee,
+    CdscFee,
+    OptRegFee,
+    AdditionalFee,
+    MiscellaneousFee,
+    FuturesExchangeFee,
+    LowProceedsCommission,
+    BaseCharge,
+    GeneralCharge,
+    GstFee,
+    TafFee,
+    IndexOptionFee,
+    Unknown,
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TransferItemPositionEffect {
+    #[default]
+    Opening,
+    Closing,
+    Automatic,
+    Unknown,
 }
 
 #[cfg(test)]
