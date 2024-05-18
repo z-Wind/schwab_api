@@ -26,7 +26,7 @@ pub struct MutualFundResponse {
     ///
     /// is quote realtime
     pub realtime: bool,
-    pub fundamental: Fundamental,
+    pub fundamental: Option<Fundamental>,
     pub quote: QuoteMutualFund,
     pub reference: ReferenceMutualFund,
 }
@@ -57,7 +57,7 @@ pub struct QuoteMutualFund {
     ///
     /// Net Asset Value
     #[serde(rename = "nAV")]
-    pub n_av: i64,
+    pub n_av: f64,
 
     /// example: -0.04
     ///
@@ -77,7 +77,7 @@ pub struct QuoteMutualFund {
     /// example: 20171188
     ///
     /// Aggregated shares traded throughout the day, including pre/post market hours.
-    pub total_volume: i64,
+    pub total_volume: Option<i64>,
 
     /// example: 1621376731304
     ///
@@ -105,7 +105,7 @@ pub struct ReferenceMutualFund {
     /// Exchange Code
     pub exchange: String,
 
-    /// default: MUTUAL_FUND
+    /// default: `MUTUAL_FUND`
     ///
     /// Exchange Name
     pub exchange_name: String,

@@ -23,6 +23,7 @@
       "orderLegType": "EQUITY",
       "legId": 0,
       "instrument": {
+        "assetType": "COLLECTIVE_INVESTMENT",
         "cusip": "string",
         "symbol": "string",
         "description": "string",

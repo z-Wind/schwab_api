@@ -33,7 +33,7 @@ pub struct SecuritiesAccountBase {
     pub is_closing_only_restricted: bool,
     /// default: false
     pub pfcb_flag: bool,
-    pub positions: Vec<Position>,
+    pub positions: Option<Vec<Position>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ pub struct MarginInitialBalance {
     pub short_option_market_value: f64,
     pub short_stock_value: f64,
     pub total_cash: f64,
-    pub is_in_call: f64,
+    pub is_in_call: bool,
     pub unsettled_cash: f64,
     pub pending_deposits: f64,
     pub margin_balance: f64,
@@ -104,7 +104,7 @@ pub struct MarginBalance {
     pub short_balance: f64,
     pub short_margin_value: f64,
     pub sma: f64,
-    pub is_in_call: f64,
+    pub is_in_call: bool,
     pub stock_buying_power: f64,
     pub option_buying_power: f64,
 }
@@ -136,7 +136,7 @@ pub struct CashInitialBalance {
     pub mutual_fund_value: f64,
     pub short_option_market_value: f64,
     pub short_stock_value: f64,
-    pub is_in_call: f64,
+    pub is_in_call: bool,
     pub unsettled_cash: f64,
     pub cash_debit_call_value: f64,
     pub pending_deposits: f64,
@@ -148,11 +148,26 @@ pub struct CashInitialBalance {
 pub struct CashBalance {
     pub cash_available_for_trading: f64,
     pub cash_available_for_withdrawal: f64,
-    pub cash_call: f64,
-    pub long_non_marginable_market_value: f64,
-    pub total_cash: f64,
-    pub cash_debit_call_value: f64,
-    pub unsettled_cash: f64,
+    pub cash_call: Option<f64>,
+    pub long_non_marginable_market_value: Option<f64>,
+    pub total_cash: Option<f64>,
+    pub cash_debit_call_value: Option<f64>,
+    pub unsettled_cash: Option<f64>,
+
+    // not in schema
+    pub accrued_interest: Option<f64>,
+    pub cash_balance: Option<f64>,
+    pub cash_receipts: Option<f64>,
+    pub long_option_market_value: Option<f64>,
+    pub liquidation_value: Option<f64>,
+    pub long_market_value: Option<f64>,
+    pub money_market_fund: Option<f64>,
+    pub savings: Option<f64>,
+    pub short_market_value: Option<f64>,
+    pub pending_deposits: Option<f64>,
+    pub mutual_fund_value: Option<f64>,
+    pub bond_value: Option<f64>,
+    pub short_option_market_value: Option<f64>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -181,18 +196,21 @@ pub struct Position {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase", untagged)]
+#[serde(tag = "assetType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AccountsInstrument {
-    AccountCashEquivalent(AccountCashEquivalent),
-    AccountEquity(AccountEquity),
-    AccountFixedIncome(AccountFixedIncome),
-    AccountMutualFund(AccountMutualFund),
-    AccountOption(AccountOption),
+    CashEquivalent(AccountCashEquivalent),
+    Equity(AccountEquity),
+    FixedIncome(AccountFixedIncome),
+    MutualFund(AccountMutualFund),
+    Option(AccountOption),
+    Index(AccountIndex),
+    Currency(AccountCurrency),
+    CollectiveInvestment(AccountCollectiveInvestment),
 }
 
 impl Default for AccountsInstrument {
     fn default() -> Self {
-        Self::AccountCashEquivalent(AccountCashEquivalent::default())
+        Self::CashEquivalent(AccountCashEquivalent::default())
     }
 }
 
@@ -237,13 +255,34 @@ pub struct AccountOption {
     #[serde(flatten)]
     pub accounts_base_instrument: AccountsBaseInstrument,
 
-    /// xml: OrderedMap { "name": "optionDeliverables", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<AccountAPIOptionDeliverable>,
     pub put_call: AccountOptionPullCall,
     pub option_multiplier: i64,
     #[serde(rename = "type")]
     pub type_field: AccountOptionType,
     pub underlying_symbol: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountIndex {
+    #[serde(flatten)]
+    pub accounts_base_instrument: AccountsBaseInstrument,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountCurrency {
+    #[serde(flatten)]
+    pub accounts_base_instrument: AccountsBaseInstrument,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountCollectiveInvestment {
+    #[serde(flatten)]
+    pub accounts_base_instrument: AccountsBaseInstrument,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -258,12 +297,11 @@ pub struct AccountAPIOptionDeliverable {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountsBaseInstrument {
-    pub asset_type: Option<AccountsInstrumentAssetType>,
     pub cusip: String,
     pub symbol: String,
     pub description: String,
     pub instrument_id: i64,
-    pub net_change: f64,
+    pub net_change: Option<f64>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -344,7 +382,7 @@ mod tests {
     fn test_de_account() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Account.json"
+            "/tests/model/Trader/Account_real.json"
         ));
 
         let val = serde_json::from_str::<Account>(json);
@@ -356,7 +394,19 @@ mod tests {
     fn test_de_accounts() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Accounts.json"
+            "/tests/model/Trader/Accounts_real.json"
+        ));
+
+        let val = serde_json::from_str::<Accounts>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de_accounts2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/Accounts_real.json"
         ));
 
         let val = serde_json::from_str::<Accounts>(json);

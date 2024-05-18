@@ -68,7 +68,7 @@ impl TokenChecker {
                 .access_token(&token.refresh)
                 .await
                 .map_err(|e| Error::TokenError(e.to_string()))?;
-            token.access = rsp.access_token().secret().clone();
+            token.access.clone_from(rsp.access_token().secret());
             token.access_expires_in = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap()

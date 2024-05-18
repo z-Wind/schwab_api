@@ -107,10 +107,10 @@ pub struct QuoteFuture {
     /// Day's low trade price
     pub low_price: f64,
 
-    /// example: 4083
+    /// example: 5438.25
     ///
     /// Mark price
-    pub mark: i64,
+    pub mark: f64,
 
     /// example: -40
     ///
@@ -192,7 +192,7 @@ pub struct ReferenceFuture {
     /// example: /ESM21
     ///
     /// Active symbol
-    pub future_active_symbol: String,
+    pub future_active_symbol: Option<String>,
 
     /// example: 1623988800000
     ///
@@ -205,10 +205,10 @@ pub struct ReferenceFuture {
     /// Future is active
     pub future_is_active: bool,
 
-    /// example: 50
+    /// example: 50.0
     ///
     /// Future multiplier
-    pub future_multiplier: i64,
+    pub future_multiplier: f64,
 
     /// example: D,D
     ///
@@ -231,7 +231,7 @@ pub struct ReferenceFuture {
     pub product: String,
 
     // not in schama
-    pub future_is_tradable: bool,
+    pub future_is_tradable: Option<bool>,
 }
 
 #[cfg(test)]

@@ -1,0 +1,28 @@
+{
+  "accounts": [
+    {
+      "accountNumber": "12345678",
+      "primaryAccount": true,
+      "type": "BROKERAGE",
+      "nickName": "Individual",
+      "displayAcctId": "...123",
+      "autoPositionEffect": false,
+      "accountColor": "Green"
+    }
+  ],
+  "streamerInfo": [
+    {
+      "streamerSocketUrl": "wss://streamer-api.schwab.com/ws",
+      "schwabClientCustomerId": "a12bc34d-e56f-7g8h-i101-2j345678kl90",
+      "schwabClientCorrelId": "a12bc34d-e56f-7g8h-i101-2j345678kl90",
+      "schwabClientChannel": "A0",
+      "schwabClientFunctionId": "APIAPP"
+    }
+  ],
+  "offers": [
+    {
+      "level2Permissions": true,
+      "mktDataPermission": "NP"
+    }
+  ]
+}

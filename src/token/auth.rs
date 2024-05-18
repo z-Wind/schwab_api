@@ -56,7 +56,7 @@ impl Authorizer {
         let auth_code = Self::auth_code(csrf_token, self.certs_dir.clone()).await;
 
         let token_result = self.refresh_token(auth_code).await?;
-        // println!("{token_result:?}");
+        // dbg!(&token_result);
         let token = Token {
             refresh: token_result
                 .refresh_token()
@@ -101,7 +101,6 @@ impl Authorizer {
     ) -> Result<BasicTokenResponse, RequestTokenError> {
         self.client
             .exchange_code(auth_code)
-            .add_extra_param("access_type", "offline")
             .request_async(async_http_client)
             .await
     }
@@ -154,9 +153,12 @@ mod tests {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
         );
 
-        let result = auth.authorize().await;
+        let token = auth.authorize().await.unwrap();
+        dbg!(&token);
 
-        assert!(result.is_ok());
+        // test refresh access token
+        let access_token = auth.access_token(&token.refresh).await.unwrap();
+        dbg!(&access_token);
     }
 
     #[test]

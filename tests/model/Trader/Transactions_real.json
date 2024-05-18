@@ -1,0 +1,4049 @@
+[
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T15:57:00+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-08T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BND",
+          "description": "VANGUARD TOTAL BOND MARKET ETF",
+          "instrumentId": 5224897,
+          "closingPrice": 71.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 71.38722,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T12:50:50+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-08T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 48.705,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T15:56:07+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-08T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BND",
+          "description": "VANGUARD TOTAL BOND MARKET ETF",
+          "instrumentId": 5224897,
+          "closingPrice": 71.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 71.96188,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T12:50:53+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-08T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 49.03,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-27T16:15:33+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-27T04:00:00+0000",
+    "settlementDate": "2024-04-01T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VTI",
+          "description": "VANGUARD TOTAL STOCK MARKET ETF",
+          "instrumentId": 5215623,
+          "closingPrice": 261.93,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 258.28585,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-21T23:40:15+0000",
+    "description": "Sell Trade",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-21T04:00:00+0000",
+    "settlementDate": "2024-03-25T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BWX",
+          "description": "SPDR BLOOMBG INTL TRY BD ETF",
+          "instrumentId": 1773528,
+          "closingPrice": 21.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -12.34,
+        "cost": 12.34,
+        "price": 22.32,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-21T12:40:17+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-21T12:40:17+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 237,
+        "cost": -12.34,
+        "price": 48.9885,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-21T12:31:45+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-21T12:31:45+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BWX",
+          "description": "SPDR BLOOMBG INTL TRY BD ETF",
+          "instrumentId": 1773528,
+          "closingPrice": 21.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -521,
+        "cost": 12.34,
+        "price": 22.3236,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:57:02+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-22T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VWO",
+          "description": "VANGUARD FTSE EMERGING MARKETS ETF",
+          "instrumentId": 5195795,
+          "closingPrice": 44.57,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 41.5176,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:54:47+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-22T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VGK",
+          "description": "VANGUARD FTSE EUROPE ETF",
+          "instrumentId": 5219959,
+          "closingPrice": 69.9,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 66.44058,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T12:50:35+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-22T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VPL",
+          "description": "VANGUARD FTSE PACIFIC ETF",
+          "instrumentId": 5219936,
+          "closingPrice": 74.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 75.2699,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-19T12:33:35+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-19T12:33:35+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VGK",
+          "description": "VANGUARD FTSE EUROPE ETF",
+          "instrumentId": 5219959,
+          "closingPrice": 69.9,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 1,
+        "cost": -12.34,
+        "price": 66.2799,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-19T12:32:38+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-19T12:32:38+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 1,
+        "cost": -12.34,
+        "price": 48.8669,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T23:36:06+0000",
+    "description": "Sell Trade",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T04:00:00+0000",
+    "settlementDate": "2024-03-19T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VBR",
+          "description": "VANGUARD SMALL CAP VALUE ETF",
+          "instrumentId": 5215508,
+          "closingPrice": 189.97,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -12.34,
+        "cost": 12.34,
+        "price": 184.51,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T23:36:04+0000",
+    "description": "Sell Trade",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T04:00:00+0000",
+    "settlementDate": "2024-03-19T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VNQ",
+          "description": "VANGUARD REAL ESTATE ETF",
+          "instrumentId": 5230735,
+          "closingPrice": 84.9,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -12.34,
+        "cost": 12.34,
+        "price": 85.18,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:18:41+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:18:41+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VWO",
+          "description": "VANGUARD FTSE EMERGING MARKETS ETF",
+          "instrumentId": 5195795,
+          "closingPrice": 44.57,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 91,
+        "cost": -12.34,
+        "price": 41.72,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:18:25+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:18:25+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VGK",
+          "description": "VANGUARD FTSE EUROPE ETF",
+          "instrumentId": 5219959,
+          "closingPrice": 69.9,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 41,
+        "cost": -12.34,
+        "price": 66.8271,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:17:57+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:17:57+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VPL",
+          "description": "VANGUARD FTSE PACIFIC ETF",
+          "instrumentId": 5219936,
+          "closingPrice": 74.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 25,
+        "cost": -12.34,
+        "price": 74.6086,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:16:48+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:16:48+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 36,
+        "cost": -12.34,
+        "price": 48.7997,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:16:12+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:16:12+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BND",
+          "description": "VANGUARD TOTAL BOND MARKET ETF",
+          "instrumentId": 5224897,
+          "closingPrice": 71.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12,
+        "cost": -12.34,
+        "price": 72.0499,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T14:12:47+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T14:12:47+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VTI",
+          "description": "VANGUARD TOTAL STOCK MARKET ETF",
+          "instrumentId": 5215623,
+          "closingPrice": 261.93,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 40,
+        "cost": -12.34,
+        "price": 254.17,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T13:40:30+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T13:40:30+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VNQ",
+          "description": "VANGUARD REAL ESTATE ETF",
+          "instrumentId": 5230735,
+          "closingPrice": 84.9,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -149,
+        "cost": 12.34,
+        "price": 85.175,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-15T13:39:16+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-15T13:39:16+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VBR",
+          "description": "VANGUARD SMALL CAP VALUE ETF",
+          "instrumentId": 5215508,
+          "closingPrice": 189.97,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": -46,
+        "cost": 12.34,
+        "price": 184.505,
+        "positionEffect": "CLOSING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-07T13:52:35+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-07T05:00:00+0000",
+    "settlementDate": "2024-03-11T04:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BWX",
+          "description": "SPDR BLOOMBG INTL TRY BD ETF",
+          "instrumentId": 1773528,
+          "closingPrice": 21.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 22.515,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T16:55:02+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-08T05:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BND",
+          "description": "VANGUARD TOTAL BOND MARKET ETF",
+          "instrumentId": 5224897,
+          "closingPrice": 71.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 72.68021,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T13:49:44+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-08T05:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 48.955,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-04T13:30:04+0000",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-04T13:30:04+0000",
+    "positionId": 12345678,
+    "orderId": 12345678910,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "COMMISSION"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "SEC_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "OPT_REG_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 0,
+        "cost": 0,
+        "feeType": "TAF_FEE"
+      },
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "VWO",
+          "description": "VANGUARD FTSE EMERGING MARKETS ETF",
+          "instrumentId": 5195795,
+          "closingPrice": 44.57,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 4,
+        "cost": -12.34,
+        "price": 41.6,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-07T13:54:59+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-07T05:00:00+0000",
+    "settlementDate": "2024-02-09T05:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BWX",
+          "description": "SPDR BLOOMBG INTL TRY BD ETF",
+          "instrumentId": 1773528,
+          "closingPrice": 21.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 22.2757,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T16:59:56+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-08T05:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BND",
+          "description": "VANGUARD TOTAL BOND MARKET ETF",
+          "instrumentId": 5224897,
+          "closingPrice": 71.99,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 72.67878,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T13:52:00+0000",
+    "description": "Dividend Reinvest",
+    "accountNumber": "12345678",
+    "type": "TRADE",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-08T05:00:00+0000",
+    "positionId": 12345678,
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "status": "ACTIVE",
+          "symbol": "BNDX",
+          "description": "VANGUARD TOTAL INTERNATIONAL BND ETF",
+          "instrumentId": 3148252,
+          "closingPrice": 48.86,
+          "type": "EXCHANGE_TRADED_FUND"
+        },
+        "amount": 12.34,
+        "cost": -12.34,
+        "price": 48.685,
+        "positionEffect": "OPENING"
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T15:55:14+0000",
+    "description": "Ordinary Dividend~BND",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-06T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T12:50:22+0000",
+    "description": "Ordinary Dividend~BNDX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-06T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-01T01:18:24+0000",
+    "description": "Free Balance Interest Adjustment",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-30T04:00:00+0000",
+    "settlementDate": "2024-04-30T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T15:54:14+0000",
+    "description": "Ordinary Dividend~BND",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-04T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T12:50:19+0000",
+    "description": "Ordinary Dividend~BNDX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-04T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-29T01:22:28+0000",
+    "description": "Free Balance Interest Adjustment",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-28T04:00:00+0000",
+    "settlementDate": "2024-03-28T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-27T16:07:05+0000",
+    "description": "Ordinary Dividend~VTI",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-27T04:00:00+0000",
+    "settlementDate": "2024-03-27T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:54:56+0000",
+    "description": "Ordinary Dividend~VWO",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:53:58+0000",
+    "description": "Ordinary Dividend~VGK",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T12:49:56+0000",
+    "description": "Ordinary Dividend~VPL",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-07T13:52:24+0000",
+    "description": "Ordinary Dividend~BWX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-07T05:00:00+0000",
+    "settlementDate": "2024-03-07T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T16:53:14+0000",
+    "description": "Ordinary Dividend~BND",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-06T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T13:49:11+0000",
+    "description": "Ordinary Dividend~BNDX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-06T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T02:17:21+0000",
+    "description": "Free Balance Interest Adjustment",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-29T05:00:00+0000",
+    "settlementDate": "2024-02-29T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-07T13:54:48+0000",
+    "description": "Ordinary Dividend~BWX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-07T05:00:00+0000",
+    "settlementDate": "2024-02-07T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T16:58:06+0000",
+    "description": "Ordinary Dividend~BND",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-06T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T13:51:27+0000",
+    "description": "Ordinary Dividend~BNDX",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-06T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-01T02:17:48+0000",
+    "description": "Free Balance Interest Adjustment",
+    "accountNumber": "12345678",
+    "type": "DIVIDEND_OR_INTEREST",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-01-31T05:00:00+0000",
+    "settlementDate": "2024-01-31T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-07-19T07:32:28+0000",
+    "description": "ACH Credit Received",
+    "accountNumber": "12345678",
+    "type": "ELECTRONIC_FUND",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-07-19T04:00:00+0000",
+    "settlementDate": "2023-07-19T04:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-15T13:14:10+0000",
+    "description": "Wire Incoming",
+    "accountNumber": "12345678",
+    "type": "WIRE_IN",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-15T05:00:00+0000",
+    "settlementDate": "2023-12-15T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T15:55:16+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-06T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-05-06T12:50:24+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-05-06T04:00:00+0000",
+    "settlementDate": "2024-05-06T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T15:54:12+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-04T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-04-04T12:50:19+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-04-04T04:00:00+0000",
+    "settlementDate": "2024-04-04T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-27T16:07:05+0000",
+    "description": "W-8 Withholding~VTI",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-27T04:00:00+0000",
+    "settlementDate": "2024-03-27T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:54:58+0000",
+    "description": "W-8 Withholding~VWO",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T15:53:58+0000",
+    "description": "W-8 Withholding~VGK",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-20T12:49:56+0000",
+    "description": "W-8 Withholding~VPL",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-20T04:00:00+0000",
+    "settlementDate": "2024-03-20T04:00:00+0000",
+    "netAmount": -61,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -61,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-07T13:52:24+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-07T05:00:00+0000",
+    "settlementDate": "2024-03-07T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T16:53:16+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-06T13:49:11+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-06T05:00:00+0000",
+    "settlementDate": "2024-03-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:02+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:02+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:02+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:02+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:00+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:00+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:10:00+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:58+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:58+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:58+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:58+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:58+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:56+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:56+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:56+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-03-01T16:09:56+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-03-01T05:00:00+0000",
+    "settlementDate": "2024-03-01T05:00:00+0000",
+    "netAmount": 12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": 12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-07T13:54:50+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-07T05:00:00+0000",
+    "settlementDate": "2024-02-07T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T16:58:08+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2024-02-06T13:51:27+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2024-02-06T05:00:00+0000",
+    "settlementDate": "2024-02-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-28T17:03:07+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-28T05:00:00+0000",
+    "settlementDate": "2023-12-28T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-28T17:01:46+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-28T05:00:00+0000",
+    "settlementDate": "2023-12-28T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-27T17:09:33+0000",
+    "description": "W-8 Withholding~VTI",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-27T05:00:00+0000",
+    "settlementDate": "2023-12-27T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-27T17:04:46+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-27T05:00:00+0000",
+    "settlementDate": "2023-12-27T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-27T17:02:59+0000",
+    "description": "W-8 Withholding~VBR",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-27T05:00:00+0000",
+    "settlementDate": "2023-12-27T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-22T13:48:32+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-22T05:00:00+0000",
+    "settlementDate": "2023-12-22T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-21T17:00:12+0000",
+    "description": "W-8 Withholding~VWO",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-21T05:00:00+0000",
+    "settlementDate": "2023-12-21T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-21T16:59:04+0000",
+    "description": "W-8 Withholding~VGK",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-21T05:00:00+0000",
+    "settlementDate": "2023-12-21T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-21T16:58:43+0000",
+    "description": "W-8 Withholding~VPL",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-21T05:00:00+0000",
+    "settlementDate": "2023-12-21T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-07T13:52:31+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-07T05:00:00+0000",
+    "settlementDate": "2023-12-07T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-06T16:53:43+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-06T05:00:00+0000",
+    "settlementDate": "2023-12-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-12-06T13:49:28+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-12-06T05:00:00+0000",
+    "settlementDate": "2023-12-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-11-07T13:55:46+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-11-07T05:00:00+0000",
+    "settlementDate": "2023-11-07T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-11-06T17:00:01+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-11-06T05:00:00+0000",
+    "settlementDate": "2023-11-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-11-06T13:52:32+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-11-06T05:00:00+0000",
+    "settlementDate": "2023-11-06T05:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-10-06T12:56:03+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-10-06T04:00:00+0000",
+    "settlementDate": "2023-10-06T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-10-05T16:03:34+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-10-05T04:00:00+0000",
+    "settlementDate": "2023-10-05T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-10-05T12:53:58+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-10-05T04:00:00+0000",
+    "settlementDate": "2023-10-05T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-10-03T16:04:00+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-10-03T04:00:00+0000",
+    "settlementDate": "2023-10-03T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-26T16:14:04+0000",
+    "description": "W-8 Withholding~VTI",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-26T04:00:00+0000",
+    "settlementDate": "2023-09-26T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-26T16:01:25+0000",
+    "description": "W-8 Withholding~VBR",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-26T04:00:00+0000",
+    "settlementDate": "2023-09-26T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-21T16:01:38+0000",
+    "description": "W-8 Withholding~VWO",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-21T04:00:00+0000",
+    "settlementDate": "2023-09-21T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-21T15:59:34+0000",
+    "description": "W-8 Withholding~VGK",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-21T04:00:00+0000",
+    "settlementDate": "2023-09-21T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-21T12:53:05+0000",
+    "description": "W-8 Withholding~VPL",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-21T04:00:00+0000",
+    "settlementDate": "2023-09-21T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-08T12:55:02+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-08T04:00:00+0000",
+    "settlementDate": "2023-09-08T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-07T16:00:42+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-07T04:00:00+0000",
+    "settlementDate": "2023-09-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-09-07T12:52:24+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-09-07T04:00:00+0000",
+    "settlementDate": "2023-09-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-08-07T13:02:20+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-08-07T04:00:00+0000",
+    "settlementDate": "2023-08-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-08-04T15:59:04+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-08-04T04:00:00+0000",
+    "settlementDate": "2023-08-04T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-08-04T15:54:09+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-08-04T04:00:00+0000",
+    "settlementDate": "2023-08-04T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-07-10T12:55:54+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-07-10T04:00:00+0000",
+    "settlementDate": "2023-07-10T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-07-07T16:12:26+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-07-07T04:00:00+0000",
+    "settlementDate": "2023-07-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-07-07T16:04:10+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-07-07T04:00:00+0000",
+    "settlementDate": "2023-07-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-07-05T16:08:45+0000",
+    "description": "W-8 Withholding~VNQ",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-07-05T04:00:00+0000",
+    "settlementDate": "2023-07-05T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-28T16:32:39+0000",
+    "description": "W-8 Withholding~VTI",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-28T04:00:00+0000",
+    "settlementDate": "2023-06-28T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-28T16:09:51+0000",
+    "description": "W-8 Withholding~VBR",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-28T04:00:00+0000",
+    "settlementDate": "2023-06-28T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-23T15:58:17+0000",
+    "description": "W-8 Withholding~VWO",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-23T04:00:00+0000",
+    "settlementDate": "2023-06-23T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-23T15:52:46+0000",
+    "description": "W-8 Withholding~VGK",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-23T04:00:00+0000",
+    "settlementDate": "2023-06-23T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-23T15:49:45+0000",
+    "description": "W-8 Withholding~VPL",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-23T04:00:00+0000",
+    "settlementDate": "2023-06-23T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-07T16:00:32+0000",
+    "description": "W-8 Withholding~BNDX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-07T04:00:00+0000",
+    "settlementDate": "2023-06-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-07T12:58:06+0000",
+    "description": "W-8 Withholding~BWX",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-07T04:00:00+0000",
+    "settlementDate": "2023-06-07T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  },
+  {
+    "activityId": 12345678910,
+    "time": "2023-06-06T18:08:02+0000",
+    "description": "W-8 Withholding~BND",
+    "accountNumber": "12345678",
+    "type": "JOURNAL",
+    "status": "VALID",
+    "subAccount": "CASH",
+    "tradeDate": "2023-06-06T04:00:00+0000",
+    "settlementDate": "2023-06-06T04:00:00+0000",
+    "netAmount": -12.34,
+    "transferItems": [
+      {
+        "instrument": {
+          "assetType": "CURRENCY",
+          "status": "ACTIVE",
+          "symbol": "CURRENCY_USD",
+          "description": "USD currency",
+          "instrumentId": 1,
+          "closingPrice": 0
+        },
+        "amount": -12.34,
+        "cost": 0,
+        "price": 0
+      }
+    ]
+  }
+]

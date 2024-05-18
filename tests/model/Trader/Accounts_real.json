@@ -1,0 +1,58 @@
+[
+  {
+    "securitiesAccount": {
+      "type": "CASH",
+      "accountNumber": "12345678",
+      "roundTrips": 0,
+      "isDayTrader": false,
+      "isClosingOnlyRestricted": false,
+      "pfcbFlag": false,
+      "initialBalances": {
+        "accruedInterest": 0,
+        "cashAvailableForTrading": 12.34,
+        "cashAvailableForWithdrawal": 12.34,
+        "cashBalance": 12.34,
+        "bondValue": 0,
+        "cashReceipts": 0,
+        "liquidationValue": 12.34,
+        "longOptionMarketValue": 0,
+        "longStockValue": 12.34,
+        "moneyMarketFund": 0,
+        "mutualFundValue": 12.34,
+        "shortOptionMarketValue": 0,
+        "shortStockValue": 0,
+        "isInCall": false,
+        "unsettledCash": 0,
+        "cashDebitCallValue": 0,
+        "pendingDeposits": 0,
+        "accountValue": 12.34
+      },
+      "currentBalances": {
+        "accruedInterest": 0,
+        "cashBalance": 12.34,
+        "cashReceipts": 0,
+        "longOptionMarketValue": 0,
+        "liquidationValue": 12.34,
+        "longMarketValue": 12.34,
+        "moneyMarketFund": 0,
+        "savings": 0,
+        "shortMarketValue": 0,
+        "pendingDeposits": 0,
+        "mutualFundValue": 0,
+        "bondValue": 0,
+        "shortOptionMarketValue": 0,
+        "cashAvailableForTrading": 12.34,
+        "cashAvailableForWithdrawal": 12.34,
+        "cashCall": 0,
+        "longNonMarginableMarketValue": 12.34,
+        "totalCash": 12.34,
+        "cashDebitCallValue": 0,
+        "unsettledCash": 0
+      },
+      "projectedBalances": {
+        "cashAvailableForTrading": 12.34,
+        "cashAvailableForWithdrawal": 12.34
+      }
+    }
+  }
+]

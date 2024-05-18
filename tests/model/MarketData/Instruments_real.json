@@ -1,0 +1,11 @@
+{
+  "instruments": [
+    {
+      "cusip": "922908769",
+      "symbol": "VTI",
+      "description": "VANGUARD TOTAL STOCK MARKET ETF",
+      "exchange": "NYSE Arca",
+      "assetType": "ETF"
+    }
+  ]
+}

@@ -274,8 +274,14 @@ impl GetAccountOrdersRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[
-            ("fromEnteredTime", self.from_entered_time.to_string()),
-            ("toEnteredTime", self.to_entered_time.to_string()),
+            (
+                "fromEnteredTime",
+                self.from_entered_time.format("%+").to_string(),
+            ),
+            (
+                "toEnteredTime",
+                self.to_entered_time.format("%+").to_string(),
+            ),
         ]);
         if let Some(x) = self.max_results {
             req = req.query(&[("maxResults", x)]);
@@ -290,6 +296,13 @@ impl GetAccountOrdersRequest {
     pub async fn send(self) -> Result<Vec<model::Order>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // // std::fs::write("Order_real.json", &json).expect("Unable to write file");
+        // let item: Vec<model::Order> = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -625,8 +638,14 @@ impl GetAccountsOrdersRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[
-            ("fromEnteredTime", self.from_entered_time.to_string()),
-            ("toEnteredTime", self.to_entered_time.to_string()),
+            (
+                "fromEnteredTime",
+                self.from_entered_time.format("%+").to_string(),
+            ),
+            (
+                "toEnteredTime",
+                self.to_entered_time.format("%+").to_string(),
+            ),
         ]);
         if let Some(x) = self.max_results {
             req = req.query(&[("maxResults", x)]);
@@ -788,8 +807,8 @@ impl GetAccountTransactions {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[
-            ("startDate", self.start_date.to_string()),
-            ("endDate", self.end_date.to_string()),
+            ("startDate", self.start_date.format("%+").to_string()),
+            ("endDate", self.end_date.format("%+").to_string()),
         ]);
         req = req.query(&[("types", self.types)]);
         if let Some(x) = self.symbol {
@@ -802,6 +821,12 @@ impl GetAccountTransactions {
     pub async fn send(self) -> Result<Vec<model::Transaction>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // let v: Vec<model::Transaction> = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", v);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -902,9 +927,16 @@ impl GetUserPreferenceRequest {
         self.req
     }
 
-    pub async fn send(self) -> Result<Vec<model::UserPreference>, Error> {
+    pub async fn send(self) -> Result<model::UserPreferences, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("UserPreferences_real.json", &json).expect("Unable to write file");
+        // let item: model::UserPreferences = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -912,7 +944,7 @@ impl GetUserPreferenceRequest {
             return Err(Error::ServiceError(error_response));
         }
 
-        rsp.json::<Vec<model::UserPreference>>()
+        rsp.json::<model::UserPreferences>()
             .await
             .map_err(std::convert::Into::into)
     }
@@ -996,7 +1028,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Accounts.json"
+                "/tests/model/Trader/Accounts_real.json"
             ))
             .create_async()
             .await;
@@ -1050,7 +1082,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Account.json"
+                "/tests/model/Trader/Account_real.json"
             ))
             .create_async()
             .await;
@@ -1112,15 +1144,21 @@ mod tests {
             .mock("GET", "/accounts/account_number/orders")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("maxResults".into(), max_results.to_string()),
-                Matcher::UrlEncoded("fromEnteredTime".into(), from_entered_time.to_string()),
-                Matcher::UrlEncoded("toEnteredTime".into(), to_entered_time.to_string()),
+                Matcher::UrlEncoded(
+                    "fromEnteredTime".into(),
+                    from_entered_time.format("%+").to_string(),
+                ),
+                Matcher::UrlEncoded(
+                    "toEnteredTime".into(),
+                    to_entered_time.format("%+").to_string(),
+                ),
                 Matcher::UrlEncoded("status".into(), "AWAITING_PARENT_ORDER".into()),
             ]))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Orders.json"
+                "/tests/model/Trader/Orders_real.json"
             ))
             .create_async()
             .await;
@@ -1155,7 +1193,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 2);
+        assert_eq!(result.len(), 1);
     }
 
     #[tokio::test]
@@ -1223,7 +1261,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Order.json"
+                "/tests/model/Trader/Order_real.json"
             ))
             .create_async()
             .await;
@@ -1368,15 +1406,21 @@ mod tests {
             .mock("GET", "/orders")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("maxResults".into(), max_results.to_string()),
-                Matcher::UrlEncoded("fromEnteredTime".into(), from_entered_time.to_string()),
-                Matcher::UrlEncoded("toEnteredTime".into(), to_entered_time.to_string()),
+                Matcher::UrlEncoded(
+                    "fromEnteredTime".into(),
+                    from_entered_time.format("%+").to_string(),
+                ),
+                Matcher::UrlEncoded(
+                    "toEnteredTime".into(),
+                    to_entered_time.format("%+").to_string(),
+                ),
                 Matcher::UrlEncoded("status".into(), "AWAITING_PARENT_ORDER".into()),
             ]))
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Orders.json"
+                "/tests/model/Trader/Orders_real.json"
             ))
             .create_async()
             .await;
@@ -1405,7 +1449,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 2);
+        assert_eq!(result.len(), 1);
     }
 
     #[tokio::test]
@@ -1486,8 +1530,8 @@ mod tests {
         let mock = server
             .mock("GET", "/accounts/account_number/transactions")
             .match_query(Matcher::AllOf(vec![
-                Matcher::UrlEncoded("startDate".into(), start_date.to_string()),
-                Matcher::UrlEncoded("endDate".into(), end_date.to_string()),
+                Matcher::UrlEncoded("startDate".into(), start_date.format("%+").to_string()),
+                Matcher::UrlEncoded("endDate".into(), end_date.format("%+").to_string()),
                 Matcher::UrlEncoded("symbol".into(), symbol.to_string()),
                 Matcher::UrlEncoded("types".into(), "RECEIVE_AND_DELIVER".into()),
             ]))
@@ -1495,7 +1539,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/Trader/Transactions.json"
+                "/tests/model/Trader/Transactions_real.json"
             ))
             .create_async()
             .await;
@@ -1529,7 +1573,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 2);
+        assert_eq!(result.len(), 122);
     }
 
     #[tokio::test]
@@ -1552,48 +1596,33 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(
                 r#"[
-                {
-                  "activityId": 0,
-                  "time": "2024-04-20T03:47:13.958Z",
-                  "user": {
-                    "cdDomainId": "string",
-                    "login": "string",
-                    "type": "ADVISOR_USER",
-                    "userId": 0,
-                    "systemUserName": "string",
-                    "firstName": "string",
-                    "lastName": "string",
-                    "brokerRepCode": "string"
-                  },
-                  "description": "string",
-                  "accountNumber": "string",
-                  "type": "TRADE",
-                  "status": "VALID",
-                  "subAccount": "CASH",
-                  "tradeDate": "2024-04-20T03:47:13.958Z",
-                  "settlementDate": "2024-04-20T03:47:13.958Z",
-                  "positionId": 0,
-                  "orderId": 0,
-                  "netAmount": 0,
-                  "activityType": "ACTIVITY_CORRECTION",
-                  "transferItems": [
                     {
-                      "instrument": {
-                        "cusip": "string",
-                        "symbol": "string",
-                        "description": "string",
-                        "instrumentId": 0,
-                        "netChange": 0,
-                        "type": "SWEEP_VEHICLE"
-                      },
-                      "amount": 0,
-                      "cost": 0,
-                      "price": 0,
-                      "feeType": "COMMISSION",
-                      "positionEffect": "OPENING"
+                        "activityId": 12345678910,
+                        "time": "2024-05-06T15:55:14+0000",
+                        "description": "Ordinary Dividend~BND",
+                        "accountNumber": "12345678",
+                        "type": "DIVIDEND_OR_INTEREST",
+                        "status": "VALID",
+                        "subAccount": "CASH",
+                        "tradeDate": "2024-05-06T04:00:00+0000",
+                        "settlementDate": "2024-05-06T04:00:00+0000",
+                        "netAmount": 12.34,
+                        "transferItems": [
+                            {
+                            "instrument": {
+                                "assetType": "CURRENCY",
+                                "status": "ACTIVE",
+                                "symbol": "CURRENCY_USD",
+                                "description": "USD currency",
+                                "instrumentId": 1,
+                                "closingPrice": 0
+                            },
+                            "amount": 12.34,
+                            "cost": 0,
+                            "price": 0
+                            }
+                        ]
                     }
-                  ]
-                }
               ]"#,
             )
             .create_async()
@@ -1618,7 +1647,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.activity_id, 0);
+        assert_eq!(result.activity_id, 12_345_678_910);
     }
 
     #[tokio::test]
@@ -1663,6 +1692,6 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 1);
+        assert!(matches!(result, model::UserPreferences::Mutiple(_)));
     }
 }

@@ -1,4 +1,6 @@
 /// specifies Endpoints for Schwab API
+use urlencoding::encode;
+
 use super::parameter::Market;
 
 const SERVER_TRADER: &str = "https://api.schwabapi.com/trader/v1";
@@ -28,7 +30,8 @@ impl EndpointAccount {
         match self {
             EndpointAccount::AccountNumbers => "/accounts/accountNumbers".to_string(),
             EndpointAccount::Accounts => "/accounts".to_string(),
-            EndpointAccount::Account { account_number } => {
+            EndpointAccount::Account { ref account_number } => {
+                let account_number = encode(account_number);
                 format!("/accounts/{account_number}")
             }
         }
@@ -83,15 +86,20 @@ impl EndpointOrder {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointOrder::OrdersAccount { account_number } => {
+            EndpointOrder::OrdersAccount { ref account_number } => {
+                let account_number = encode(account_number);
                 format!("/accounts/{account_number}/orders")
             }
             EndpointOrder::Order {
-                account_number,
+                ref account_number,
                 order_id,
-            } => format!("/accounts/{account_number}/orders/{order_id}"),
+            } => {
+                let account_number = encode(account_number);
+                format!("/accounts/{account_number}/orders/{order_id}")
+            }
             EndpointOrder::Orders => "/orders".to_string(),
-            EndpointOrder::PreviewOrderAccount { account_number } => {
+            EndpointOrder::PreviewOrderAccount { ref account_number } => {
+                let account_number = encode(account_number);
                 format!("/accounts/{account_number}/previewOrder")
             }
         }
@@ -125,13 +133,15 @@ impl EndpointTransaction {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointTransaction::TransactionsAccount { account_number } => {
+            EndpointTransaction::TransactionsAccount { ref account_number } => {
+                let account_number = encode(account_number);
                 format!("/accounts/{account_number}/transactions")
             }
             EndpointTransaction::Transaction {
-                account_number,
+                ref account_number,
                 transaction_id,
             } => {
+                let account_number = encode(account_number);
                 format!("/accounts/{account_number}/transactions/{transaction_id}")
             }
         }
@@ -183,7 +193,8 @@ impl EndpointQuote {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointQuote::Quotes => "/quotes".to_string(),
-            EndpointQuote::Quote { symbol_id } => {
+            EndpointQuote::Quote { ref symbol_id } => {
+                let symbol_id = encode(symbol_id);
                 format!("/{symbol_id}/quotes")
             }
         }
@@ -273,7 +284,8 @@ impl EndpointMover {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointMover::Mover { symbol_id } => {
+            EndpointMover::Mover { ref symbol_id } => {
+                let symbol_id = encode(symbol_id);
                 format!("/movers/{symbol_id}")
             }
         }
@@ -306,6 +318,7 @@ impl EndpointMarketHour {
             EndpointMarketHour::Market { market_id } => {
                 let market_id = serde_json::to_value(market_id).expect("value");
                 let market_id = market_id.as_str().expect("value is a str");
+                let market_id = encode(market_id);
                 format!("/markets/{market_id}")
             }
         }
@@ -322,7 +335,7 @@ pub(crate) enum EndpointInstrument {
     // GET
     // /instruments
     // Get Instruments by symbols and projections.
-    Instrutments,
+    Instruments,
 
     // GET
     // /instruments/{cusip_id}
@@ -334,9 +347,10 @@ impl EndpointInstrument {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointInstrument::Instrutments => "/instrutments".to_string(),
-            EndpointInstrument::Instrutment { cusip_id } => {
-                format!("/instrutments/{cusip_id}")
+            EndpointInstrument::Instruments => "/instruments".to_string(),
+            EndpointInstrument::Instrutment { ref cusip_id } => {
+                let cusip_id = encode(cusip_id);
+                format!("/instruments/{cusip_id}")
             }
         }
     }
@@ -503,12 +517,12 @@ mod tests {
     #[test]
     fn test_endpoint_instrument() {
         assert_eq!(
-            "https://api.schwabapi.com/marketdata/v1/instrutments",
-            EndpointInstrument::Instrutments.url()
+            "https://api.schwabapi.com/marketdata/v1/instruments",
+            EndpointInstrument::Instruments.url()
         );
 
         assert_eq!(
-            "https://api.schwabapi.com/marketdata/v1/instrutments/123456",
+            "https://api.schwabapi.com/marketdata/v1/instruments/123456",
             EndpointInstrument::Instrutment {
                 cusip_id: "123456".to_string()
             }

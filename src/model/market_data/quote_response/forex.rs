@@ -9,7 +9,7 @@ pub struct ForexResponse {
     /// example: 1234567890
     ///
     /// SSID of instrument
-    pub ssid: i64,
+    pub ssid: Option<i64>,
 
     /// example: AAPL
     ///
@@ -97,7 +97,7 @@ pub struct QuoteForex {
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: i64,
+    pub net_percent_change: f64,
 
     /// example: 52.8
     ///
@@ -115,15 +115,15 @@ pub struct QuoteForex {
     /// Status of security
     pub security_status: String,
 
-    /// example: 0
+    /// example: 0.0
     ///
     /// Tick Price
-    pub tick: i64,
+    pub tick: f64,
 
-    /// example: 0
+    /// example: 0.0
     ///
     /// Tick Amount
-    pub tick_amount: i64,
+    pub tick_amount: f64,
 
     /// example: 20171188
     ///
@@ -160,15 +160,15 @@ pub struct ReferenceForex {
     pub is_tradable: bool,
 
     /// Market marker
-    pub market_maker: String,
+    pub market_maker: Option<String>,
 
     /// example: null
     ///
     /// Product name
-    pub product: String,
+    pub product: Option<String>,
 
     /// Trading hours
-    pub trading_hours: String,
+    pub trading_hours: Option<String>,
 }
 
 #[cfg(test)]

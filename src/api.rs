@@ -144,14 +144,14 @@ impl<T: Tokener> API<T> {
     /// search by
     ///
     /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
-    pub async fn get_instrucments(
+    pub async fn get_instruments(
         &self,
         symbol: String,
         projection: Projection,
-    ) -> Result<market_data::GetInstrucmentsRequest, Error> {
+    ) -> Result<market_data::GetInstrumentsRequest, Error> {
         let access_token = self.tokener.get_access_token().await?;
 
-        Ok(market_data::GetInstrucmentsRequest::new(
+        Ok(market_data::GetInstrumentsRequest::new(
             &self.client,
             access_token,
             symbol,
@@ -162,13 +162,13 @@ impl<T: Tokener> API<T> {
     /// `cusip_id`
     ///
     /// cusip of a security
-    pub async fn get_instrucment(
+    pub async fn get_instrument(
         &self,
         cusip_id: String,
-    ) -> Result<market_data::GetInstrucmentRequest, Error> {
+    ) -> Result<market_data::GetInstrumentRequest, Error> {
         let access_token = self.tokener.get_access_token().await?;
 
-        Ok(market_data::GetInstrucmentRequest::new(
+        Ok(market_data::GetInstrumentRequest::new(
             &self.client,
             access_token,
             cusip_id,
@@ -450,7 +450,7 @@ mod tests {
             .join(".credentials")
             .join("Schwab-rust.json");
 
-        let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "tests/certs"));
+        let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
 
         let callback_url = "https://127.0.0.1:8080".to_string();
 
@@ -470,22 +470,27 @@ mod tests {
         let api = client().await;
         let req = api
             .get_quotes(vec![
-                // Bond
-                "^IRX".into(),
+                // Bond #unsupported
+                //"^IRX".into(),
                 // EQUITY
                 "AAPL".into(),
                 // FOREX
+                // https://www.schwab.com/forex/what-is-forex#bcn-table-206441
                 "EUR/USD".into(),
                 // FUTURE
-                "/ESZ21".into(),
-                // FUTURE_OPTION
-                "ESM24.CME".into(),
+                // https://help.streetsmart.schwab.com/edge/1.68/Content/Futures%20Symbols.htm
+                // '/' + 'root symbol' + 'month code' + 'year code'
+                "/ESZ24".into(),
+                // FUTURE_OPTION #unsupported
+                //"ESZ24.CME".into(),
                 // INDEX
                 "$SPX".into(),
                 // MUTUAL_FUND
                 "AAAIX".into(),
                 // OPTION
-                "AMZN  220617C03170000".into(),
+                // Symbol (max. 6 characters) + Yr (YY) + Mo (MM) + Day (DD) + Call or Put (C/P) + Strike Price (#####.###) listed with five digits before the decimal and three digits following the decimal
+                // "AAPL  240517C00100000".into(),
+                get_option_chain("AAPL".to_string()).await,
             ])
             .await
             .unwrap();
@@ -501,25 +506,30 @@ mod tests {
     async fn test_get_quote() {
         let symbols = vec![
             // Bond
-            "^IRX".to_string(),
+            // "^IRX".to_string(),
             // EQUITY
             "AAPL".to_string(),
-            // FOREX
-            "EUR/USD".to_string(),
-            // FUTURE
-            "/ESZ21".to_string(),
-            // FUTURE_OPTION
-            "ESM24.CME".to_string(),
+            // FOREX #unsupported
+            //"EUR/USD".to_string(),
+            // FUTURE #unsupported
+            // https://help.streetsmart.schwab.com/edge/1.68/Content/Futures%20Symbols.htm
+            // '/' + 'root symbol' + 'month code' + 'year code'
+            //"/ESZ24".to_string(),
+            // FUTURE_OPTION #unsupported
+            //"ESZ24.CME".to_string(),
             // INDEX
             "$SPX".to_string(),
             // MUTUAL_FUND
             "AAAIX".to_string(),
             // OPTION
-            "AMZN  220617C03170000".to_string(),
+            // Symbol (max. 6 characters) + Yr (YY) + Mo (MM) + Day (DD) + Call or Put (C/P) + Strike Price (#####.###) listed with five digits before the decimal and three digits following the decimal
+            // "AAPL  240517C00100000".into(),
+            get_option_chain("AAPL".to_string()).await,
         ];
 
+        let api = client().await;
         for symbol in symbols {
-            let api = client().await;
+            dbg!(&symbol);
             let req = api.get_quote(symbol).await.unwrap();
             let rsp = req.send().await.unwrap();
             dbg!(rsp);
@@ -535,10 +545,22 @@ mod tests {
         let api = client().await;
         let mut req = api.get_option_chains("AAPL".into()).await.unwrap();
         req.days_to_expiration(3)
-            .exp_month(parameter::Month::Apr)
-            .contract_type(parameter::ContractType::Put);
+            .exp_month(parameter::Month::All)
+            .contract_type(parameter::ContractType::All);
         let rsp = req.send().await.unwrap();
         dbg!(rsp);
+    }
+
+    async fn get_option_chain(symbol: String) -> String {
+        let api = client().await;
+        let req = api.get_option_chains(symbol).await.unwrap();
+        let rsp = req.send().await.unwrap();
+        if let Some(v) = rsp.call_exp_date_map.into_values().next() {
+            if let Some(mut v) = v.into_values().next() {
+                return v.pop().expect("must exist").symbol;
+            }
+        }
+        unreachable!()
     }
 
     #[cfg_attr(
@@ -612,10 +634,10 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
-    async fn test_get_instrucments() {
+    async fn test_get_instruments() {
         let api = client().await;
         let req = api
-            .get_instrucments("VTI".into(), Projection::SymbolSearch)
+            .get_instruments("VTI".into(), Projection::SymbolSearch)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
@@ -627,9 +649,9 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
-    async fn test_get_instrucment() {
+    async fn test_get_instrument() {
         let api = client().await;
-        let req = api.get_instrucment("037833100".into()).await.unwrap();
+        let req = api.get_instrument("922908769".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
         dbg!(rsp);
     }
@@ -650,7 +672,7 @@ mod tests {
         let api = client().await;
         let req = api.get_account_numbers().await.unwrap();
         let rsp = req.send().await.unwrap();
-        rsp[0].account_number.clone()
+        rsp[0].hash_value.clone()
     }
 
     #[cfg_attr(
@@ -687,13 +709,13 @@ mod tests {
         let req = api
             .get_account_orders(
                 account_number().await,
-                chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2024, 6, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                chrono::NaiveDate::from_ymd_opt(2016, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2025, 5, 20)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
@@ -706,8 +728,32 @@ mod tests {
         dbg!(rsp);
     }
 
+    async fn get_account_orders() -> i64 {
+        let api = client().await;
+        let req = api
+            .get_account_orders(
+                account_number().await,
+                chrono::NaiveDate::from_ymd_opt(2024, 6, 1)
+                    .unwrap()
+                    .and_hms_milli_opt(0, 0, 1, 444)
+                    .unwrap()
+                    .and_local_timezone(chrono::Utc)
+                    .unwrap(),
+                chrono::NaiveDate::from_ymd_opt(2025, 5, 20)
+                    .unwrap()
+                    .and_hms_milli_opt(0, 0, 1, 444)
+                    .unwrap()
+                    .and_local_timezone(chrono::Utc)
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        rsp[0].order_id
+    }
+
     #[cfg_attr(
-        not(feature = "test_online"),
+        not(all(feature = "test_online", feature = "danger")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
@@ -728,7 +774,7 @@ mod tests {
     async fn test_get_account_order() {
         let api = client().await;
         let req = api
-            .get_account_order(account_number().await, 0)
+            .get_account_order(account_number().await, get_account_orders().await)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
@@ -736,11 +782,12 @@ mod tests {
     }
 
     #[cfg_attr(
-        not(feature = "test_online"),
+        not(all(feature = "test_online", feature = "danger")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
     async fn test_delete_account_order() {
+        todo!();
         let api = client().await;
         let req = api
             .delete_account_order(account_number().await, 0)
@@ -750,11 +797,12 @@ mod tests {
     }
 
     #[cfg_attr(
-        not(feature = "test_online"),
+        not(all(feature = "test_online", feature = "danger")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
     async fn test_put_account_order() {
+        todo!();
         let api = client().await;
         let req = api
             .put_account_order(account_number().await, 0, model::OrderRequest::default())
@@ -772,13 +820,13 @@ mod tests {
         let api = client().await;
         let req = api
             .get_accounts_orders(
-                chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2024, 6, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                chrono::NaiveDate::from_ymd_opt(2016, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2025, 5, 20)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
@@ -792,11 +840,12 @@ mod tests {
     }
 
     #[cfg_attr(
-        not(feature = "test_online"),
+        not(all(feature = "test_online", feature = "danger")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
     async fn test_post_accounts_preview_order() {
+        todo!();
         let api = client().await;
         let req = api
             .post_accounts_preview_order(account_number().await, model::PreviewOrder::default())
@@ -812,17 +861,18 @@ mod tests {
     )]
     #[tokio::test]
     async fn test_get_account_transactions() {
+        // # duplicate field `assetType`
         let api = client().await;
         let req = api
             .get_account_transactions(
                 account_number().await,
-                chrono::NaiveDate::from_ymd_opt(2015, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2023, 5, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                chrono::NaiveDate::from_ymd_opt(2016, 1, 1)
+                chrono::NaiveDate::from_ymd_opt(2024, 5, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
@@ -836,15 +886,44 @@ mod tests {
         dbg!(rsp);
     }
 
+    async fn get_account_transactions() -> i64 {
+        // # duplicate field `assetType`
+
+        let api = client().await;
+        let req = api
+            .get_account_transactions(
+                account_number().await,
+                chrono::NaiveDate::from_ymd_opt(2023, 5, 1)
+                    .unwrap()
+                    .and_hms_milli_opt(0, 0, 1, 444)
+                    .unwrap()
+                    .and_local_timezone(chrono::Utc)
+                    .unwrap(),
+                chrono::NaiveDate::from_ymd_opt(2024, 5, 1)
+                    .unwrap()
+                    .and_hms_milli_opt(0, 0, 1, 444)
+                    .unwrap()
+                    .and_local_timezone(chrono::Utc)
+                    .unwrap(),
+                TransactionType::Trade,
+            )
+            .await
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        rsp[0].activity_id
+    }
+
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
     async fn test_get_account_transaction() {
+        // # duplicate field `assetType`
+
         let api = client().await;
         let req = api
-            .get_account_transaction(account_number().await, 0)
+            .get_account_transaction(account_number().await, get_account_transactions().await)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();

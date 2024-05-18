@@ -8,8 +8,18 @@ pub mod option;
 pub mod quote_error;
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::api::parameter::QuoteField;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct QuoteResponseMap {
+    #[serde(flatten)]
+    pub(crate) responses: HashMap<String, QuoteResponse>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) errors: Option<quote_error::QuoteError>,
+}
 
 /// a (symbol, `QuoteResponse`) map. `SCHWis` an example key
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -45,7 +55,7 @@ pub struct QuoteRequest {
     ///List of Schwab securityid[SSID], max of 500 of symbols+cusip+ssids
     ssids: Vec<i64>,
 
-    /// example: List [ "MRAD", "EATOF", "EBIZ", "AAPL", "BAC", "AAAHX", "AAAIX", "$DJI", "$SPX", "MVEN", "SOBS", "TOITF", "CNSWF", "AMZN 230317C01360000", "DJX 231215C00290000", "/ESH23", "./ADUF23C0.55", "AUD/CAD" ]
+    /// example: List [ `MRAD`, `EATOF`, `EBIZ`, `AAPL`, `BAC`, `AAAHX`, `AAAIX`, `$DJI`, `$SPX`, `MVEN`, `SOBS`, `TOITF`, `CNSWF`, `AMZN 230317C01360000`, `DJX 231215C00290000`, `/ESH23`, `./ADUF23C0.55`, `AUD/CAD` ]
     ///
     /// List of symbols, max of 500 of symbols+cusip+ssids
     symbols: Vec<String>,
@@ -75,6 +85,18 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<HashMap<String, QuoteResponse>>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/QuoteResponse_real.json"
+        ));
+
+        let val = serde_json::from_str::<QuoteResponseMap>(json);
         println!("{val:?}");
         assert!(val.is_ok());
     }

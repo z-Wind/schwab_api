@@ -40,4 +40,16 @@ mod tests {
         println!("{val:?}");
         assert!(val.is_ok());
     }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/ExpirationChain_real.json"
+        ));
+
+        let val = serde_json::from_str::<ExpirationChain>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
 }

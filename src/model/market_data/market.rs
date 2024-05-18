@@ -12,9 +12,9 @@ pub struct Hours {
     pub exchange: Option<String>,
     pub category: Option<String>,
     pub product: String,
-    pub product_name: String,
+    pub product_name: Option<String>,
     pub is_open: bool,
-    pub session_hours: HashMap<String, Vec<Interval>>,
+    pub session_hours: Option<HashMap<String, Vec<Interval>>>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -52,6 +52,18 @@ mod tests {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Markets.json"
+        ));
+
+        let val = serde_json::from_str::<Markets>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/Markets_real.json"
         ));
 
         let val = serde_json::from_str::<Markets>(json);

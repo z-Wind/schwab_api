@@ -308,7 +308,7 @@ pub struct ReferenceOption {
     pub underlying: String,
 
     // not in schama
-    pub uv_expiration_type: String,
+    pub uv_expiration_type: Option<String>,
 }
 
 /// Indicates call or put

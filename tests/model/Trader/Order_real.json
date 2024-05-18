@@ -1,0 +1,36 @@
+{
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderType": "LIMIT",
+    "complexOrderStrategyType": "NONE",
+    "quantity": 1.0,
+    "filledQuantity": 0.0,
+    "remainingQuantity": 1.0,
+    "requestedDestination": "AUTO",
+    "destinationLinkName": "AutoRoute",
+    "price": 30.0,
+    "orderLegCollection": [
+        {
+            "orderLegType": "EQUITY",
+            "legId": 1,
+            "instrument": {
+                "assetType": "COLLECTIVE_INVESTMENT",
+                "cusip": "922908769",
+                "symbol": "VTI",
+                "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                "instrumentId": 5215623,
+                "type": "EXCHANGE_TRADED_FUND"
+            },
+            "instruction": "BUY",
+            "positionEffect": "OPENING",
+            "quantity": 1.0
+        }
+    ],
+    "orderStrategyType": "SINGLE",
+    "orderId": 1234567890123,
+    "cancelable": true,
+    "editable": true,
+    "status": "PENDING_ACTIVATION",
+    "enteredTime": "2024-05-18T05:38:44+0000",
+    "accountNumber": 12345678
+}

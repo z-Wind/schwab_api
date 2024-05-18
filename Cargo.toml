@@ -38,6 +38,7 @@ axum-server = { version = "0.6", features = ["tls-rustls"] }
 thiserror = "1.0"
 open = "5"
 async-channel = "2.2"
+urlencoding = "2.1"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
@@ -47,3 +48,4 @@ pretty_assertions = "1.4"
 
 [features]
 test_online = []
+danger = []

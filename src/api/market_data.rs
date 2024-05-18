@@ -95,15 +95,26 @@ impl GetQuotesRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("QuoteResponse_real.json", &json).expect("Unable to write file");
+        // let item: HashMap<String, model::QuoteResponse> = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
             return Err(Error::ErrorResponse(error_response));
         }
 
-        rsp.json::<HashMap<String, model::QuoteResponse>>()
-            .await
-            .map_err(std::convert::Into::into)
+        let map = rsp.json::<model::QuoteResponseMap>().await?;
+
+        if let Some(e) = map.errors {
+            return Err(Error::QuoteError(e));
+        }
+
+        Ok(map.responses)
     }
 }
 
@@ -178,14 +189,26 @@ impl GetQuoteRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        //let json = rsp.text().await.unwrap();
+        //dbg!(&json);
+        //let item: HashMap<String, model::QuoteResponse> = serde_json::from_str(&json).unwrap();
+        //println!("{:#?}", item);
+        //panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
             return Err(Error::ErrorResponse(error_response));
         }
 
-        let mut map = rsp.json::<HashMap<String, model::QuoteResponse>>().await?;
-        Ok(map.remove(&symbol).expect("must exist"))
+        let mut map = rsp.json::<model::QuoteResponseMap>().await?;
+
+        if let Some(e) = map.errors {
+            return Err(Error::QuoteError(e));
+        }
+
+        let val = map.responses.remove(&symbol).expect("must exist");
+        Ok(val)
     }
 }
 
@@ -207,7 +230,7 @@ pub struct GetOptionChainsRequest {
     /// Underlying quotes to be included
     include_underlying_quote: Option<bool>,
 
-    /// OptionChain strategy.
+    /// `OptionChain` strategy.
     ///
     /// Default is `SINGLE`.
     ///
@@ -475,6 +498,13 @@ impl GetOptionChainsRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("OptionChain_real.json", &json).expect("Unable to write file");
+        // let item: model::OptionChain = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -516,6 +546,13 @@ impl GetOptionExpirationChainRequest {
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("ExpirationChain_real.json", &json).expect("Unable to write file");
+        // let item: model::ExpirationChain = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -742,6 +779,13 @@ impl GetPriceHistoryRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("CandleList_real.json", &json).expect("Unable to write file");
+        // let item: model::CandleList = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -839,6 +883,13 @@ impl GetMoversRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Mover_real.json", &json).expect("Unable to write file");
+        // let item: model::Mover = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -914,6 +965,13 @@ impl GetMarketsRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Markets_real.json", &json).expect("Unable to write file");
+        // let item: model::Markets = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -983,6 +1041,13 @@ impl GetMarketRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Markets_real.json", &json).expect("Unable to write file");
+        // let item: model::Markets = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -997,7 +1062,7 @@ impl GetMarketRequest {
 
 /// Get Instruments by symbols and projections.
 #[derive(Debug)]
-pub struct GetInstrucmentsRequest {
+pub struct GetInstrumentsRequest {
     req: RequestBuilder,
 
     symbol: String,
@@ -1008,9 +1073,9 @@ pub struct GetInstrucmentsRequest {
     projection: Projection,
 }
 
-impl GetInstrucmentsRequest {
+impl GetInstrumentsRequest {
     fn endpoint() -> endpoints::EndpointInstrument {
-        endpoints::EndpointInstrument::Instrutments
+        endpoints::EndpointInstrument::Instruments
     }
 
     pub(crate) fn new(
@@ -1041,6 +1106,13 @@ impl GetInstrucmentsRequest {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Instruments_real.json", &json).expect("Unable to write file");
+        // let item: model::Instruments = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
@@ -1055,7 +1127,7 @@ impl GetInstrucmentsRequest {
 
 /// Get Instrument by specific cusip
 #[derive(Debug)]
-pub struct GetInstrucmentRequest {
+pub struct GetInstrumentRequest {
     req: RequestBuilder,
 
     #[allow(dead_code)]
@@ -1063,7 +1135,7 @@ pub struct GetInstrucmentRequest {
     cusip_id: String,
 }
 
-impl GetInstrucmentRequest {
+impl GetInstrumentRequest {
     fn endpoint(cusip_id: String) -> endpoints::EndpointInstrument {
         endpoints::EndpointInstrument::Instrutment { cusip_id }
     }
@@ -1083,9 +1155,19 @@ impl GetInstrucmentRequest {
         self.req
     }
 
-    pub async fn send(self) -> Result<model::Instrument, Error> {
+    /// # Panics
+    ///
+    /// Will panic if no Instrument
+    pub async fn send(self) -> Result<model::InstrumentResponse, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Instrument_real.json", &json).expect("Unable to write file");
+        // let item: model::Instruments = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -1093,9 +1175,12 @@ impl GetInstrucmentRequest {
             return Err(Error::ErrorResponse(error_response));
         }
 
-        rsp.json::<model::Instrument>()
+        let mut data = rsp
+            .json::<model::Instruments>()
             .await
-            .map_err(std::convert::Into::into)
+            .map_err(std::convert::Into::<Error>::into)?;
+
+        Ok(data.instruments.pop().expect("must exist"))
     }
 }
 
@@ -1170,6 +1255,68 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_get_quotes_request_real() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbols = vec!["symbol1".to_string(), "symbol2".to_string()];
+        let fields = vec![
+            QuoteField::Reference,
+            QuoteField::Regular,
+            QuoteField::Extra("Extra".to_string()),
+        ];
+        let indicative = true;
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/quotes")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbols".into(), symbols.join(",")),
+                Matcher::UrlEncoded("fields".into(), "reference,regular,Extra".into()),
+                Matcher::UrlEncoded("indicative".into(), indicative.to_string()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/QuoteResponse_real.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!(
+            "{url}{}",
+            GetQuotesRequest::endpoint().url_endpoint()
+        ));
+
+        let mut req = GetQuotesRequest::new_with(req, symbols.clone());
+
+        // check initial value
+        assert_eq!(req.symbols, symbols);
+        assert_eq!(req.fields, None);
+        assert_eq!(req.indicative, None);
+
+        // check setter
+        req.fields(fields.clone());
+        assert_eq!(req.fields, Some(fields));
+        req.indicative(indicative);
+        assert_eq!(req.indicative, Some(indicative));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        result.unwrap();
+    }
+
+    #[tokio::test]
+    #[allow(clippy::too_many_lines)]
     async fn test_get_quote_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1193,66 +1340,77 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
-					  "AAPL": {
-						"assetMainType": "EQUITY",
-						"symbol": "AAPL",
-						"quoteType": "NBBO",
-						"realtime": true,
-						"ssid": 1973757747,
-						"reference": {
-						  "cusip": "037833100",
-						  "description": "Apple Inc",
-						  "exchange": "Q",
-						  "exchangeName": "NASDAQ"
-						},
-						"quote": {
-						  "52WeekHigh": 169,
-						  "52WeekLow": 1.1,
-						  "askMICId": "MEMX",
-						  "askPrice": 168.41,
-						  "askSize": 400,
-						  "askTime": 1644854683672,
-						  "bidMICId": "IEGX",
-						  "bidPrice": 168.4,
-						  "bidSize": 400,
-						  "bidTime": 1644854683633,
-						  "closePrice": 177.57,
-						  "highPrice": 169,
-						  "lastMICId": "XADF",
-						  "lastPrice": 168.405,
-						  "lastSize": 200,
-						  "lowPrice": 167.09,
-						  "mark": 168.405,
-						  "markChange": -9.164999999999992,
-						  "markPercentChange": -5.161344821760428,
-						  "netChange": -9.165,
-						  "netPercentChange": -5.161344821760428,
-						  "openPrice": 167.37,
-						  "quoteTime": 1644854683672,
-						  "securityStatus": "Normal",
-						  "totalVolume": 22361159,
-						  "tradeTime": 1644854683408,
-						  "volatility": 0.0347
-						},
-						"regular": {
-						  "regularMarketLastPrice": 168.405,
-						  "regularMarketLastSize": 2,
-						  "regularMarketNetChange": -9.165,
-						  "regularMarketPercentChange": -5.161344821760428,
-						  "regularMarketTradeTime": 1644854683408
-						},
-						"fundamental": {
-						  "avg10DaysVolume": 1,
-						  "avg1YearVolume": 0,
-						  "divAmount": 1.1,
-						  "divFreq": 0,
-						  "divPayAmount": 0,
-						  "divYield": 1.1,
-						  "eps": 0,
-						  "fundLeverageFactor": 1.1,
-						  "peRatio": 1.1
-						}
-					  }
+					"AAPL": {
+							"assetMainType": "EQUITY",
+							"assetSubType": "COE",
+							"quoteType": "NBBO",
+							"realtime": true,
+							"ssid": 1973757747,
+							"symbol": "AAPL",
+							"fundamental": {
+							  "avg10DaysVolume": 74260136,
+							  "avg1YearVolume": 58373005,
+							  "declarationDate": "2024-05-02T04:00:00Z",
+							  "divAmount": 1,
+							  "divExDate": "2024-05-10T04:00:00Z",
+							  "divFreq": 4,
+							  "divPayAmount": 0.25,
+							  "divPayDate": "2024-05-16T04:00:00Z",
+							  "divYield": 0.5463,
+							  "eps": 6.13,
+							  "fundLeverageFactor": 0,
+							  "lastEarningsDate": "2024-05-02T04:00:00Z",
+							  "nextDivExDate": "2024-08-12T04:00:00Z",
+							  "nextDivPayDate": "2024-08-16T04:00:00Z",
+							  "peRatio": 28.51406
+							},
+							"quote": {
+							  "52WeekHigh": 199.62,
+							  "52WeekLow": 164.075,
+							  "askMICId": "EDGX",
+							  "askPrice": 184.98,
+							  "askSize": 3,
+							  "askTime": 1715594417785,
+							  "bidMICId": "EDGX",
+							  "bidPrice": 184.91,
+							  "bidSize": 1,
+							  "bidTime": 1715594417785,
+							  "closePrice": 183.05,
+							  "highPrice": 0,
+							  "lastMICId": "ARCX",
+							  "lastPrice": 184.92,
+							  "lastSize": 9,
+							  "lowPrice": 0,
+							  "mark": 184.91,
+							  "markChange": 1.86,
+							  "markPercentChange": 1.01611582,
+							  "netChange": 1.87,
+							  "netPercentChange": 1.0215788,
+							  "openPrice": 0,
+							  "postMarketChange": 1.87,
+							  "postMarketPercentChange": 1.0215788,
+							  "quoteTime": 1715594417785,
+							  "securityStatus": "Normal",
+							  "totalVolume": 138478,
+							  "tradeTime": 1715594427508
+							},
+							"reference": {
+							  "cusip": "037833100",
+							  "description": "Apple Inc",
+							  "exchange": "Q",
+							  "exchangeName": "NASDAQ",
+							  "isHardToBorrow": false,
+							  "isShortable": true,
+							  "htbRate": 0
+							},
+							"regular": {
+							  "regularMarketLastPrice": 183.05,
+							  "regularMarketLastSize": 7250871,
+							  "regularMarketNetChange": 0,
+							  "regularMarketPercentChange": 0,
+							  "regularMarketTradeTime": 1715371200231
+							}
+						  }
 					}"#,
             )
             .create_async()
@@ -1279,7 +1437,69 @@ mod tests {
         let result = result.unwrap();
         match result {
             model::QuoteResponse::Equity(x) => assert_eq!(x.symbol, symbol),
-            _ => panic!("not Equity"),
+            x => panic!("{x:?} is not Equity"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_quote_request_error() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbol = "^IRX".to_string();
+        let fields = vec![QuoteField::Reference, QuoteField::Regular];
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/%5EIRX/quotes")
+            .match_query(Matcher::UrlEncoded(
+                "fields".into(),
+                "reference,regular".into(),
+            ))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+					"errors": {
+						"invalidSymbols": [
+						  "^IRX"
+						]
+					  }
+				}"#,
+            )
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!(
+            "{url}{}",
+            GetQuoteRequest::endpoint(symbol.clone()).url_endpoint()
+        ));
+        let mut req = GetQuoteRequest::new_with(req, symbol.clone());
+
+        // check initial value
+        assert_eq!(req.symbol, symbol);
+        assert_eq!(req.fields, None);
+
+        // check setter
+        req.fields(fields.clone());
+        assert_eq!(req.fields, Some(fields));
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap_err();
+        match result {
+            Error::QuoteError(model::QuoteError {
+                invalid_symbols: Some(e),
+                ..
+            }) => assert_eq!(e, vec!["^IRX"]),
+            x => panic!("{x:?} is not QuoteError"),
         }
     }
 
@@ -1342,7 +1562,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/MarketData/OptionChain.json"
+                "/tests/model/MarketData/OptionChain_real.json"
             ))
             .create_async()
             .await;
@@ -1411,7 +1631,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.status, "string");
+        assert_eq!(result.status, "SUCCESS");
     }
 
     #[tokio::test]
@@ -1438,7 +1658,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/tests/model/MarketData/ExpirationChain.json"
+                "/tests/model/MarketData/ExpirationChain_real.json"
             ))
             .create_async()
             .await;
@@ -1460,7 +1680,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.expiration_list.len(), 18);
+        assert_eq!(result.expiration_list.len(), 21);
     }
 
     #[tokio::test]
@@ -1582,7 +1802,7 @@ mod tests {
 
         // Create a mock
         let mock = server
-            .mock("GET", "/movers/$DJI")
+            .mock("GET", "/movers/%24DJI")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("sort".into(), "VOLUME".into()),
                 Matcher::UrlEncoded("frequency".into(), frequency.to_string()),
@@ -1758,7 +1978,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_instrucments_request() {
+    async fn test_get_instruments_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
 
@@ -1772,7 +1992,7 @@ mod tests {
 
         // Create a mock
         let mock = server
-            .mock("GET", "/instrutments")
+            .mock("GET", "/instruments")
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("symbol".into(), symbol.clone()),
                 Matcher::UrlEncoded("projection".into(), "symbol-search".into()),
@@ -1790,9 +2010,9 @@ mod tests {
         let client = Client::new();
         let req = client.get(format!(
             "{url}{}",
-            GetInstrucmentsRequest::endpoint().url_endpoint()
+            GetInstrumentsRequest::endpoint().url_endpoint()
         ));
-        let req = GetInstrucmentsRequest::new_with(req, symbol.clone(), projection);
+        let req = GetInstrumentsRequest::new_with(req, symbol.clone(), projection);
 
         // check initial value
         assert_eq!(req.symbol, symbol);
@@ -1809,7 +2029,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_instrucment_request() {
+    async fn test_get_instrument_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
 
@@ -1822,18 +2042,22 @@ mod tests {
 
         // Create a mock
         let mock = server
-            .mock("GET", "/instrutments/037833100")
+            .mock("GET", "/instruments/037833100")
             // .match_query(Matcher::Any)
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
-			  "cusip": "037833100",
-			  "symbol": "AAPL",
-			  "description": "Apple Inc",
-			  "exchange": "NASDAQ",
-			  "assetType": "EQUITY"
-			}"#,
+                    "instruments": [
+                      {
+                        "cusip": "922908769",
+                        "symbol": "VTI",
+                        "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                        "exchange": "NYSE Arca",
+                        "assetType": "ETF"
+                      }
+                    ]
+                  }"#,
             )
             .create_async()
             .await;
@@ -1841,9 +2065,9 @@ mod tests {
         let client = Client::new();
         let req = client.get(format!(
             "{url}{}",
-            GetInstrucmentRequest::endpoint(cusip_id.clone()).url_endpoint()
+            GetInstrumentRequest::endpoint(cusip_id.clone()).url_endpoint()
         ));
-        let req = GetInstrucmentRequest::new_with(req, cusip_id.clone());
+        let req = GetInstrumentRequest::new_with(req, cusip_id.clone());
 
         // check initial value
         assert_eq!(req.cusip_id, cusip_id);
@@ -1855,6 +2079,6 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.cusip, "037833100");
+        assert_eq!(result.cusip, "922908769");
     }
 }

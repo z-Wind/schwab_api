@@ -7,12 +7,33 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 pub struct QuoteError {
     /// list of invalid cusips from request
-    pub invalid_cusips: Vec<String>,
+    pub invalid_cusips: Option<Vec<String>>,
 
     /// list of invalid SSIDs from request
-    #[serde(rename = "invalidSSIDs")]
-    pub invalid_ssids: Vec<String>,
+    #[serde(
+        rename = "invalidSSIDs",
+    )]
+    pub invalid_ssids: Option<Vec<String>>,
 
     ///list of invalid symbols from request
-    pub invalid_symbols: Vec<String>,
+    pub invalid_symbols: Option<Vec<String>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_de() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/QuoteResponse/QuoteError.json"
+        ));
+
+        let val = serde_json::from_str::<HashMap<String, QuoteError>>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
 }

@@ -11,27 +11,27 @@ pub struct Order {
     pub session: Session,
     pub duration: Duration,
     pub order_type: OrderType,
-    pub cancel_time: chrono::DateTime<chrono::Utc>,
+    pub cancel_time: Option<chrono::DateTime<chrono::Utc>>,
     pub complex_order_strategy_type: ComplexOrderStrategyType,
     pub quantity: f64,
     pub filled_quantity: f64,
     pub remaining_quantity: f64,
     pub requested_destination: RequestedDestination,
     pub destination_link_name: String,
-    pub release_time: chrono::DateTime<chrono::Utc>,
-    pub stop_price: f64,
-    pub stop_price_link_basis: StopPriceLinkBasis,
-    pub stop_price_link_type: StopPriceLinkType,
-    pub stop_price_offset: f64,
-    pub stop_type: StopType,
-    pub price_link_basis: PriceLinkBasis,
-    pub price_link_type: PriceLinkType,
+    pub release_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub stop_price: Option<f64>,
+    pub stop_price_link_basis: Option<StopPriceLinkBasis>,
+    pub stop_price_link_type: Option<StopPriceLinkType>,
+    pub stop_price_offset: Option<f64>,
+    pub stop_type: Option<StopType>,
+    pub price_link_basis: Option<PriceLinkBasis>,
+    pub price_link_type: Option<PriceLinkType>,
     pub price: f64,
-    pub tax_lot_method: TaxLotMethod,
-    /// xml: OrderedMap { "name": "orderLegCollection", "wrapped": true }
+    pub tax_lot_method: Option<TaxLotMethod>,
+    /// xml: `OrderedMap` { "name": "orderLegCollection", "wrapped": true }
     pub order_leg_collection: Vec<OrderLegCollection>,
-    pub activation_price: f64,
-    pub special_instruction: SpecialInstruction,
+    pub activation_price: Option<f64>,
+    pub special_instruction: Option<SpecialInstruction>,
     pub order_strategy_type: OrderStrategyType,
     pub order_id: i64,
     /// default: false
@@ -40,16 +40,16 @@ pub struct Order {
     pub editable: bool,
     pub status: Status,
     pub entered_time: chrono::DateTime<chrono::Utc>,
-    pub close_time: chrono::DateTime<chrono::Utc>,
-    pub tag: String,
+    pub close_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub tag: Option<String>,
     pub account_number: i64,
-    /// xml: OrderedMap { "name": "orderActivity", "wrapped": true }
-    pub order_activity_collection: Vec<OrderActivity>,
-    /// xml: OrderedMap { "name": "replacingOrder", "wrapped": true }
-    pub replacing_order_collection: Vec<String>,
-    /// xml: OrderedMap { "name": "childOrder", "wrapped": true }
-    pub child_order_strategies: Vec<String>,
-    pub status_description: String,
+    /// xml: `OrderedMap` { "name": "orderActivity", "wrapped": true }
+    pub order_activity_collection: Option<Vec<OrderActivity>>,
+    /// xml: `OrderedMap` { "name": "replacingOrder", "wrapped": true }
+    pub replacing_order_collection: Option<Vec<String>>,
+    /// xml: `OrderedMap` { "name": "childOrder", "wrapped": true }
+    pub child_order_strategies: Option<Vec<String>>,
+    pub status_description: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -61,9 +61,9 @@ pub struct OrderLegCollection {
     pub instruction: Instruction,
     pub position_effect: PositionEffect,
     pub quantity: f64,
-    pub quantity_type: QuantityType,
-    pub div_cap_gains: DivCapGains,
-    pub to_symbol: String,
+    pub quantity_type: Option<QuantityType>,
+    pub div_cap_gains: Option<DivCapGains>,
+    pub to_symbol: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -73,7 +73,7 @@ pub struct OrderActivity {
     pub execution_type: ExecutionType,
     pub quantity: f64,
     pub order_remaining_quantity: f64,
-    /// xml: OrderedMap { "name": "executionLegs", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "executionLegs", "wrapped": true }
     pub execution_legs: Vec<ExecutionLeg>,
 }
 
@@ -364,7 +364,7 @@ mod tests {
     fn test_de_order() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Order.json"
+            "/tests/model/Trader/Order_real.json"
         ));
 
         let val = serde_json::from_str::<Order>(json);
@@ -376,7 +376,19 @@ mod tests {
     fn test_de_orders() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Orders.json"
+            "/tests/model/Trader/Orders_real.json"
+        ));
+
+        let val = serde_json::from_str::<Vec<Order>>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de_orders2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/Orders_real.json"
         ));
 
         let val = serde_json::from_str::<Vec<Order>>(json);

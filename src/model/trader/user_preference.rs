@@ -1,7 +1,12 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-pub type UserPreferences = Vec<UserPreference>;
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(untagged, rename_all = "camelCase")]
+pub enum UserPreferences {
+    One(UserPreference),
+    Mutiple(Vec<UserPreference>),
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -63,6 +68,18 @@ mod tests {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/UserPreferences.json"
+        ));
+
+        let val = serde_json::from_str::<UserPreferences>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/UserPreferences_real.json"
         ));
 
         let val = serde_json::from_str::<UserPreferences>(json);

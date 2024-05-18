@@ -10,20 +10,20 @@ pub type Root = Vec<Transaction>;
 pub struct Transaction {
     pub activity_id: i64,
     pub time: String,
-    pub user: UserDetails,
-    pub description: String,
+    pub user: Option<UserDetails>,
+    pub description: Option<String>,
     pub account_number: String,
     #[serde(rename = "type")]
     pub type_field: TransactionType,
     pub status: TransactionStatus,
     pub sub_account: TransactionSubAccount,
     pub trade_date: chrono::DateTime<chrono::Utc>,
-    pub settlement_date: chrono::DateTime<chrono::Utc>,
-    pub position_id: i64,
-    pub order_id: i64,
+    pub settlement_date: Option<chrono::DateTime<chrono::Utc>>,
+    pub position_id: Option<i64>,
+    pub order_id: Option<i64>,
     pub net_amount: f64,
-    pub activity_type: TransactionActivityType,
-    /// xml: OrderedMap { "name": "transferItems", "wrapped": true }
+    pub activity_type: Option<TransactionActivityType>,
+    /// xml: `OrderedMap` { "name": "transferItems", "wrapped": true }
     pub transfer_items: Vec<TransferItem>,
 }
 
@@ -47,13 +47,13 @@ pub struct TransferItem {
     pub instrument: TransactionInstrument,
     pub amount: f64,
     pub cost: f64,
-    pub price: f64,
-    pub fee_type: TransferItemFeeType,
-    pub position_effect: TransferItemPositionEffect,
+    pub price: Option<f64>,
+    pub fee_type: Option<TransferItemFeeType>,
+    pub position_effect: Option<TransferItemPositionEffect>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", untagged)]
+#[serde(tag = "assetType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionInstrument {
     TransactionCashEquivalent(TransactionCashEquivalent),
     CollectiveInvestment(CollectiveInvestment),
@@ -188,7 +188,7 @@ pub struct TransactionOption {
     pub transaction_base_instrument: TransactionBaseInstrument,
 
     pub expiration_date: chrono::DateTime<chrono::Utc>,
-    /// xml: OrderedMap { "name": "optionDeliverables", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<TransactionAPIOptionDeliverable>,
     pub option_premium_multiplier: i64,
     pub put_call: TransactionOptionPullCall,
@@ -224,12 +224,11 @@ pub struct Product {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionBaseInstrument {
-    pub asset_type: Option<TransactionAssetType>,
-    pub cusip: String,
+    pub cusip: Option<String>,
     pub symbol: String,
-    pub description: String,
+    pub description: Option<String>,
     pub instrument_id: i64,
-    pub net_change: f64,
+    pub net_change: Option<f64>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -481,7 +480,19 @@ mod tests {
     fn test_de() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Transactions.json"
+            "/tests/model/Trader/Transactions_real.json"
+        ));
+
+        let val = serde_json::from_str::<Vec<Transaction>>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/Transactions_real.json"
         ));
 
         let val = serde_json::from_str::<Vec<Transaction>>(json);

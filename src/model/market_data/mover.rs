@@ -12,15 +12,23 @@ pub struct Mover {
 #[serde(rename_all = "camelCase")]
 pub struct Screener {
     /// percent or value changed, by default its percent changed
-    pub change: f64,
+    pub change: Option<f64>,
     /// Name of security
     pub description: String,
-    pub direction: Direction,
+    pub direction: Option<Direction>,
     /// what was last quoted price
-    pub last: f64,
+    pub last: Option<f64>,
     /// schwab security symbol
     pub symbol: String,
     pub total_volume: i64,
+
+    // not in schema
+    pub volume: Option<i64>,
+    pub last_price: Option<f64>,
+    pub net_change: Option<f64>,
+    pub market_share: Option<f64>,
+    pub trades: Option<i64>,
+    pub net_percent_change: Option<f64>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -40,6 +48,18 @@ mod tests {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Mover.json"
+        ));
+
+        let val = serde_json::from_str::<Mover>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/Mover_real.json"
         ));
 
         let val = serde_json::from_str::<Mover>(json);

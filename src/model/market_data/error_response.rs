@@ -47,7 +47,7 @@ pub struct Error {
 pub struct ErrorSource {
     /// readOnly: true
     ///
-    /// example: List [ "/data/attributes/symbols", "/data/attributes/cusips", "/data/attributes/ssids" ]
+    /// example: List [ `/data/attributes/symbols`, `/data/attributes/cusips`, `/data/attributes/ssids` ]
     ///
     /// list of attributes which lead to this error message.
     pub pointer: Option<Vec<String>>,

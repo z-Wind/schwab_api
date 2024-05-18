@@ -33,7 +33,7 @@ pub struct EquityResponse {
     pub fundamental: Option<Fundamental>,
     pub quote: QuoteEquity,
     pub reference: ReferenceEquity,
-    pub regular: RegularMarket,
+    pub regular: Option<RegularMarket>,
 }
 
 /// Quote data for extended hours
@@ -155,7 +155,7 @@ pub struct Fundamental {
 
     /// nullable: true
     ///
-    /// FundStrategy "A" - Active "L" - Leveraged "P" - Passive "Q" - Quantitative "S" - Short
+    /// `FundStrategy` "A" - Active "L" - Leveraged "P" - Passive "Q" - Quantitative "S" - Short
     pub fund_strategy: Option<FundStrategy>,
 
     /// example: 2021-02-12T00:00:00Z
@@ -323,7 +323,7 @@ pub struct QuoteEquity {
     /// example: 0.0094
     ///
     /// Option Risk/Volatility Measurement
-    pub volatility: f64,
+    pub volatility: Option<f64>,
 }
 
 /// Reference data of Equity security
