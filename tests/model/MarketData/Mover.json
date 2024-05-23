@@ -1,28 +1,28 @@
 {
-  "screeners": [
-    {
-      "change": 10,
-      "description": "Dow jones",
-      "direction": "up",
-      "last": 100,
-      "symbol": "$DJI",
-      "totalVolume": 100
-    },
-    {
-      "change": 10,
-      "description": "Dow jones",
-      "direction": "up",
-      "last": 100,
-      "symbol": "$DJI",
-      "totalVolume": 100
-    },
-    {
-      "change": 10,
-      "description": "Dow jones",
-      "direction": "up",
-      "last": 100,
-      "symbol": "$DJI",
-      "totalVolume": 100
-    }
-  ]
+    "screeners": [
+        {
+            "change": 10,
+            "description": "Dow jones",
+            "direction": "up",
+            "last": 100,
+            "symbol": "$DJI",
+            "totalVolume": 100
+        },
+        {
+            "change": 10,
+            "description": "Dow jones",
+            "direction": "up",
+            "last": 100,
+            "symbol": "$DJI",
+            "totalVolume": 100
+        },
+        {
+            "change": 10,
+            "description": "Dow jones",
+            "direction": "up",
+            "last": 100,
+            "symbol": "$DJI",
+            "totalVolume": 100
+        }
+    ]
 }

@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CandleList {
     pub candles: Vec<Candle>,
@@ -17,7 +17,7 @@ pub struct CandleList {
 }
 
 #[serde_as]
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Candle {
     pub close: f64,
@@ -48,7 +48,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/CandleList_real.json"
@@ -60,7 +60,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de3() {
+    fn test_de_real2() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/CandleList_real2.json"

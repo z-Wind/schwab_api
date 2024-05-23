@@ -1,6 +1,6 @@
 [
-  {
-    "accountNumber": "string",
-    "hashValue": "string"
-  }
+    {
+        "accountNumber": "string",
+        "hashValue": "string"
+    }
 ]

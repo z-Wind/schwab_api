@@ -1,136 +1,136 @@
 {
-  "orderId": 0,
-  "orderStrategy": {
-    "accountNumber": "string",
-    "advancedOrderType": "NONE",
-    "closeTime": "2024-04-16T00:52:07.854Z",
-    "enteredTime": "2024-04-16T00:52:07.854Z",
-    "orderBalance": {
-      "orderValue": 0,
-      "projectedAvailableFund": 0,
-      "projectedBuyingPower": 0,
-      "projectedCommission": 0
-    },
-    "orderStrategyType": "SINGLE",
-    "orderVersion": 0,
-    "session": "NORMAL",
-    "status": "AWAITING_PARENT_ORDER",
-    "allOrNone": true,
-    "discretionary": true,
-    "duration": "DAY",
-    "filledQuantity": 0,
-    "orderType": "MARKET",
-    "orderValue": 0,
-    "price": 0,
-    "quantity": 0,
-    "remainingQuantity": 0,
-    "sellNonMarginableFirst": true,
-    "settlementInstruction": "REGULAR",
-    "strategy": "NONE",
-    "amountIndicator": "DOLLARS",
-    "orderLegs": [
-      {
-        "askPrice": 0,
-        "bidPrice": 0,
-        "lastPrice": 0,
-        "markPrice": 0,
-        "projectedCommission": 0,
+    "orderId": 0,
+    "orderStrategy": {
+        "accountNumber": "string",
+        "advancedOrderType": "NONE",
+        "closeTime": "2024-04-16T00:52:07.854Z",
+        "enteredTime": "2024-04-16T00:52:07.854Z",
+        "orderBalance": {
+            "orderValue": 0,
+            "projectedAvailableFund": 0,
+            "projectedBuyingPower": 0,
+            "projectedCommission": 0
+        },
+        "orderStrategyType": "SINGLE",
+        "orderVersion": 0,
+        "session": "NORMAL",
+        "status": "AWAITING_PARENT_ORDER",
+        "allOrNone": true,
+        "discretionary": true,
+        "duration": "DAY",
+        "filledQuantity": 0,
+        "orderType": "MARKET",
+        "orderValue": 0,
+        "price": 0,
         "quantity": 0,
-        "finalSymbol": "string",
-        "legId": 0,
-        "assetType": "EQUITY",
-        "instruction": "BUY"
-      }
-    ]
-  },
-  "orderValidationResult": {
-    "alerts": [
-      {
-        "validationRuleName": "string",
-        "message": "string",
-        "activityMessage": "string",
-        "originalSeverity": "ACCEPT",
-        "overrideName": "string",
-        "overrideSeverity": "ACCEPT"
-      }
-    ],
-    "accepts": [
-      {
-        "validationRuleName": "string",
-        "message": "string",
-        "activityMessage": "string",
-        "originalSeverity": "ACCEPT",
-        "overrideName": "string",
-        "overrideSeverity": "ACCEPT"
-      }
-    ],
-    "rejects": [
-      {
-        "validationRuleName": "string",
-        "message": "string",
-        "activityMessage": "string",
-        "originalSeverity": "ACCEPT",
-        "overrideName": "string",
-        "overrideSeverity": "ACCEPT"
-      }
-    ],
-    "reviews": [
-      {
-        "validationRuleName": "string",
-        "message": "string",
-        "activityMessage": "string",
-        "originalSeverity": "ACCEPT",
-        "overrideName": "string",
-        "overrideSeverity": "ACCEPT"
-      }
-    ],
-    "warns": [
-      {
-        "validationRuleName": "string",
-        "message": "string",
-        "activityMessage": "string",
-        "originalSeverity": "ACCEPT",
-        "overrideName": "string",
-        "overrideSeverity": "ACCEPT"
-      }
-    ]
-  },
-  "commissionAndFee": {
-    "commission": {
-      "commissionLegs": [
-        {
-          "commissionValues": [
+        "remainingQuantity": 0,
+        "sellNonMarginableFirst": true,
+        "settlementInstruction": "REGULAR",
+        "strategy": "NONE",
+        "amountIndicator": "DOLLARS",
+        "orderLegs": [
             {
-              "value": 0,
-              "type": "COMMISSION"
+                "askPrice": 0,
+                "bidPrice": 0,
+                "lastPrice": 0,
+                "markPrice": 0,
+                "projectedCommission": 0,
+                "quantity": 0,
+                "finalSymbol": "string",
+                "legId": 0,
+                "assetType": "EQUITY",
+                "instruction": "BUY"
             }
-          ]
-        }
-      ]
+        ]
     },
-    "fee": {
-      "feeLegs": [
-        {
-          "feeValues": [
+    "orderValidationResult": {
+        "alerts": [
             {
-              "value": 0,
-              "type": "COMMISSION"
+                "validationRuleName": "string",
+                "message": "string",
+                "activityMessage": "string",
+                "originalSeverity": "ACCEPT",
+                "overrideName": "string",
+                "overrideSeverity": "ACCEPT"
             }
-          ]
-        }
-      ]
+        ],
+        "accepts": [
+            {
+                "validationRuleName": "string",
+                "message": "string",
+                "activityMessage": "string",
+                "originalSeverity": "ACCEPT",
+                "overrideName": "string",
+                "overrideSeverity": "ACCEPT"
+            }
+        ],
+        "rejects": [
+            {
+                "validationRuleName": "string",
+                "message": "string",
+                "activityMessage": "string",
+                "originalSeverity": "ACCEPT",
+                "overrideName": "string",
+                "overrideSeverity": "ACCEPT"
+            }
+        ],
+        "reviews": [
+            {
+                "validationRuleName": "string",
+                "message": "string",
+                "activityMessage": "string",
+                "originalSeverity": "ACCEPT",
+                "overrideName": "string",
+                "overrideSeverity": "ACCEPT"
+            }
+        ],
+        "warns": [
+            {
+                "validationRuleName": "string",
+                "message": "string",
+                "activityMessage": "string",
+                "originalSeverity": "ACCEPT",
+                "overrideName": "string",
+                "overrideSeverity": "ACCEPT"
+            }
+        ]
     },
-    "trueCommission": {
-      "commissionLegs": [
-        {
-          "commissionValues": [
-            {
-              "value": 0,
-              "type": "COMMISSION"
-            }
-          ]
+    "commissionAndFee": {
+        "commission": {
+            "commissionLegs": [
+                {
+                    "commissionValues": [
+                        {
+                            "value": 0,
+                            "type": "COMMISSION"
+                        }
+                    ]
+                }
+            ]
+        },
+        "fee": {
+            "feeLegs": [
+                {
+                    "feeValues": [
+                        {
+                            "value": 0,
+                            "type": "COMMISSION"
+                        }
+                    ]
+                }
+            ]
+        },
+        "trueCommission": {
+            "commissionLegs": [
+                {
+                    "commissionValues": [
+                        {
+                            "value": 0,
+                            "type": "COMMISSION"
+                        }
+                    ]
+                }
+            ]
         }
-      ]
     }
-  }
 }

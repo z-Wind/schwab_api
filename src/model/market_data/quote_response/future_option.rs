@@ -4,7 +4,7 @@ use serde::Serialize;
 use super::option::ContractType;
 
 /// Quote info of Future Option security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FutureOptionResponse {
     /// example: 1234567890
@@ -26,7 +26,7 @@ pub struct FutureOptionResponse {
 }
 
 /// Quote data of Option security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteFutureOption {
     /// example: XNYS
@@ -157,7 +157,7 @@ pub struct QuoteFutureOption {
 }
 
 /// Reference data of Future Option security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceFutureOption {
     /// Indicates call or put

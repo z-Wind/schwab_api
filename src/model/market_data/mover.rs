@@ -1,14 +1,14 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Mover {
     pub screeners: Vec<Screener>,
 }
 
 /// Security info of most moved with in an index
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Screener {
     /// percent or value changed, by default its percent changed
@@ -31,10 +31,9 @@ pub struct Screener {
     pub net_percent_change: Option<f64>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
-    #[default]
     Up,
     Down,
 }
@@ -56,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Mover_real.json"

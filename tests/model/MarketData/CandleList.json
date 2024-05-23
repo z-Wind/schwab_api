@@ -1,64 +1,64 @@
 {
-  "symbol": "AAPL",
-  "empty": false,
-  "previousClose": 174.56,
-  "previousCloseDate": 1639029600000,
-  "candles": [
-    {
-      "open": 175.01,
-      "high": 175.15,
-      "low": 175.01,
-      "close": 175.04,
-      "volume": 10719,
-      "datetime": 1639137600000
-    },
-    {
-      "open": 175.08,
-      "high": 175.09,
-      "low": 175.05,
-      "close": 175.05,
-      "volume": 500,
-      "datetime": 1639137660000
-    },
-    {
-      "open": 176.22,
-      "high": 176.27,
-      "low": 176.22,
-      "close": 176.25,
-      "volume": 3395,
-      "datetime": 1640307300000
-    },
-    {
-      "open": 176.26,
-      "high": 176.27,
-      "low": 176.26,
-      "close": 176.26,
-      "volume": 2174,
-      "datetime": 1640307360000
-    },
-    {
-      "open": 176.26,
-      "high": 176.31,
-      "low": 176.26,
-      "close": 176.3,
-      "volume": 15401,
-      "datetime": 1640307420000
-    },
-    {
-      "open": 176.3,
-      "high": 176.3,
-      "low": 176.3,
-      "close": 176.3,
-      "volume": 1700,
-      "datetime": 1640307480000
-    },
-    {
-      "open": 176.3,
-      "high": 176.5,
-      "low": 176.3,
-      "close": 176.32,
-      "volume": 5941,
-      "datetime": 1640307540000
-    }
-  ]
+    "symbol": "AAPL",
+    "empty": false,
+    "previousClose": 174.56,
+    "previousCloseDate": 1639029600000,
+    "candles": [
+        {
+            "open": 175.01,
+            "high": 175.15,
+            "low": 175.01,
+            "close": 175.04,
+            "volume": 10719,
+            "datetime": 1639137600000
+        },
+        {
+            "open": 175.08,
+            "high": 175.09,
+            "low": 175.05,
+            "close": 175.05,
+            "volume": 500,
+            "datetime": 1639137660000
+        },
+        {
+            "open": 176.22,
+            "high": 176.27,
+            "low": 176.22,
+            "close": 176.25,
+            "volume": 3395,
+            "datetime": 1640307300000
+        },
+        {
+            "open": 176.26,
+            "high": 176.27,
+            "low": 176.26,
+            "close": 176.26,
+            "volume": 2174,
+            "datetime": 1640307360000
+        },
+        {
+            "open": 176.26,
+            "high": 176.31,
+            "low": 176.26,
+            "close": 176.3,
+            "volume": 15401,
+            "datetime": 1640307420000
+        },
+        {
+            "open": 176.3,
+            "high": 176.3,
+            "low": 176.3,
+            "close": 176.3,
+            "volume": 1700,
+            "datetime": 1640307480000
+        },
+        {
+            "open": 176.3,
+            "high": 176.5,
+            "low": 176.3,
+            "close": 176.32,
+            "volume": 5941,
+            "datetime": 1640307540000
+        }
+    ]
 }

@@ -8,7 +8,7 @@ pub enum UserPreferences {
     Mutiple(Vec<UserPreference>),
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserPreference {
     pub accounts: Vec<UserPreferenceAccount>,
@@ -16,7 +16,7 @@ pub struct UserPreference {
     pub offers: Vec<Offer>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserPreferenceAccount {
     pub account_number: String,
@@ -31,7 +31,7 @@ pub struct UserPreferenceAccount {
     pub auto_position_effect: bool,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamerInfo {
     pub streamer_socket_url: String,
@@ -41,7 +41,7 @@ pub struct StreamerInfo {
     pub schwab_client_function_id: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     /// default: false
@@ -49,10 +49,9 @@ pub struct Offer {
     pub mkt_data_permission: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub enum UserPreferenceAccountColor {
-    #[default]
     Green,
     Blue,
     #[serde(untagged)]
@@ -76,7 +75,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/UserPreferences_real.json"

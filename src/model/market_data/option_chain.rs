@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use super::quote_response::option::ExpirationType;
 use super::quote_response::option::SettlementType;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionChain {
     pub symbol: String,
@@ -29,7 +29,7 @@ pub struct OptionChain {
     pub is_chain_truncated: Option<bool>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Underlying {
     pub ask: i64,
@@ -58,7 +58,7 @@ pub struct Underlying {
 }
 
 #[allow(clippy::struct_excessive_bools)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionContract {
     pub put_call: PutCall,
@@ -123,7 +123,7 @@ pub struct OptionContract {
     pub penny_pilot: Option<bool>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionDeliverable {
     pub symbol: String,
@@ -133,10 +133,9 @@ pub struct OptionDeliverable {
 }
 
 /// Available values : `SINGLE`, `ANALYTICAL`, `COVERED`, `VERTICAL`, `CALENDAR`, `STRANGLE`, `STRADDLE`, `BUTTERFLY`, `CONDOR`, `DIAGONAL`, `COLLAR`, `ROLL`
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Strategy {
-    #[default]
     Single,
     Analytical,
     Covered,
@@ -152,10 +151,9 @@ pub enum Strategy {
 }
 
 /// Available values : IND, ASE, NYS, NAS, NAP, PAC, OPR, BATS
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ExchangeName {
-    #[default]
     Ind,
     Ase,
     Nys,
@@ -167,10 +165,9 @@ pub enum ExchangeName {
 }
 
 /// Available values : `PUT`, `CALL`
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum PutCall {
-    #[default]
     Put,
     Call,
 }
@@ -183,7 +180,7 @@ mod tests {
     fn test_de() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/MarketData/OptionChain_real.json"
+            "/tests/model/MarketData/OptionChain.json"
         ));
 
         let val = serde_json::from_str::<OptionChain>(json);
@@ -192,7 +189,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/OptionChain_real.json"

@@ -3,9 +3,7 @@ use serde::Serialize;
 
 use super::accounts::AssetType;
 
-pub type Root = Vec<Transaction>;
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
     pub activity_id: i64,
@@ -27,7 +25,7 @@ pub struct Transaction {
     pub transfer_items: Vec<TransferItem>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserDetails {
     pub cd_domain_id: String,
@@ -41,7 +39,7 @@ pub struct UserDetails {
     pub broker_rep_code: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferItem {
     pub instrument: TransactionInstrument,
@@ -68,13 +66,7 @@ pub enum TransactionInstrument {
     Product(Product),
 }
 
-impl Default for TransactionInstrument {
-    fn default() -> Self {
-        Self::TransactionEquity(TransactionEquity::default())
-    }
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionCashEquivalent {
     #[serde(flatten)]
@@ -84,7 +76,7 @@ pub struct TransactionCashEquivalent {
     pub type_field: TransactionCashEquivalentType,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CollectiveInvestment {
     #[serde(flatten)]
@@ -94,14 +86,14 @@ pub struct CollectiveInvestment {
     pub type_field: CollectiveInvestmentType,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Currency {
     #[serde(flatten)]
     pub transaction_base_instrument: TransactionBaseInstrument,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionEquity {
     #[serde(flatten)]
@@ -111,7 +103,7 @@ pub struct TransactionEquity {
     pub type_field: TransactionEquityType,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionFixedIncome {
     #[serde(flatten)]
@@ -125,7 +117,7 @@ pub struct TransactionFixedIncome {
     pub variable_rate: f64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Forex {
     #[serde(flatten)]
@@ -137,7 +129,7 @@ pub struct Forex {
     pub counter_currency: Currency,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Future {
     /// default: false
@@ -153,7 +145,7 @@ pub struct Future {
     pub transaction_instrument: Box<TransactionInstrument>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Index {
     /// default: false
@@ -165,7 +157,7 @@ pub struct Index {
     pub transaction_instrument: Box<TransactionInstrument>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionMutualFund {
     #[serde(flatten)]
@@ -181,7 +173,7 @@ pub struct TransactionMutualFund {
     pub redemption_cutoff_time: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionOption {
     #[serde(flatten)]
@@ -200,7 +192,7 @@ pub struct TransactionOption {
     pub deliverable: Box<TransactionInstrument>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionAPIOptionDeliverable {
     pub root_symbol: String,
@@ -211,7 +203,7 @@ pub struct TransactionAPIOptionDeliverable {
     pub asset_type: AssetType,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {
     #[serde(flatten)]
@@ -221,7 +213,7 @@ pub struct Product {
     pub type_field: ProductType,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionBaseInstrument {
     pub cusip: Option<String>,
@@ -231,34 +223,18 @@ pub struct TransactionBaseInstrument {
     pub net_change: Option<f64>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum TransactionAssetType {
-    #[default]
-    Equity,
-    Option,
-    Index,
-    MutualFund,
-    CashEquivalent,
-    FixedIncome,
-    Currency,
-    CollectiveInvestment,
-}
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionCashEquivalentType {
-    #[default]
     SweepVehicle,
     Savings,
     MoneyMarketFund,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CollectiveInvestmentType {
-    #[default]
     UnitInvestmentTrust,
     ExchangeTradedFund,
     ClosedEndFund,
@@ -266,10 +242,9 @@ pub enum CollectiveInvestmentType {
     Units,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionEquityType {
-    #[default]
     CommonStock,
     PreferredStock,
     DepositoryReceipt,
@@ -285,10 +260,9 @@ pub enum TransactionEquityType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionFixedIncomeType {
-    #[default]
     BondUnit,
     CertificateOfDeposit,
     ConvertibleBond,
@@ -310,36 +284,32 @@ pub enum TransactionFixedIncomeType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ForexType {
-    #[default]
     Standard,
     Nbbo,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FutureType {
-    #[default]
     Standard,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum IndexType {
-    #[default]
     BroadBased,
     NarrowBased,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionMutualFundType {
-    #[default]
     NotApplicable,
     OpenEndNonTaxable,
     OpenEndTaxable,
@@ -348,37 +318,33 @@ pub enum TransactionMutualFundType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionOptionPullCall {
-    #[default]
     Put,
     Call,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProductType {
-    #[default]
     Tbd,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionOptionType {
-    #[default]
     Vanilla,
     Binary,
     Barrier,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionType {
-    #[default]
     Trade,
     ReceiveAndDeliver,
     DividendOrInterest,
@@ -396,20 +362,18 @@ pub enum TransactionType {
     SmaAdjustment,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionStatus {
-    #[default]
     Valid,
     Invalid,
     Pending,
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionSubAccount {
-    #[default]
     Cash,
     Margin,
     Short,
@@ -418,10 +382,9 @@ pub enum TransactionSubAccount {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionActivityType {
-    #[default]
     ActivityCorrection,
     Execution,
     OrderAction,
@@ -429,10 +392,9 @@ pub enum TransactionActivityType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum UserDetailsType {
-    #[default]
     AdvisorUser,
     BrokerUser,
     ClientUser,
@@ -440,10 +402,9 @@ pub enum UserDetailsType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransferItemFeeType {
-    #[default]
     Commission,
     SecFee,
     StrFee,
@@ -462,10 +423,9 @@ pub enum TransferItemFeeType {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransferItemPositionEffect {
-    #[default]
     Opening,
     Closing,
     Automatic,
@@ -489,7 +449,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Transactions_real.json"

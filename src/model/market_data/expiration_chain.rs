@@ -4,14 +4,15 @@ use serde::Serialize;
 use super::quote_response::option::ExpirationType;
 use super::quote_response::option::SettlementType;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpirationChain {
     pub expiration_list: Vec<Expiration>,
 }
 
 /// expiration type
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Expiration {
     pub days_to_expiration: i64,
@@ -42,7 +43,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/ExpirationChain_real.json"

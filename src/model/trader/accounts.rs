@@ -3,7 +3,7 @@ use serde::Serialize;
 
 pub type Accounts = Vec<Account>;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
     pub securities_account: SecuritiesAccount,
@@ -16,13 +16,7 @@ pub enum SecuritiesAccount {
     Cash(Box<CashAccount>),
 }
 
-impl Default for SecuritiesAccount {
-    fn default() -> Self {
-        Self::Cash(Box::default())
-    }
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SecuritiesAccountBase {
     pub account_number: String,
@@ -36,7 +30,7 @@ pub struct SecuritiesAccountBase {
     pub positions: Option<Vec<Position>>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginAccount {
     #[serde(flatten)]
@@ -47,7 +41,7 @@ pub struct MarginAccount {
     pub projected_balances: Option<MarginBalance>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginInitialBalance {
     pub accrued_interest: f64,
@@ -85,7 +79,8 @@ pub struct MarginInitialBalance {
     pub account_value: f64,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginBalance {
     pub available_funds: f64,
@@ -109,7 +104,7 @@ pub struct MarginBalance {
     pub option_buying_power: f64,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CashAccount {
     #[serde(flatten)]
@@ -120,7 +115,7 @@ pub struct CashAccount {
     pub projected_balances: Option<CashBalance>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CashInitialBalance {
     pub accrued_interest: f64,
@@ -143,7 +138,8 @@ pub struct CashInitialBalance {
     pub account_value: f64,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CashBalance {
     pub cash_available_for_trading: f64,
@@ -170,7 +166,7 @@ pub struct CashBalance {
     pub short_option_market_value: Option<f64>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     pub short_quantity: f64,
@@ -306,26 +302,12 @@ pub struct AccountsBaseInstrument {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum AccountsInstrumentAssetType {
-    #[default]
-    Equity,
-    Option,
-    Index,
-    MutualFund,
-    CashEquivalent,
-    FixedIncome,
-    Currency,
-    CollectiveInvestment,
-}
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum APICurrencyType {
     #[default]
-    USD,
-    CAD,
-    EUR,
-    JPY,
+    Usd,
+    Cad,
+    Eur,
+    Jpy,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

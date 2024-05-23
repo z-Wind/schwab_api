@@ -17,6 +17,7 @@ pub struct PreviewOrder {
     pub commission_and_fee: CommissionAndFee,
 }
 
+#[allow(clippy::struct_field_names)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderStrategy {
@@ -201,18 +202,30 @@ pub enum APIOrderStatus {
     Unknown,
 }
 
+/// Instructions for opening and closing equity positions.
+/// Instructions for opening and closing options positions.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Instruction {
     #[default]
+    /// Open a long equity position
     Buy,
+    /// Close a long equity position
     Sell,
+    /// Close a short equity position
     BuyToCover,
+    /// Open a short equity position
     SellShort,
+
+    /// Enter a new long option position
     BuyToOpen,
+    /// Exit an existing short position in an option
     BuyToClose,
+    /// Enter a short position in an option
     SellToOpen,
+    /// Exit an existing long option position
     SellToClose,
+
     Exchange,
     SellShortExempt,
 }

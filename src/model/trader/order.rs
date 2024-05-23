@@ -5,6 +5,7 @@ use crate::model::trader::accounts::AccountsInstrument;
 
 use super::preview_order::Instruction;
 
+#[allow(clippy::struct_field_names)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
@@ -48,7 +49,7 @@ pub struct Order {
     /// xml: `OrderedMap` { "name": "replacingOrder", "wrapped": true }
     pub replacing_order_collection: Option<Vec<String>>,
     /// xml: `OrderedMap` { "name": "childOrder", "wrapped": true }
-    pub child_order_strategies: Option<Vec<String>>,
+    pub child_order_strategies: Option<Vec<Order>>,
     pub status_description: Option<String>,
 }
 
@@ -88,22 +89,36 @@ pub struct ExecutionLeg {
     pub time: chrono::DateTime<chrono::Utc>,
 }
 
+/// The market session during which the order trade should be executed.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Session {
+    /// Normal market hours, from 9:30am to 4:00pm Eastern.
     #[default]
     Normal,
+    /// Premarket session, from 8:00am to 9:30am Eastern.
     Am,
+    /// After-market session, from 4:00pm to 8:00pm Eastern.
     Pm,
+    /// Orders are active during all trading sessions except the overnight
+    /// session. This is the union of ``NORMAL``, ``AM``, and ``PM``.
     Seamless,
 }
 
+/// Length of time over which the trade will be active.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Duration {
+    /// Cancel the trade at the end of the trading day. Note if the order cannot
+    /// be filled all at once, you may see partial executions throughout the day.
     #[default]
     Day,
+    /// Keep the trade open for six months, or until the end of the cancel date,
+    /// whichever is shorter. Note if the order cannot be filled all at once, you
+    /// may see partial executions over the lifetime of the order.
     GoodTillCancel,
+    /// Either execute the order immediately at the specified price, or cancel it
+    /// immediately.
     FillOrKill,
     ImmediateOrCancel,
     EndOfWeek,
@@ -112,54 +127,102 @@ pub enum Duration {
     Unknown,
 }
 
+/// Type of order to place.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderType {
     #[default]
+    /// Execute the order immediately at the best-available price.
+    /// `More Info <https://www.investopedia.com/terms/m/marketorder.asp>`__.
     Market,
+    /// Execute the order at your price or better.
+    /// `More info <https://www.investopedia.com/terms/l/limitorder.asp>`__.
     Limit,
+    /// Wait until the price reaches the stop price, and then immediately place a
+    /// market order.
+    /// `More Info <https://www.investopedia.com/terms/l/limitorder.asp>`__.
     Stop,
+    /// Wait until the price reaches the stop price, and then immediately place a
+    /// limit order at the specified price.
+    /// `More Info <https://www.investopedia.com/terms/s/stop-limitorder.asp>`__.
     StopLimit,
+    /// Similar to ``STOP``, except if the price moves in your favor, the stop
+    /// price is adjusted in that direction. Places a market order if the stop
+    /// condition is met.
+    /// `More info <https://www.investopedia.com/terms/t/trailingstop.asp>`__.
     TrailingStop,
     Cabinet,
     NonMarketable,
+    /// Place the order at the closing price immediately upon market close.
+    /// `More info <https://www.investopedia.com/terms/m/marketonclose.asp>`__
     MarketOnClose,
+    /// Exercise an option.
     Exercise,
+    /// Similar to ``STOP_LIMIT``, except if the price moves in your favor, the
+    /// stop price is adjusted in that direction. Places a limit order at the
+    /// specified price if the stop condition is met.
+    /// `More info <https://www.investopedia.com/terms/t/trailingstop.asp>`__.
     TrailingStopLimit,
+    /// Place an order for an options spread resulting in a net debit.
+    /// `More info <https://www.investopedia.com/ask/answers/042215/whats-difference-between-credit-spread-and-debt-spread.asp>`__
     NetDebit,
+    /// Place an order for an options spread resulting in a net credit.
+    /// `More info <https://www.investopedia.com/ask/answers/042215/whats-difference-between-credit-spread-and-debt-spread.asp>`__
     NetCredit,
+    /// Place an order for an options spread resulting in neither a credit nor a
+    /// debit.
+    /// `More info <https://www.investopedia.com/ask/answers/042215/whats-difference-between-credit-spread-and-debt-spread.asp>`__
     NetZero,
     LimitOnClose,
     Unknown,
 }
 
+/// Explicit order strategies for executing multi-leg options orders.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ComplexOrderStrategyType {
     #[default]
+    /// No complex order strategy. This is the default.
     None,
+    /// `Covered call <https://tickertape.tdameritrade.com/trading/selling-covered-call-options-strategy-income-hedging-15135>`__
     Covered,
+    /// `Vertical spread <https://tickertape.tdameritrade.com/trading/vertical-credit-spreads-high-probability-15846>`__
     Vertical,
+    /// `Ratio backspread <https://tickertape.tdameritrade.com/trading/pricey-stocks-ratio-spreads-15306>`__
     BackRatio,
+    /// `Calendar spread <https://tickertape.tdameritrade.com/trading/calendar-spreads-trading-primer-15095>`__
     Calendar,
+    /// `Diagonal spread <https://tickertape.tdameritrade.com/trading/love-your-diagonal-spread-15030>`__
     Diagonal,
+    /// `Straddle spread <https://tickertape.tdameritrade.com/trading/straddle-strangle-option-volatility-16208>`__
     Straddle,
+    /// `Strandle spread <https://tickertape.tdameritrade.com/trading/straddle-strangle-option-volatility-16208>`__
     Strangle,
     CollarSynthetic,
+    /// `Butterfly spread <https://tickertape.tdameritrade.com/trading/butterfly-spread-options-15976>`__
     Butterfly,
+    /// `Condor spread <https://www.investopedia.com/terms/c/condorspread.asp>`__
     Condor,
+    /// `Iron condor spread <https://tickertape.tdameritrade.com/trading/iron-condor-options-spread-your-trading-wings-15948>`__
     IronCondor,
+    /// `Roll a vertical spread <https://tickertape.tdameritrade.com/trading/exit-winning-losing-trades-16685>`__
     VerticalRoll,
+    /// `Collar strategy <https://tickertape.tdameritrade.com/trading/stock-hedge-options-collars-15529>`__
     CollarWithStock,
+    /// `Double diagonal spread <https://optionstradingiq.com/the-ultimate-guide-to-double-diagonal-spreads/>`__
     DoubleDiagonal,
+    /// `Unbalanced butterfy spread  <https://tickertape.tdameritrade.com/trading/unbalanced-butterfly-strong-directional-bias-15913>`__
     UnbalancedButterfly,
     UnbalancedCondor,
     UnbalancedIronCondor,
     UnbalancedVerticalRoll,
+    /// Mutual fund swap
     MutualFundSwap,
+    /// A custom multi-leg order strategy.
     Custom,
 }
 
+/// Destinations for when you want to request a specific destination for your order.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RequestedDestination {
@@ -250,18 +313,26 @@ pub enum TaxLotMethod {
     LossHarvester,
 }
 
+/// Special instruction for trades.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SpecialInstruction {
     #[default]
+    /// Disallow partial order execution.
+    /// `More info <https://www.investopedia.com/terms/a/aon.asp>`__.
     AllOrNone,
+    /// Do not reduce order size in response to cash dividends.
+    /// `More info <https://www.investopedia.com/terms/d/dnr.asp>`__.
     DoNotReduce,
+    /// Combination of ``ALL_OR_NONE`` and ``DO_NOT_REDUCE``.
     AllOrNoneDoNotReduce,
 }
 
+/// Rules for composite orders.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStrategyType {
+    /// No chaining, only a single order is submitted
     #[default]
     Single,
     Cancel,
@@ -270,7 +341,9 @@ pub enum OrderStrategyType {
     Flatten,
     TwoDaySwap,
     BlastAll,
+    /// Execution of one order cancels the other
     Oco,
+    /// Execution of one order triggers placement of the other
     Trigger,
 }
 
@@ -364,7 +437,7 @@ mod tests {
     fn test_de_order() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Order_real.json"
+            "/tests/model/Trader/Order.json"
         ));
 
         let val = serde_json::from_str::<Order>(json);
@@ -376,7 +449,7 @@ mod tests {
     fn test_de_orders() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Orders_real.json"
+            "/tests/model/Trader/Orders.json"
         ));
 
         let val = serde_json::from_str::<Vec<Order>>(json);

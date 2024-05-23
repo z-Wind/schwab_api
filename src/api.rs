@@ -13,17 +13,17 @@ use parameter::{Market, Projection, TransactionType};
 
 /// Interacting with the Schwab API.
 #[derive(Debug)]
-pub struct API<T: Tokener> {
+pub struct Api<T: Tokener> {
     tokener: T,
     client: Client,
 }
 
-impl<T: Tokener> API<T> {
+impl<T: Tokener> Api<T> {
     /// Create API Struct
-    pub fn new(tokener: T) -> Result<Self, Error> {
+    pub fn new(tokener: T) -> Self {
         let client = Client::new();
 
-        Ok(API { tokener, client })
+        Api { tokener, client }
     }
 
     pub async fn get_quotes(
@@ -433,9 +433,13 @@ mod tests {
 
     use std::path::PathBuf;
 
+    use crate::model::trader::accounts::AccountCollectiveInvestment;
+    use crate::model::trader::accounts::AccountsBaseInstrument;
+    use crate::model::trader::accounts::AccountsInstrument;
+    use crate::model::trader::preview_order::Instruction;
     use crate::token::TokenChecker;
 
-    async fn client() -> API<TokenChecker> {
+    async fn client() -> Api<TokenChecker> {
         #[allow(clippy::option_env_unwrap)]
         let key = option_env!("SCHWAB_API_KEY")
             .expect("There should be SCHWAB API KEY")
@@ -458,7 +462,7 @@ mod tests {
             .await
             .unwrap();
 
-        API::new(token_checker).unwrap()
+        Api::new(token_checker)
     }
 
     #[cfg_attr(
@@ -757,13 +761,113 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
     #[tokio::test]
-    async fn test_post_account_order() {
+    async fn test_post_put_delete_account_order() {
+        todo!();
         let api = client().await;
+
+        // #! AccountsInstrument is not Instrument like assetType
+        // Instrument
+        // {
+        // "instruments": [
+        // {
+        // "cusip": "922908769",
+        // "symbol": "VTI",
+        // "description": "VANGUARD TOTAL STOCK MARKET ETF",
+        // "exchange": "NYSE Arca",
+        // "assetType": "ETF"
+        // }
+        // ]
+        // }
+        // AccountsInstrument
+        // "instrument": {
+        // "assetType": "COLLECTIVE_INVESTMENT",
+        // "cusip": "922908769",
+        // "symbol": "VTI",
+        // "description": "VANGUARD TOTAL STOCK MARKET ETF",
+        // "instrumentId": 5215623,
+        // "type": "EXCHANGE_TRADED_FUND"
+        // },
+        // get symbol VTI
+        // let req = api.get_instrument("922908769".into()).await.unwrap();
+        // let symbol = req.send().await.unwrap();
+        // assert_eq!(symbol.symbol, "VTI");
+        let symbol = AccountsInstrument::CollectiveInvestment(AccountCollectiveInvestment {
+            accounts_base_instrument: AccountsBaseInstrument {
+                symbol: "VTI".to_string(),
+                ..AccountsBaseInstrument::default()
+            },
+            ..AccountCollectiveInvestment::default()
+        });
+
+        // post
+        let order_post = model::OrderRequest::limit(symbol, Instruction::Buy, 1.0, 0.0).unwrap();
         let req = api
-            .post_account_order(account_number().await, model::OrderRequest::default())
+            .post_account_order(account_number().await, order_post.clone())
             .await
             .unwrap();
         req.send().await.unwrap();
+
+        // post check
+        let req = api
+            .get_account_orders(
+                account_number().await,
+                chrono::Local::now()
+                    .checked_sub_days(chrono::Days::new(1))
+                    .unwrap()
+                    .to_utc(),
+                chrono::Local::now()
+                    .checked_add_days(chrono::Days::new(1))
+                    .unwrap()
+                    .to_utc(),
+            )
+            .await
+            .unwrap();
+        let orders = req.send().await.unwrap();
+        let mut order_post_check: model::OrderRequest = orders[0].into();
+        assert_eq!(order_post, order_post_check);
+
+        // put
+        let order_id = order_post_check.order_id.unwrap();
+        let mut order_put = order_post_check;
+        order_put.price = Some(0.1);
+        let req = api
+            .put_account_order(account_number().await, order_id, order_put.clone())
+            .await
+            .unwrap();
+        req.send().await.unwrap();
+
+        // put check
+        let req = api
+            .get_account_order(account_number().await, order_id)
+            .await
+            .unwrap();
+        let order_put_check = req.send().await.unwrap();
+        assert_eq!(order_put, order_put_check.into());
+
+        // delete
+        let req = api
+            .delete_account_order(account_number().await, order_id)
+            .await
+            .unwrap();
+        req.send().await.unwrap();
+
+        // get check
+        let req = api
+            .get_account_orders(
+                account_number().await,
+                chrono::Local::now()
+                    .checked_sub_days(chrono::Days::new(1))
+                    .unwrap()
+                    .to_utc(),
+                chrono::Local::now()
+                    .checked_add_days(chrono::Days::new(1))
+                    .unwrap()
+                    .to_utc(),
+            )
+            .await
+            .unwrap();
+        let orders = req.send().await.unwrap();
+        assert!(orders.is_empty());
     }
 
     #[cfg_attr(
@@ -779,36 +883,6 @@ mod tests {
             .unwrap();
         let rsp = req.send().await.unwrap();
         dbg!(rsp);
-    }
-
-    #[cfg_attr(
-        not(all(feature = "test_online", feature = "danger")),
-        ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
-    )]
-    #[tokio::test]
-    async fn test_delete_account_order() {
-        todo!();
-        let api = client().await;
-        let req = api
-            .delete_account_order(account_number().await, 0)
-            .await
-            .unwrap();
-        req.send().await.unwrap();
-    }
-
-    #[cfg_attr(
-        not(all(feature = "test_online", feature = "danger")),
-        ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
-    )]
-    #[tokio::test]
-    async fn test_put_account_order() {
-        todo!();
-        let api = client().await;
-        let req = api
-            .put_account_order(account_number().await, 0, model::OrderRequest::default())
-            .await
-            .unwrap();
-        req.send().await.unwrap();
     }
 
     #[cfg_attr(

@@ -39,12 +39,14 @@ thiserror = "1.0"
 open = "5"
 async-channel = "2.2"
 urlencoding = "2.1"
+derive_builder = "0.20"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
 serde_test = "1.0"
 mockito = "1.4"
 pretty_assertions = "1.4"
+assert-json-diff = "2.0"
 
 [features]
 test_online = []

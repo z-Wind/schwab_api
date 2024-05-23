@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Index security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IndexResponse {
     /// example: 1234567890
@@ -26,7 +26,7 @@ pub struct IndexResponse {
 
 /// Quote data of Index security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteIndex {
     /// example: 145.09
@@ -92,7 +92,7 @@ pub struct QuoteIndex {
 }
 
 /// Reference data of Index security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceIndex {
     /// example: DOW JONES 30 INDUSTRIALS

@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Forex security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ForexResponse {
     /// example: 1234567890
@@ -26,7 +26,7 @@ pub struct ForexResponse {
 
 /// Quote data of Forex security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteForex {
     /// example: 145.09
@@ -138,7 +138,7 @@ pub struct QuoteForex {
 }
 
 /// Reference data of Forex security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceForex {
     /// example: Euro/USDollar Spot

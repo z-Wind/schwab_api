@@ -22,7 +22,7 @@ const MINUTE: u64 = 60;
 const HOUR: u64 = 60 * MINUTE;
 const DAY: u64 = 24 * HOUR;
 const ACCESS_TOKEN_LIFETIME: u64 = 25 * MINUTE; // 25 Minutes instead of 30 min
-const REFRESH_TOKEN_LIFETIME: u64 = 60 * DAY; // 60 days instead of 90 days
+const REFRESH_TOKEN_LIFETIME: u64 = 6 * DAY; // 6 days instead of 7 days
 
 #[derive(Debug)]
 pub struct TokenChecker {
@@ -67,7 +67,7 @@ impl TokenChecker {
                 .authorizer
                 .access_token(&token.refresh)
                 .await
-                .map_err(|e| Error::TokenError(e.to_string()))?;
+                .map_err(|e| Error::Token(e.to_string()))?;
             token.access.clone_from(rsp.access_token().secret());
             token.access_expires_in = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)

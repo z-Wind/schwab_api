@@ -39,7 +39,7 @@ impl GetAccountNumbersRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::AccountNumbers>()
@@ -105,7 +105,7 @@ impl GetAccountsRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::Accounts>()
@@ -181,7 +181,7 @@ impl GetAccountRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::Account>()
@@ -307,7 +307,7 @@ impl GetAccountOrdersRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<Vec<model::Order>>()
@@ -364,7 +364,7 @@ impl PostAccountOrderRequest {
         let status = rsp.status();
         if status != StatusCode::CREATED {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         Ok(())
@@ -423,7 +423,7 @@ impl GetAccountOrderRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::Order>()
@@ -485,7 +485,7 @@ impl DeleteAccountOrderRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         Ok(())
@@ -554,7 +554,7 @@ impl PutAccountOrderRequest {
         let status = rsp.status();
         if status != StatusCode::CREATED {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         Ok(())
@@ -664,7 +664,7 @@ impl GetAccountsOrdersRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<Vec<model::Order>>()
@@ -721,7 +721,7 @@ impl PostAccountPreviewOrderRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::PreviewOrder>()
@@ -831,7 +831,7 @@ impl GetAccountTransactions {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<Vec<model::Transaction>>()
@@ -896,7 +896,7 @@ impl GetAccountTransaction {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         let mut transactions = rsp.json::<Vec<model::Transaction>>().await?;
@@ -941,7 +941,7 @@ impl GetUserPreferenceRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
-            return Err(Error::ServiceError(error_response));
+            return Err(Error::Service(error_response));
         }
 
         rsp.json::<model::UserPreferences>()

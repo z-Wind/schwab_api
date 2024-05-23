@@ -3,7 +3,7 @@ use serde::Serialize;
 
 pub type AccountNumbers = Vec<AccountNumberHash>;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountNumberHash {
     pub account_number: String,

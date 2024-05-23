@@ -4,7 +4,8 @@ use std::collections::HashMap;
 
 pub type Markets = HashMap<String, HashMap<String, Hours>>;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hours {
     pub date: String,
@@ -17,14 +18,14 @@ pub struct Hours {
     pub session_hours: Option<HashMap<String, Vec<Interval>>>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Interval {
     pub start: chrono::DateTime<chrono::Utc>,
     pub end: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MarketType {
     Bond,
@@ -39,7 +40,6 @@ pub enum MarketType {
     Indicator,
     MutualFund,
     Option,
-    #[default]
     Unknown,
 }
 
@@ -60,7 +60,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Markets_real.json"

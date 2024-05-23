@@ -5,7 +5,7 @@ use serde_with::{serde_as, TimestampMilliSeconds};
 use super::equity::Fundamental;
 
 /// Quote info of Mutual Fund security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MutualFundResponse {
     /// nullable: true
@@ -33,7 +33,7 @@ pub struct MutualFundResponse {
 
 /// Quote data of Mutual Fund security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteMutualFund {
     /// example: 145.09
@@ -87,7 +87,7 @@ pub struct QuoteMutualFund {
 }
 
 /// Reference data of Mutual Fund security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceMutualFund {
     /// example: A23456789
@@ -112,10 +112,9 @@ pub struct ReferenceMutualFund {
 }
 
 /// Asset Sub Type (only there if applicable)
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MutualFundAssetSubType {
-    #[default]
     Oef,
     Cef,
     Mmf,

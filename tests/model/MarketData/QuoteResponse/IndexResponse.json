@@ -1,52 +1,52 @@
 {
-  "$SPX": {
-    "assetMainType": "INDEX",
-    "symbol": "$SPX",
-    "realtime": true,
-    "ssid": 1819771877,
-    "reference": {
-      "description": "S&P DOW JONES INDEX            S&P 500",
-      "exchange": "0",
-      "exchangeName": "Index"
+    "$SPX": {
+        "assetMainType": "INDEX",
+        "symbol": "$SPX",
+        "realtime": true,
+        "ssid": 1819771877,
+        "reference": {
+            "description": "S&P DOW JONES INDEX            S&P 500",
+            "exchange": "0",
+            "exchangeName": "Index"
+        },
+        "quote": {
+            "52WeekHigh": 4423.46,
+            "52WeekLow": 4385.52,
+            "closePrice": 4766.18,
+            "highPrice": 4423.46,
+            "lastPrice": 4396.2,
+            "lowPrice": 4385.52,
+            "netChange": -369.98,
+            "netPercentChange": -7.76261072808833,
+            "openPrice": 4412.61,
+            "securityStatus": "Unknown",
+            "totalVolume": 628009977,
+            "tradeTime": 1644854683056
+        }
     },
-    "quote": {
-      "52WeekHigh": 4423.46,
-      "52WeekLow": 4385.52,
-      "closePrice": 4766.18,
-      "highPrice": 4423.46,
-      "lastPrice": 4396.2,
-      "lowPrice": 4385.52,
-      "netChange": -369.98,
-      "netPercentChange": -7.762610728088331,
-      "openPrice": 4412.61,
-      "securityStatus": "Unknown",
-      "totalVolume": 628009977,
-      "tradeTime": 1644854683056
+    "$DJI": {
+        "assetMainType": "INDEX",
+        "symbol": "$DJI",
+        "realtime": true,
+        "ssid": 0,
+        "reference": {
+            "description": "Dow Jones Industrial Average",
+            "exchange": "0",
+            "exchangeName": "Index"
+        },
+        "quote": {
+            "52WeekHigh": 34744.56,
+            "52WeekLow": 34364.39,
+            "closePrice": 34738.06,
+            "highPrice": 34744.56,
+            "lastPrice": 34436.13,
+            "lowPrice": 34364.39,
+            "netChange": -301.93,
+            "netPercentChange": -0.869161950897662,
+            "openPrice": 34694.5,
+            "securityStatus": "Unknown",
+            "totalVolume": 106647543,
+            "tradeTime": 1644854683055
+        }
     }
-  },
-  "$DJI": {
-    "assetMainType": "INDEX",
-    "symbol": "$DJI",
-    "realtime": true,
-    "ssid": 0,
-    "reference": {
-      "description": "Dow Jones Industrial Average",
-      "exchange": "0",
-      "exchangeName": "Index"
-    },
-    "quote": {
-      "52WeekHigh": 34744.56,
-      "52WeekLow": 34364.39,
-      "closePrice": 34738.06,
-      "highPrice": 34744.56,
-      "lastPrice": 34436.13,
-      "lowPrice": 34364.39,
-      "netChange": -301.93,
-      "netPercentChange": -0.8691619508976618,
-      "openPrice": 34694.5,
-      "securityStatus": "Unknown",
-      "totalVolume": 106647543,
-      "tradeTime": 1644854683055
-    }
-  }
 }

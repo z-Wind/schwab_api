@@ -34,7 +34,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let api = api::API::new(token_checker).unwrap();
+    let api = api::Api::new(token_checker);
 
     let req = api.get_quote("VTI".to_string()).await.unwrap();
     let rsp = req.send().await.unwrap();
@@ -48,5 +48,8 @@ async fn main() {
 [dependencies]
 schwab_api = "0.1"
 ```
+
+## Reference
+* [GitHub - alexgolec/schwab-py: Unofficial API wrapper for the upcoming Schwab HTTP API](https://github.com/alexgolec/schwab-py/tree/main)
 
 **Disclaimer:** *This is an unofficial API wrapper for Schwab. It is not endorsed by or affiliated with Schwab or any associated organization. Before using this package, make sure to read and understand the terms of service of the underlying API. The authors of this package accept no responsibility for any damage that might stem from its use. Refer to the LICENSE file for more details.*

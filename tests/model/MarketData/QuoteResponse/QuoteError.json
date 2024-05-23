@@ -1,10 +1,10 @@
 {
-  "errors": {
-    "invalidSymbols": [
-      "^IRX",
-      "/ESZ21",
-      "ESM24.CME",
-      "AMZN  220617C03170000"
-    ]
-  }
+    "errors": {
+        "invalidSymbols": [
+            "^IRX",
+            "/ESZ21",
+            "ESM24.CME",
+            "AMZN  220617C03170000"
+        ]
+    }
 }

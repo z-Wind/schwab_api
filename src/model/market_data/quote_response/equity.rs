@@ -3,7 +3,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Equity security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EquityResponse {
     /// nullable: true
@@ -38,7 +38,7 @@ pub struct EquityResponse {
 
 /// Quote data for extended hours
 #[serde_as]
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtendedMarket {
     /// example: 124.85
@@ -95,7 +95,7 @@ pub struct ExtendedMarket {
 }
 
 /// Fundamentals of a security
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fundamental {
     /// Average 10 day volume
@@ -180,7 +180,7 @@ pub struct Fundamental {
 
 /// Quote data of Equity security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteEquity {
     /// example: 145.09
@@ -327,7 +327,7 @@ pub struct QuoteEquity {
 }
 
 /// Reference data of Equity security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceEquity {
     /// example: A23456789
@@ -377,7 +377,7 @@ pub struct ReferenceEquity {
 
 /// Market info of security
 #[serde_as]
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegularMarket {
     /// example: 124.85
@@ -413,10 +413,9 @@ pub struct RegularMarket {
 }
 
 /// Asset Sub Type (only there if applicable)
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EquityAssetSubType {
-    #[default]
     Coe,
     Prf,
     Adr,
@@ -429,22 +428,20 @@ pub enum EquityAssetSubType {
     Rgt,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuoteType {
     /// NBBO - realtime
-    #[default]
     Nbbo,
     /// NFL - Non-fee liable quote
     Nfl,
 }
 
 /// Dividend frequency
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum DivFrequency {
     /// null
-    #[default]
     Zero = 0,
 
     /// 1 – once a year or annually
@@ -470,11 +467,11 @@ pub enum DivFrequency {
 }
 
 /// Fund Strategy
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FundStrategy {
     ///  "A" - Active
-    #[default]
+
     #[serde(rename = "A")]
     Active,
 

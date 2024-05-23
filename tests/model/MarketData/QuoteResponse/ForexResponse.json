@@ -1,40 +1,40 @@
 {
-  "EUR/USD": {
-    "assetMainType": "FOREX",
-    "symbol": "EUR/USD",
-    "ssid": 1,
-    "realtime": true,
-    "reference": {
-      "description": "Euro/USDollar Spot",
-      "exchange": "T",
-      "exchangeName": "GFT",
-      "isTradable": false,
-      "marketMaker": "",
-      "product": "",
-      "tradingHours": ""
-    },
-    "quote": {
-      "52WeekHigh": 1.135,
-      "52WeekLow": 1.1331,
-      "askPrice": 1.13456,
-      "askSize": 1000000,
-      "bidPrice": 1.13434,
-      "bidSize": 1000000,
-      "netChange": 0.00254,
-      "closePrice": 1.13191,
-      "highPrice": 1.135,
-      "lastPrice": 1.13445,
-      "lastSize": 0,
-      "lowPrice": 1.1331,
-      "mark": 1.13445,
-      "openPrice": 1.13324,
-      "netPercentChange": 0,
-      "quoteTime": 1637236739892,
-      "securityStatus": "Unknown",
-      "tick": 0,
-      "tickAmount": 0,
-      "totalVolume": 0,
-      "tradeTime": 1637236739892
+    "EUR/USD": {
+        "assetMainType": "FOREX",
+        "symbol": "EUR/USD",
+        "ssid": 1,
+        "realtime": true,
+        "reference": {
+            "description": "Euro/USDollar Spot",
+            "exchange": "T",
+            "exchangeName": "GFT",
+            "isTradable": false,
+            "marketMaker": "",
+            "product": "",
+            "tradingHours": ""
+        },
+        "quote": {
+            "52WeekHigh": 1.135,
+            "52WeekLow": 1.1331,
+            "askPrice": 1.13456,
+            "askSize": 1000000,
+            "bidPrice": 1.13434,
+            "bidSize": 1000000,
+            "netChange": 0.00254,
+            "closePrice": 1.13191,
+            "highPrice": 1.135,
+            "lastPrice": 1.13445,
+            "lastSize": 0,
+            "lowPrice": 1.1331,
+            "mark": 1.13445,
+            "openPrice": 1.13324,
+            "netPercentChange": 0,
+            "quoteTime": 1637236739892,
+            "securityStatus": "Unknown",
+            "tick": 0,
+            "tickAmount": 0,
+            "totalVolume": 0,
+            "tradeTime": 1637236739892
+        }
     }
-  }
 }

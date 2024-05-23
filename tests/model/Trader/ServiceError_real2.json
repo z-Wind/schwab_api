@@ -1,10 +1,10 @@
 {
-  "errors": [
-    {
-      "id": "1a2345b6-7c89-01de-2f34-5ghij6789k0",
-      "status": 401,
-      "title": "Unauthorized",
-      "detail": "Client not authorized"
-    }
-  ]
+    "errors": [
+        {
+            "id": "1a2345b6-7c89-01de-2f34-5ghij6789k0",
+            "status": 401,
+            "title": "Unauthorized",
+            "detail": "Client not authorized"
+        }
+    ]
 }

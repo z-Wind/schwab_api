@@ -1,13 +1,13 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Instruments {
     pub instruments: Vec<InstrumentResponse>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstrumentResponse {
     pub cusip: String,
@@ -27,7 +27,7 @@ pub struct InstrumentResponse {
     pub type_filed: Option<InstrumentAssetType>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FundamentalInst {
     pub symbol: String,
@@ -99,7 +99,7 @@ pub struct FundamentalInst {
     pub fund_strategy: String,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Instrument {
     pub cusip: String,
@@ -113,7 +113,8 @@ pub struct Instrument {
     pub type_filed: Option<InstrumentAssetType>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::struct_field_names)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bond {
     pub cusip: String,
@@ -130,7 +131,7 @@ pub struct Bond {
     pub type_filed: Option<InstrumentAssetType>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum InstrumentAssetType {
     Bond,
@@ -145,7 +146,6 @@ pub enum InstrumentAssetType {
     Indicator,
     MutualFund,
     Option,
-    #[default]
     Unknown,
 }
 
@@ -166,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de2() {
+    fn test_de_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Instruments_real.json"

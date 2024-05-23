@@ -1,18 +1,18 @@
 {
-  "instruments": [
-    {
-      "cusip": "037833100",
-      "symbol": "AAPL",
-      "description": "Apple Inc",
-      "exchange": "NASDAQ",
-      "assetType": "EQUITY"
-    },
-    {
-      "cusip": "060505104",
-      "symbol": "BAC",
-      "description": "Bank Of America Corp",
-      "exchange": "NYSE",
-      "assetType": "EQUITY"
-    }
-  ]
+    "instruments": [
+        {
+            "cusip": "037833100",
+            "symbol": "AAPL",
+            "description": "Apple Inc",
+            "exchange": "NASDAQ",
+            "assetType": "EQUITY"
+        },
+        {
+            "cusip": "060505104",
+            "symbol": "BAC",
+            "description": "Bank Of America Corp",
+            "exchange": "NYSE",
+            "assetType": "EQUITY"
+        }
+    ]
 }

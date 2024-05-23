@@ -31,7 +31,7 @@
 //!         .await
 //!         .unwrap();
 //!
-//!     let api = api::API::new(token_checker).unwrap();
+//!     let api = api::Api::new(token_checker);
 //!
 //!     let req = api.get_quote("VTI".to_string()).await.unwrap();
 //!     let rsp = req.send().await.unwrap();
@@ -70,5 +70,5 @@ pub mod error;
 pub mod model;
 pub mod token;
 
-pub use api::API;
+pub use api::Api;
 pub use error::Error;

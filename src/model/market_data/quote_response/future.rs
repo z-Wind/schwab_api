@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Future security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FutureResponse {
     /// example: 1234567890
@@ -26,7 +26,7 @@ pub struct FutureResponse {
 
 /// Quote data of Future security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteFuture {
     /// example: XNYS
@@ -173,7 +173,7 @@ pub struct QuoteFuture {
 
 /// Reference data of Future security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceFuture {
     /// example: E-mini S&P 500 Index Futures,Jun-2021,ETH

@@ -120,7 +120,7 @@ impl Authorizer {
         let token = self
             .authorize()
             .await
-            .map_err(|e| Error::TokenError(e.to_string()))?;
+            .map_err(|e| Error::Token(e.to_string()))?;
         token.save(path)?;
         Ok(token)
     }

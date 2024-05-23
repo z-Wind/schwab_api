@@ -105,13 +105,13 @@ impl GetQuotesRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         let map = rsp.json::<model::QuoteResponseMap>().await?;
 
         if let Some(e) = map.errors {
-            return Err(Error::QuoteError(e));
+            return Err(Error::Quote(e));
         }
 
         Ok(map.responses)
@@ -198,13 +198,13 @@ impl GetQuoteRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         let mut map = rsp.json::<model::QuoteResponseMap>().await?;
 
         if let Some(e) = map.errors {
-            return Err(Error::QuoteError(e));
+            return Err(Error::Quote(e));
         }
 
         let val = map.responses.remove(&symbol).expect("must exist");
@@ -508,7 +508,7 @@ impl GetOptionChainsRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::OptionChain>()
@@ -557,7 +557,7 @@ impl GetOptionExpirationChainRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::ExpirationChain>()
@@ -789,7 +789,7 @@ impl GetPriceHistoryRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::CandleList>()
@@ -893,7 +893,7 @@ impl GetMoversRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::Mover>()
@@ -975,7 +975,7 @@ impl GetMarketsRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::Markets>()
@@ -1051,7 +1051,7 @@ impl GetMarketRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::Markets>()
@@ -1116,7 +1116,7 @@ impl GetInstrumentsRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         rsp.json::<model::Instruments>()
@@ -1172,7 +1172,7 @@ impl GetInstrumentRequest {
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::ErrorResponse(error_response));
+            return Err(Error::Response(error_response));
         }
 
         let mut data = rsp
@@ -1340,7 +1340,7 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
-					"AAPL": {
+						"AAPL": {
 							"assetMainType": "EQUITY",
 							"assetSubType": "COE",
 							"quoteType": "NBBO",
@@ -1348,69 +1348,69 @@ mod tests {
 							"ssid": 1973757747,
 							"symbol": "AAPL",
 							"fundamental": {
-							  "avg10DaysVolume": 74260136,
-							  "avg1YearVolume": 58373005,
-							  "declarationDate": "2024-05-02T04:00:00Z",
-							  "divAmount": 1,
-							  "divExDate": "2024-05-10T04:00:00Z",
-							  "divFreq": 4,
-							  "divPayAmount": 0.25,
-							  "divPayDate": "2024-05-16T04:00:00Z",
-							  "divYield": 0.5463,
-							  "eps": 6.13,
-							  "fundLeverageFactor": 0,
-							  "lastEarningsDate": "2024-05-02T04:00:00Z",
-							  "nextDivExDate": "2024-08-12T04:00:00Z",
-							  "nextDivPayDate": "2024-08-16T04:00:00Z",
-							  "peRatio": 28.51406
+								"avg10DaysVolume": 74260136,
+								"avg1YearVolume": 58373005,
+								"declarationDate": "2024-05-02T04:00:00Z",
+								"divAmount": 1,
+								"divExDate": "2024-05-10T04:00:00Z",
+								"divFreq": 4,
+								"divPayAmount": 0.25,
+								"divPayDate": "2024-05-16T04:00:00Z",
+								"divYield": 0.5463,
+								"eps": 6.13,
+								"fundLeverageFactor": 0,
+								"lastEarningsDate": "2024-05-02T04:00:00Z",
+								"nextDivExDate": "2024-08-12T04:00:00Z",
+								"nextDivPayDate": "2024-08-16T04:00:00Z",
+								"peRatio": 28.51406
 							},
 							"quote": {
-							  "52WeekHigh": 199.62,
-							  "52WeekLow": 164.075,
-							  "askMICId": "EDGX",
-							  "askPrice": 184.98,
-							  "askSize": 3,
-							  "askTime": 1715594417785,
-							  "bidMICId": "EDGX",
-							  "bidPrice": 184.91,
-							  "bidSize": 1,
-							  "bidTime": 1715594417785,
-							  "closePrice": 183.05,
-							  "highPrice": 0,
-							  "lastMICId": "ARCX",
-							  "lastPrice": 184.92,
-							  "lastSize": 9,
-							  "lowPrice": 0,
-							  "mark": 184.91,
-							  "markChange": 1.86,
-							  "markPercentChange": 1.01611582,
-							  "netChange": 1.87,
-							  "netPercentChange": 1.0215788,
-							  "openPrice": 0,
-							  "postMarketChange": 1.87,
-							  "postMarketPercentChange": 1.0215788,
-							  "quoteTime": 1715594417785,
-							  "securityStatus": "Normal",
-							  "totalVolume": 138478,
-							  "tradeTime": 1715594427508
+								"52WeekHigh": 199.62,
+								"52WeekLow": 164.075,
+								"askMICId": "EDGX",
+								"askPrice": 184.98,
+								"askSize": 3,
+								"askTime": 1715594417785,
+								"bidMICId": "EDGX",
+								"bidPrice": 184.91,
+								"bidSize": 1,
+								"bidTime": 1715594417785,
+								"closePrice": 183.05,
+								"highPrice": 0,
+								"lastMICId": "ARCX",
+								"lastPrice": 184.92,
+								"lastSize": 9,
+								"lowPrice": 0,
+								"mark": 184.91,
+								"markChange": 1.86,
+								"markPercentChange": 1.01611582,
+								"netChange": 1.87,
+								"netPercentChange": 1.0215788,
+								"openPrice": 0,
+								"postMarketChange": 1.87,
+								"postMarketPercentChange": 1.0215788,
+								"quoteTime": 1715594417785,
+								"securityStatus": "Normal",
+								"totalVolume": 138478,
+								"tradeTime": 1715594427508
 							},
 							"reference": {
-							  "cusip": "037833100",
-							  "description": "Apple Inc",
-							  "exchange": "Q",
-							  "exchangeName": "NASDAQ",
-							  "isHardToBorrow": false,
-							  "isShortable": true,
-							  "htbRate": 0
+								"cusip": "037833100",
+								"description": "Apple Inc",
+								"exchange": "Q",
+								"exchangeName": "NASDAQ",
+								"isHardToBorrow": false,
+								"isShortable": true,
+								"htbRate": 0
 							},
 							"regular": {
-							  "regularMarketLastPrice": 183.05,
-							  "regularMarketLastSize": 7250871,
-							  "regularMarketNetChange": 0,
-							  "regularMarketPercentChange": 0,
-							  "regularMarketTradeTime": 1715371200231
+								"regularMarketLastPrice": 183.05,
+								"regularMarketLastSize": 7250871,
+								"regularMarketNetChange": 0,
+								"regularMarketPercentChange": 0,
+								"regularMarketTradeTime": 1715371200231
 							}
-						  }
+						}
 					}"#,
             )
             .create_async()
@@ -1467,9 +1467,9 @@ mod tests {
                 r#"{
 					"errors": {
 						"invalidSymbols": [
-						  "^IRX"
+							"^IRX"
 						]
-					  }
+					}
 				}"#,
             )
             .create_async()
@@ -1495,7 +1495,7 @@ mod tests {
         mock.assert_async().await;
         let result = result.unwrap_err();
         match result {
-            Error::QuoteError(model::QuoteError {
+            Error::Quote(model::QuoteError {
                 invalid_symbols: Some(e),
                 ..
             }) => assert_eq!(e, vec!["^IRX"]),
@@ -1919,38 +1919,38 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
-						  "equity": {
-							"EQ": {
-							  "date": "2022-04-14",
-							  "marketType": "EQUITY",
-							  "exchange": "NULL",
-							  "category": "NULL",
-							  "product": "EQ",
-							  "productName": "equity",
-							  "isOpen": true,
-							  "sessionHours": {
+					"equity": {
+						"EQ": {
+							"date": "2022-04-14",
+							"marketType": "EQUITY",
+							"exchange": "NULL",
+							"category": "NULL",
+							"product": "EQ",
+							"productName": "equity",
+							"isOpen": true,
+							"sessionHours": {
 								"preMarket": [
-								  {
-									"start": "2022-04-14T07:00:00-04:00",
-									"end": "2022-04-14T09:30:00-04:00"
-								  }
+									{
+										"start": "2022-04-14T07:00:00-04:00",
+										"end": "2022-04-14T09:30:00-04:00"
+									}
 								],
 								"regularMarket": [
-								  {
-									"start": "2022-04-14T09:30:00-04:00",
-									"end": "2022-04-14T16:00:00-04:00"
-								  }
+									{
+										"start": "2022-04-14T09:30:00-04:00",
+										"end": "2022-04-14T16:00:00-04:00"
+									}
 								],
 								"postMarket": [
-								  {
-									"start": "2022-04-14T16:00:00-04:00",
-									"end": "2022-04-14T20:00:00-04:00"
-								  }
+									{
+										"start": "2022-04-14T16:00:00-04:00",
+										"end": "2022-04-14T20:00:00-04:00"
+									}
 								]
-							  }
 							}
-						  }
-						}"#,
+						}
+					}
+				}"#,
             )
             .create_async()
             .await;
@@ -2048,16 +2048,16 @@ mod tests {
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
-                    "instruments": [
-                      {
-                        "cusip": "922908769",
-                        "symbol": "VTI",
-                        "description": "VANGUARD TOTAL STOCK MARKET ETF",
-                        "exchange": "NYSE Arca",
-                        "assetType": "ETF"
-                      }
-                    ]
-                  }"#,
+					"instruments": [
+						{
+							"cusip": "922908769",
+							"symbol": "VTI",
+							"description": "VANGUARD TOTAL STOCK MARKET ETF",
+							"exchange": "NYSE Arca",
+							"assetType": "ETF"
+						}
+					]
+				}"#,
             )
             .create_async()
             .await;

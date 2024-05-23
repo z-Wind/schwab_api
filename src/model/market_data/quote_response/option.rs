@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Option security
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionResponse {
     /// example: 1234567890
@@ -26,7 +26,7 @@ pub struct OptionResponse {
 
 /// Quote data of Option security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteOption {
     /// example: 145.09
@@ -215,7 +215,7 @@ pub struct QuoteOption {
 
 /// Reference data of Option security
 #[serde_as]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceOption {
     /// Indicates call or put
@@ -312,10 +312,9 @@ pub struct ReferenceOption {
 }
 
 /// Indicates call or put
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ContractType {
-    #[default]
     #[serde(rename = "P")]
     Put,
     #[serde(rename = "C")]
@@ -323,10 +322,9 @@ pub enum ContractType {
 }
 
 /// option contract exercise type America or European
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExerciseType {
-    #[default]
     #[serde(rename = "A")]
     America,
     #[serde(rename = "E")]
@@ -334,11 +332,11 @@ pub enum ExerciseType {
 }
 
 /// M for End Of Month Expiration Calendar Cycle. (To match the last business day of the month), Q for Quarterly expirations (last business day of the quarter month MAR/JUN/SEP/DEC), W for Weekly expiration (also called Friday Short Term Expirations) and S for Expires 3rd Friday of the month (also known as regular options).
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExpirationType {
     /// M for End Of Month Expiration Calendar Cycle. (To match the last business day of the month)
-    #[default]
+
     #[serde(rename = "M")]
     Month,
 
@@ -356,10 +354,9 @@ pub enum ExpirationType {
 }
 
 /// option contract settlement type AM or PM
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SettlementType {
-    #[default]
     #[serde(rename = "A")]
     AM,
     #[serde(rename = "P")]

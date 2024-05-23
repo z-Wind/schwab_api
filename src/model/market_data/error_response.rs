@@ -2,13 +2,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorResponse {
     pub errors: Vec<Error>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Error {
     /// readOnly: true
@@ -42,7 +42,7 @@ pub struct Error {
 }
 
 /// Who is responsible for triggering these errors.
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorSource {
     /// readOnly: true
@@ -68,12 +68,11 @@ pub struct ErrorSource {
 }
 
 /// The HTTP status code .
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(i32)]
 pub enum StatusCode {
     /// 400 Bad Request
     /// [[RFC7231, Section 6.5.1](https://tools.ietf.org/html/rfc7231#section-6.5.1)]
-    #[default]
     BadRequest = 400,
 
     /// 401 Unauthorized
