@@ -447,7 +447,7 @@ pub enum DivCapGains {
 mod tests {
     use super::*;
 
-    #[test] 
+    #[test]
     fn test_de_order() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),

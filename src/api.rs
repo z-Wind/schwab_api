@@ -432,6 +432,7 @@ mod tests {
     use super::*;
 
     use float_cmp::assert_approx_eq;
+    use pretty_assertions::assert_eq;
     use std::path::PathBuf;
 
     use crate::model::trader::order::ExecutionType;

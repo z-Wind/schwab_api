@@ -365,6 +365,8 @@ impl EndpointInstrument {
 mod tests {
     use super::*;
 
+    use pretty_assertions::assert_eq;
+
     #[test]
     fn test_endpoint_account() {
         assert_eq!(

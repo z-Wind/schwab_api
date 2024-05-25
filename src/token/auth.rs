@@ -130,6 +130,7 @@ impl Authorizer {
 mod tests {
     use super::*;
 
+    use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
 
     const REDIRECT_URL: &str = "https://127.0.0.1:8080";

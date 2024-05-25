@@ -72,6 +72,7 @@ mod tests {
         body::Body,
         http::{Request, StatusCode, Uri},
     };
+    use pretty_assertions::assert_eq;
     use tower::ServiceExt; // for `oneshot` and `ready`
 
     fn config(csrf: CsrfToken, tx: async_channel::Sender<String>) -> AppState {
