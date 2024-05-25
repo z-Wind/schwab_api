@@ -23,7 +23,7 @@
             "orderLegType": "EQUITY",
             "legId": 0,
             "instrument": {
-                "assetType": "COLLECTIVE_INVESTMENT",
+                "assetType": "EQUITY",
                 "cusip": "string",
                 "symbol": "string",
                 "description": "string",
@@ -52,7 +52,7 @@
     "orderActivityCollection": [
         {
             "activityType": "EXECUTION",
-            "executionType": "FILL",
+            "executionType": "FILLED",
             "quantity": 0,
             "orderRemainingQuantity": 0,
             "executionLegs": [

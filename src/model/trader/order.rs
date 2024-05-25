@@ -382,11 +382,25 @@ pub enum ActivityType {
     OrderAction,
 }
 
+/// Order Status
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExecutionType {
     #[default]
-    Fill,
+    /// Your order is waiting to be completed.
+    Open,
+    /// Your order cannot be completed until a certain condition is met.
+    OpenContingent,
+    /// Your order cancellation request has been submitted.
+    CancelPending,
+    /// Part of the order has been filled, part is still open.
+    OpenPartialFill,
+    /// Part of your order was filled. The remaining part was canceled.
+    ClosedPartialFill,
+    /// Your order was completed in full.
+    Filled,
+    /// Your order was canceled at your request.
+    Canceled,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -433,7 +447,7 @@ pub enum DivCapGains {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test] 
     fn test_de_order() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),

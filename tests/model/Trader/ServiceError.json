@@ -1,6 +1,11 @@
 {
     "message": "string",
     "errors": [
-        "string"
+        {
+            "id": "string",
+            "status": 401,
+            "title": "string",
+            "detail": "string"
+        }
     ]
 }

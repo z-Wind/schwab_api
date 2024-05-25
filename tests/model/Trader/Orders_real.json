@@ -34,5 +34,461 @@
         "status": "PENDING_ACTIVATION",
         "enteredTime": "2024-05-18T05:38:44+0000",
         "accountNumber": 12345678
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 30.1,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2024-05-25T09:53:53+0000",
+        "closeTime": "2024-05-25T09:55:42+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "orderActivityCollection": [
+            {
+                "activityType": "EXECUTION",
+                "executionType": "CANCELED",
+                "quantity": 1.0,
+                "orderRemainingQuantity": 0.0,
+                "executionLegs": [
+                    {
+                        "legId": 1,
+                        "quantity": 1.0,
+                        "mismarkedQuantity": 0.0,
+                        "price": 0.0,
+                        "time": "2024-05-25T09:55:42+0000",
+                        "instrumentId": 5215623
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 30.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REPLACED",
+        "enteredTime": "2024-05-25T09:53:50+0000",
+        "closeTime": "2024-05-25T09:53:53+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "orderActivityCollection": [
+            {
+                "activityType": "EXECUTION",
+                "executionType": "CANCELED",
+                "quantity": 1.0,
+                "orderRemainingQuantity": 1.0,
+                "executionLegs": [
+                    {
+                        "legId": 1,
+                        "quantity": 1.0,
+                        "mismarkedQuantity": 0.0,
+                        "price": 0.0,
+                        "time": "2024-05-25T09:53:53+0000",
+                        "instrumentId": 5215623
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 0.1,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-25T09:51:35+0000",
+        "closeTime": "2024-05-25T09:51:35+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order.|Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 10.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-25T09:46:20+0000",
+        "closeTime": "2024-05-25T09:46:20+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 10.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-25T09:43:24+0000",
+        "closeTime": "2024-05-25T09:43:24+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 0.1,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-25T09:41:53+0000",
+        "closeTime": "2024-05-25T09:41:53+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order.|Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 0.1,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-25T09:19:54+0000",
+        "closeTime": "2024-05-25T09:19:54+0000",
+        "tag": "TA_afca43bf-9d31-48d2-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order.|Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 1.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "REJECTED",
+        "enteredTime": "2024-05-24T12:31:04+0000",
+        "closeTime": "2024-05-24T12:31:04+0000",
+        "tag": "TA_a28cf04b-f73e-4f0d-",
+        "accountNumber": 12345678,
+        "statusDescription": "Your limit price is significantly away from the current market price. Please adjust your order.|Your limit price is significantly away from the current market price. Please adjust your order."
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 30.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2024-05-18T07:19:33+0000",
+        "closeTime": "2024-05-18T08:29:29+0000",
+        "accountNumber": 12345678,
+        "orderActivityCollection": [
+            {
+                "activityType": "EXECUTION",
+                "executionType": "CANCELED",
+                "quantity": 1.0,
+                "orderRemainingQuantity": 0.0,
+                "executionLegs": [
+                    {
+                        "legId": 1,
+                        "quantity": 1.0,
+                        "mismarkedQuantity": 0.0,
+                        "price": 0.0,
+                        "time": "2024-05-18T08:29:29+0000",
+                        "instrumentId": 5215623
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "session": "NORMAL",
+        "duration": "DAY",
+        "orderType": "LIMIT",
+        "complexOrderStrategyType": "NONE",
+        "quantity": 1.0,
+        "filledQuantity": 0.0,
+        "remainingQuantity": 0.0,
+        "requestedDestination": "AUTO",
+        "destinationLinkName": "AutoRoute",
+        "price": 30.0,
+        "orderLegCollection": [
+            {
+                "orderLegType": "EQUITY",
+                "legId": 1,
+                "instrument": {
+                    "assetType": "COLLECTIVE_INVESTMENT",
+                    "cusip": "922908769",
+                    "symbol": "VTI",
+                    "description": "VANGUARD TOTAL STOCK MARKET ETF",
+                    "instrumentId": 5215623,
+                    "type": "EXCHANGE_TRADED_FUND"
+                },
+                "instruction": "BUY",
+                "positionEffect": "OPENING",
+                "quantity": 1.0
+            }
+        ],
+        "orderStrategyType": "SINGLE",
+        "orderId": 1234567890123,
+        "cancelable": false,
+        "editable": false,
+        "status": "CANCELED",
+        "enteredTime": "2024-05-18T05:38:44+0000",
+        "closeTime": "2024-05-18T06:12:43+0000",
+        "accountNumber": 12345678,
+        "orderActivityCollection": [
+            {
+                "activityType": "EXECUTION",
+                "executionType": "CANCELED",
+                "quantity": 1.0,
+                "orderRemainingQuantity": 0.0,
+                "executionLegs": [
+                    {
+                        "legId": 1,
+                        "quantity": 1.0,
+                        "mismarkedQuantity": 0.0,
+                        "price": 0.0,
+                        "time": "2024-05-18T06:12:43+0000",
+                        "instrumentId": 5215623
+                    }
+                ]
+            }
+        ]
     }
 ]

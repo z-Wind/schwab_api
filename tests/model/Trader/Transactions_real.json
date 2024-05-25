@@ -14,6 +14,7 @@
         "transferItems": [
             {
                 "instrument": {
+					"assetType": "COLLECTIVE_INVESTMENT",
                     "assetType": "COLLECTIVE_INVESTMENT",
                     "status": "ACTIVE",
                     "symbol": "BND",

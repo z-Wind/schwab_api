@@ -21,6 +21,8 @@ use super::order::StopPriceLinkType;
 use super::order::StopType;
 use super::order::TaxLotMethod;
 use super::preview_order::Instruction;
+use crate::model::market_data::instrument::InstrumentAssetType;
+use crate::model::InstrumentResponse;
 
 /// More Info in [Charles Schwab Developer Portal](https://developer.schwab.com/) : API Products -> Trader API - Individual -> Accounts and Trading Production -> Documentation -> Place Order Samples
 #[skip_serializing_none]
@@ -122,7 +124,7 @@ impl From<Order> for OrderRequest {
 impl OrderRequest {
     /// Create a market order.
     pub fn market(
-        symbol: AccountsInstrument,
+        symbol: InstrumentRequest,
         instruction: Instruction,
         quantity: f64,
     ) -> Result<Self, OrderRequestBuilderError> {
@@ -142,7 +144,7 @@ impl OrderRequest {
 
     /// Create a limit order.
     pub fn limit(
-        symbol: AccountsInstrument,
+        symbol: InstrumentRequest,
         instruction: Instruction,
         quantity: f64,
         price: f64,
@@ -237,10 +239,10 @@ impl From<OrderType> for OrderTypeRequest {
 }
 
 /// Similar to `super::order::OrderLegCollection`, but more simple
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderLegCollectionRequest {
-    pub instrument: AccountsInstrument,
+    pub instrument: InstrumentRequest,
     pub instruction: Instruction,
     pub quantity: f64,
 }
@@ -248,9 +250,72 @@ pub struct OrderLegCollectionRequest {
 impl From<OrderLegCollection> for OrderLegCollectionRequest {
     fn from(value: OrderLegCollection) -> Self {
         Self {
-            instrument: value.instrument,
+            instrument: value.instrument.into(),
             instruction: value.instruction,
             quantity: value.quantity,
+        }
+    }
+}
+
+/// Similar to `super::accounts::AccountsInstrument`, but more simple
+/// only support Equity, Option now in schwab API
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "assetType", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InstrumentRequest {
+    Equity { symbol: String },
+    Option { symbol: String },
+}
+
+impl From<AccountsInstrument> for InstrumentRequest {
+    fn from(value: AccountsInstrument) -> Self {
+        match value {
+            AccountsInstrument::CashEquivalent(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::Equity(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::FixedIncome(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::MutualFund(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::Option(x) => Self::Option {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::Index(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::Currency(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+            AccountsInstrument::CollectiveInvestment(x) => Self::Equity {
+                symbol: x.accounts_base_instrument.symbol,
+            },
+        }
+    }
+}
+
+impl From<InstrumentResponse> for InstrumentRequest {
+    fn from(value: InstrumentResponse) -> Self {
+        match value.asset_type {
+            InstrumentAssetType::Bond
+            | InstrumentAssetType::Equity
+            | InstrumentAssetType::Etf
+            | InstrumentAssetType::Extended
+            | InstrumentAssetType::Forex
+            | InstrumentAssetType::Future
+            | InstrumentAssetType::Fundamental
+            | InstrumentAssetType::Index
+            | InstrumentAssetType::Indicator
+            | InstrumentAssetType::MutualFund
+            | InstrumentAssetType::Unknown => Self::Equity {
+                symbol: value.symbol,
+            },
+            InstrumentAssetType::FutureOption | InstrumentAssetType::Option => Self::Option {
+                symbol: value.symbol,
+            },
         }
     }
 }
@@ -261,8 +326,6 @@ mod tests {
 
     use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
     use serde_json::json;
-
-    use crate::model::trader::accounts::{AccountEquity, AccountOption, AccountsBaseInstrument};
 
     #[test]
     fn test_de() {
@@ -297,13 +360,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Equity(AccountEquity {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountEquity::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "XYZ".to_string(),
+        };
         let order_req = OrderRequest::market(symbol, Instruction::Buy, 15.0).unwrap();
         let order_req = serde_json::to_value(order_req).unwrap();
         assert_json_matches!(
@@ -336,13 +395,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Option(AccountOption {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ   240315C00500000".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountOption::default()
-        });
+        let symbol = InstrumentRequest::Option {
+            symbol: "XYZ   240315C00500000".to_string(),
+        };
         let order_req = OrderRequest::limit(symbol, Instruction::BuyToOpen, 10.0, 6.45).unwrap();
         let order_req = serde_json::to_value(order_req).unwrap();
         assert_json_matches!(
@@ -382,20 +437,12 @@ mod tests {
             ]
         });
 
-        let symbol1 = AccountsInstrument::Option(AccountOption {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ   240315P00045000".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountOption::default()
-        });
-        let symbol2 = AccountsInstrument::Option(AccountOption {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ   240315P00043000".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountOption::default()
-        });
+        let symbol1 = InstrumentRequest::Option {
+            symbol: "XYZ   240315P00045000".to_string(),
+        };
+        let symbol2 = InstrumentRequest::Option {
+            symbol: "XYZ   240315P00043000".to_string(),
+        };
         let order_req = OrderRequestBuilder::default()
             .order_type(OrderTypeRequest::NetDebit)
             .session(Session::Normal)
@@ -464,13 +511,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Equity(AccountEquity {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountEquity::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "XYZ".to_string(),
+        };
 
         let child_order_req = OrderRequestBuilder::default()
             .order_type(OrderTypeRequest::Limit)
@@ -551,13 +594,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Equity(AccountEquity {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountEquity::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "XYZ".to_string(),
+        };
 
         let child_order_req1 = OrderRequestBuilder::default()
             .order_type(OrderTypeRequest::Limit)
@@ -598,6 +637,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn test_one_triggers_a_one_cancels_another() {
         // Conditional Order: One Triggers A One Cancels Another
         // Buy 5 shares of XYZ at a Limit price of $14.97 good for the Day. Once filled, 2 sell orders are immediately sent: Sell 5 shares of XYZ at a Limit price of $15.27 and Sell 5 shares of XYZ with a Stop order where the stop price is $11.27. If one of the sell orders fill, the other order is immediately cancelled. Both Sell orders are Good till Cancel. Also known as a 1st Trigger OCO order.
@@ -660,13 +700,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Equity(AccountEquity {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountEquity::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "XYZ".to_string(),
+        };
 
         let child_child_order_req1 = OrderRequestBuilder::default()
             .order_type(OrderTypeRequest::Limit)
@@ -744,13 +780,9 @@ mod tests {
             ]
         });
 
-        let symbol = AccountsInstrument::Equity(AccountEquity {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "XYZ".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountEquity::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "XYZ".to_string(),
+        };
 
         let order_req = OrderRequestBuilder::default()
             .complex_order_strategy_type(ComplexOrderStrategyType::None)

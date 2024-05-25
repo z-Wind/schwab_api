@@ -431,11 +431,11 @@ impl<T: Tokener> Api<T> {
 mod tests {
     use super::*;
 
+    use float_cmp::assert_approx_eq;
     use std::path::PathBuf;
 
-    use crate::model::trader::accounts::AccountCollectiveInvestment;
-    use crate::model::trader::accounts::AccountsBaseInstrument;
-    use crate::model::trader::accounts::AccountsInstrument;
+    use crate::model::trader::order::ExecutionType;
+    use crate::model::trader::order_request::InstrumentRequest;
     use crate::model::trader::preview_order::Instruction;
     use crate::token::TokenChecker;
 
@@ -713,13 +713,13 @@ mod tests {
         let req = api
             .get_account_orders(
                 account_number().await,
-                chrono::NaiveDate::from_ymd_opt(2024, 6, 1)
+                chrono::NaiveDate::from_ymd_opt(2024, 1, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                chrono::NaiveDate::from_ymd_opt(2025, 5, 20)
+                chrono::NaiveDate::from_ymd_opt(2025, 1, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
@@ -737,13 +737,13 @@ mod tests {
         let req = api
             .get_account_orders(
                 account_number().await,
-                chrono::NaiveDate::from_ymd_opt(2024, 6, 1)
+                chrono::NaiveDate::from_ymd_opt(2024, 5, 1)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
                     .and_local_timezone(chrono::Utc)
                     .unwrap(),
-                chrono::NaiveDate::from_ymd_opt(2025, 5, 20)
+                chrono::NaiveDate::from_ymd_opt(2024, 5, 26)
                     .unwrap()
                     .and_hms_milli_opt(0, 0, 1, 444)
                     .unwrap()
@@ -760,47 +760,21 @@ mod tests {
         not(all(feature = "test_online", feature = "danger")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_SECRET and SCHWAB_SECRET need to be provided in the environment."#
     )]
+    #[allow(clippy::too_many_lines)]
     #[tokio::test]
     async fn test_post_put_delete_account_order() {
-        todo!();
         let api = client().await;
 
-        // #! AccountsInstrument is not Instrument like assetType
-        // Instrument
-        // {
-        // "instruments": [
-        // {
-        // "cusip": "922908769",
-        // "symbol": "VTI",
-        // "description": "VANGUARD TOTAL STOCK MARKET ETF",
-        // "exchange": "NYSE Arca",
-        // "assetType": "ETF"
-        // }
-        // ]
-        // }
-        // AccountsInstrument
-        // "instrument": {
-        // "assetType": "COLLECTIVE_INVESTMENT",
-        // "cusip": "922908769",
-        // "symbol": "VTI",
-        // "description": "VANGUARD TOTAL STOCK MARKET ETF",
-        // "instrumentId": 5215623,
-        // "type": "EXCHANGE_TRADED_FUND"
-        // },
-        // get symbol VTI
-        // let req = api.get_instrument("922908769".into()).await.unwrap();
-        // let symbol = req.send().await.unwrap();
-        // assert_eq!(symbol.symbol, "VTI");
-        let symbol = AccountsInstrument::CollectiveInvestment(AccountCollectiveInvestment {
-            accounts_base_instrument: AccountsBaseInstrument {
-                symbol: "VTI".to_string(),
-                ..AccountsBaseInstrument::default()
-            },
-            ..AccountCollectiveInvestment::default()
-        });
+        let symbol = InstrumentRequest::Equity {
+            symbol: "VEA".to_string(),
+        };
+        let quantity = 1.0;
+        let price = 10.0;
+        let modified_price = 11.0;
 
         // post
-        let order_post = model::OrderRequest::limit(symbol, Instruction::Buy, 1.0, 0.0).unwrap();
+        let order_post =
+            model::OrderRequest::limit(symbol.clone(), Instruction::Buy, quantity, price).unwrap();
         let req = api
             .post_account_order(account_number().await, order_post.clone())
             .await
@@ -823,13 +797,41 @@ mod tests {
             .await
             .unwrap();
         let orders = req.send().await.unwrap();
-        let mut order_post_check: model::OrderRequest = orders[0].into();
-        assert_eq!(order_post, order_post_check);
+        dbg!(&orders);
+        let order_post_check = orders[0].clone();
+        assert_eq!(
+            order_post_check.session,
+            model::trader::order::Session::Normal
+        );
+        assert_approx_eq!(f64, order_post_check.price, price);
+        assert_eq!(
+            order_post_check.duration,
+            model::trader::order::Duration::Day
+        );
+        assert_eq!(
+            order_post_check.order_type,
+            model::trader::order::OrderType::Limit
+        );
+        assert_eq!(
+            Into::<InstrumentRequest>::into(
+                order_post_check.order_leg_collection[0].instrument.clone()
+            ),
+            symbol
+        );
+        assert_eq!(
+            Into::<Instruction>::into(order_post_check.order_leg_collection[0].instruction),
+            Instruction::Buy
+        );
+        assert_approx_eq!(
+            f64,
+            order_post_check.order_leg_collection[0].quantity,
+            quantity
+        );
 
         // put
-        let order_id = order_post_check.order_id.unwrap();
-        let mut order_put = order_post_check;
-        order_put.price = Some(0.1);
+        let order_id = order_post_check.order_id;
+        let mut order_put: model::OrderRequest = order_post_check.into();
+        order_put.price = Some(modified_price);
         let req = api
             .put_account_order(account_number().await, order_id, order_put.clone())
             .await
@@ -837,12 +839,41 @@ mod tests {
         req.send().await.unwrap();
 
         // put check
+        let order_id = order_id + 1;
         let req = api
             .get_account_order(account_number().await, order_id)
             .await
             .unwrap();
         let order_put_check = req.send().await.unwrap();
-        assert_eq!(order_put, order_put_check.into());
+        dbg!(&order_put_check);
+        assert_eq!(
+            order_put_check.session,
+            model::trader::order::Session::Normal
+        );
+        assert_approx_eq!(f64, order_put_check.price, modified_price);
+        assert_eq!(
+            order_put_check.duration,
+            model::trader::order::Duration::Day
+        );
+        assert_eq!(
+            order_put_check.order_type,
+            model::trader::order::OrderType::Limit
+        );
+        assert_eq!(
+            Into::<InstrumentRequest>::into(
+                order_put_check.order_leg_collection[0].instrument.clone()
+            ),
+            symbol
+        );
+        assert_eq!(
+            Into::<Instruction>::into(order_put_check.order_leg_collection[0].instruction),
+            Instruction::Buy
+        );
+        assert_approx_eq!(
+            f64,
+            order_put_check.order_leg_collection[0].quantity,
+            quantity
+        );
 
         // delete
         let req = api
@@ -853,21 +884,15 @@ mod tests {
 
         // get check
         let req = api
-            .get_account_orders(
-                account_number().await,
-                chrono::Local::now()
-                    .checked_sub_days(chrono::Days::new(1))
-                    .unwrap()
-                    .to_utc(),
-                chrono::Local::now()
-                    .checked_add_days(chrono::Days::new(1))
-                    .unwrap()
-                    .to_utc(),
-            )
+            .get_account_order(account_number().await, order_id)
             .await
             .unwrap();
-        let orders = req.send().await.unwrap();
-        assert!(orders.is_empty());
+        let order = req.send().await.unwrap();
+        dbg!(&order);
+        assert_eq!(
+            order.order_activity_collection.unwrap()[0].execution_type,
+            ExecutionType::Canceled
+        );
     }
 
     #[cfg_attr(
@@ -919,14 +944,14 @@ mod tests {
     )]
     #[tokio::test]
     async fn test_post_accounts_preview_order() {
-        todo!();
-        let api = client().await;
-        let req = api
-            .post_accounts_preview_order(account_number().await, model::PreviewOrder::default())
-            .await
-            .unwrap();
-        let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        unimplemented!("comming soon by schwab");
+        // let api = client().await;
+        // let req = api
+        //     .post_accounts_preview_order(account_number().await, model::PreviewOrder::default())
+        //     .await
+        //     .unwrap();
+        // let rsp = req.send().await.unwrap();
+        // dbg!(rsp);
     }
 
     #[cfg_attr(

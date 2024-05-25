@@ -1,5 +1,5 @@
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Value;
 
 use super::accounts::AssetType;
 
@@ -50,7 +50,7 @@ pub struct TransferItem {
     pub position_effect: Option<TransferItemPositionEffect>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "assetType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionInstrument {
     TransactionCashEquivalent(TransactionCashEquivalent),
@@ -64,6 +64,105 @@ pub enum TransactionInstrument {
     TransactionMutualFund(TransactionMutualFund),
     TransactionOption(TransactionOption),
     Product(Product),
+}
+
+// resolve duplicate key "assetType"
+impl<'de> Deserialize<'de> for TransactionInstrument {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let mut map: serde_json::Map<String, Value> = Deserialize::deserialize(deserializer)?;
+
+        if let Some(Value::String(asset_type)) = map.remove("assetType") {
+            match asset_type.as_str() {
+                "TRANSACTION_CASH_EQUIVALENT" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::TransactionCashEquivalent)
+                        .map_err(serde::de::Error::custom)
+                }
+                "COLLECTIVE_INVESTMENT" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::CollectiveInvestment)
+                        .map_err(serde::de::Error::custom)
+                }
+                "CURRENCY" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::Currency)
+                        .map_err(serde::de::Error::custom)
+                }
+                "TRANSACTION_EQUITY" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::TransactionEquity)
+                        .map_err(serde::de::Error::custom)
+                }
+                "TRANSACTION_FIXED_INCOME" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::TransactionFixedIncome)
+                        .map_err(serde::de::Error::custom)
+                }
+                "FOREX" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::Forex)
+                        .map_err(serde::de::Error::custom)
+                }
+                "FUTURE" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::Future)
+                        .map_err(serde::de::Error::custom)
+                }
+                "INDEX" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::Index)
+                        .map_err(serde::de::Error::custom)
+                }
+                "TRANSACTION_MUTUAL_FUND" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::TransactionMutualFund)
+                        .map_err(serde::de::Error::custom)
+                }
+                "TRANSACTION_OPTION" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::TransactionOption)
+                        .map_err(serde::de::Error::custom)
+                }
+                "PRODUCT" => {
+                    let v = Value::Object(map);
+                    serde_json::from_value(v)
+                        .map(TransactionInstrument::Product)
+                        .map_err(serde::de::Error::custom)
+                }
+                _ => Err(serde::de::Error::unknown_variant(
+                    &asset_type,
+                    &[
+                        "TRANSACTION_CASH_EQUIVALENT",
+                        "COLLECTIVE_INVESTMENT",
+                        "CURRENCY",
+                        "TRANSACTION_EQUITY",
+                        "TRANSACTION_FIXED_INCOME",
+                        "FOREX",
+                        "FUTURE",
+                        "INDEX",
+                        "TRANSACTION_MUTUAL_FUND",
+                        "TRANSACTION_OPTION",
+                        "PRODUCT",
+                    ],
+                )),
+            }
+        } else {
+            Err(serde::de::Error::missing_field("assetType"))
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -440,7 +539,7 @@ mod tests {
     fn test_de() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/Transactions_real.json"
+            "/tests/model/Trader/Transactions.json"
         ));
 
         let val = serde_json::from_str::<Vec<Transaction>>(json);
@@ -456,6 +555,18 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Vec<Transaction>>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
+    fn test_de_real2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/Transaction_real.json"
+        ));
+
+        let val = serde_json::from_str::<Transaction>(json);
         println!("{val:?}");
         assert!(val.is_ok());
     }

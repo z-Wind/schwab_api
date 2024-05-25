@@ -299,7 +299,7 @@ impl GetAccountOrdersRequest {
 
         // let json = rsp.text().await.unwrap();
         // dbg!(&json);
-        // // std::fs::write("Order_real.json", &json).expect("Unable to write file");
+        // std::fs::write("Orders_real.json", &json).expect("Unable to write file");
         // let item: Vec<model::Order> = serde_json::from_str(&json).unwrap();
         // println!("{:#?}", item);
         // panic!();
@@ -419,6 +419,13 @@ impl GetAccountOrderRequest {
     pub async fn send(self) -> Result<model::Order, Error> {
         let req = self.build();
         let rsp = req.send().await?;
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Order_real.json", &json).expect("Unable to write file");
+        // let item: Vec<model::Order> = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
 
         let status = rsp.status();
         if status != StatusCode::OK {
@@ -834,9 +841,7 @@ impl GetAccountTransactions {
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<Vec<model::Transaction>>()
-            .await
-            .map_err(std::convert::Into::into)
+        rsp.json().await.map_err(std::convert::Into::into)
     }
 }
 
@@ -893,14 +898,20 @@ impl GetAccountTransaction {
         let req = self.build();
         let rsp = req.send().await?;
 
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // std::fs::write("Transaction_real.json", &json).expect("Unable to write file");
+        // let item: model::Transaction = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", item);
+        // panic!();
+
         let status = rsp.status();
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
         }
 
-        let mut transactions = rsp.json::<Vec<model::Transaction>>().await?;
-        Ok(transactions.pop().expect("must exist"))
+        rsp.json().await.map_err(std::convert::Into::into)
     }
 }
 
@@ -1193,7 +1204,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 1);
+        assert_eq!(result.len(), 11);
     }
 
     #[tokio::test]
@@ -1449,7 +1460,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 1);
+        assert_eq!(result.len(), 11);
     }
 
     #[tokio::test]
@@ -1594,37 +1605,10 @@ mod tests {
             .mock("GET", "/accounts/account_number/transactions/123")
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body(
-                r#"[
-                    {
-                        "activityId": 12345678910,
-                        "time": "2024-05-06T15:55:14+0000",
-                        "description": "Ordinary Dividend~BND",
-                        "accountNumber": "12345678",
-                        "type": "DIVIDEND_OR_INTEREST",
-                        "status": "VALID",
-                        "subAccount": "CASH",
-                        "tradeDate": "2024-05-06T04:00:00+0000",
-                        "settlementDate": "2024-05-06T04:00:00+0000",
-                        "netAmount": 12.34,
-                        "transferItems": [
-                            {
-                            "instrument": {
-                                "assetType": "CURRENCY",
-                                "status": "ACTIVE",
-                                "symbol": "CURRENCY_USD",
-                                "description": "USD currency",
-                                "instrumentId": 1,
-                                "closingPrice": 0
-                            },
-                            "amount": 12.34,
-                            "cost": 0,
-                            "price": 0
-                            }
-                        ]
-                    }
-              ]"#,
-            )
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/Trader/Transaction_real.json"
+            ))
             .create_async()
             .await;
 

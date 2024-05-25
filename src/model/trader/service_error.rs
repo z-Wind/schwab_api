@@ -25,7 +25,7 @@ mod tests {
     fn test_de() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/tests/model/Trader/ServiceError_real.json"
+            "/tests/model/Trader/ServiceError.json"
         ));
 
         let val = serde_json::from_str::<ServiceError>(json);
