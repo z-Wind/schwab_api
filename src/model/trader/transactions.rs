@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 use super::accounts::AssetType;
@@ -42,7 +42,7 @@ pub struct UserDetails {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferItem {
-    pub instrument: TransactionInstrument,
+    pub instrument: DuplicatedKey<TransactionInstrument>,
     pub amount: f64,
     pub cost: f64,
     pub price: Option<f64>,
@@ -51,6 +51,22 @@ pub struct TransferItem {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(transparent)]
+pub struct DuplicatedKey<T: DeserializeOwned>(T);
+
+impl<'de, T: DeserializeOwned> Deserialize<'de> for DuplicatedKey<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value: Value = Deserialize::deserialize(deserializer)?;
+        serde_json::from_value(value)
+            .map(DuplicatedKey)
+            .map_err(serde::de::Error::custom)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "assetType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TransactionInstrument {
     TransactionCashEquivalent(TransactionCashEquivalent),
@@ -64,105 +80,6 @@ pub enum TransactionInstrument {
     TransactionMutualFund(TransactionMutualFund),
     TransactionOption(TransactionOption),
     Product(Product),
-}
-
-// resolve duplicate key "assetType"
-impl<'de> Deserialize<'de> for TransactionInstrument {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let mut map: serde_json::Map<String, Value> = Deserialize::deserialize(deserializer)?;
-
-        if let Some(Value::String(asset_type)) = map.remove("assetType") {
-            match asset_type.as_str() {
-                "TRANSACTION_CASH_EQUIVALENT" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::TransactionCashEquivalent)
-                        .map_err(serde::de::Error::custom)
-                }
-                "COLLECTIVE_INVESTMENT" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::CollectiveInvestment)
-                        .map_err(serde::de::Error::custom)
-                }
-                "CURRENCY" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::Currency)
-                        .map_err(serde::de::Error::custom)
-                }
-                "TRANSACTION_EQUITY" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::TransactionEquity)
-                        .map_err(serde::de::Error::custom)
-                }
-                "TRANSACTION_FIXED_INCOME" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::TransactionFixedIncome)
-                        .map_err(serde::de::Error::custom)
-                }
-                "FOREX" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::Forex)
-                        .map_err(serde::de::Error::custom)
-                }
-                "FUTURE" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::Future)
-                        .map_err(serde::de::Error::custom)
-                }
-                "INDEX" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::Index)
-                        .map_err(serde::de::Error::custom)
-                }
-                "TRANSACTION_MUTUAL_FUND" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::TransactionMutualFund)
-                        .map_err(serde::de::Error::custom)
-                }
-                "TRANSACTION_OPTION" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::TransactionOption)
-                        .map_err(serde::de::Error::custom)
-                }
-                "PRODUCT" => {
-                    let v = Value::Object(map);
-                    serde_json::from_value(v)
-                        .map(TransactionInstrument::Product)
-                        .map_err(serde::de::Error::custom)
-                }
-                _ => Err(serde::de::Error::unknown_variant(
-                    &asset_type,
-                    &[
-                        "TRANSACTION_CASH_EQUIVALENT",
-                        "COLLECTIVE_INVESTMENT",
-                        "CURRENCY",
-                        "TRANSACTION_EQUITY",
-                        "TRANSACTION_FIXED_INCOME",
-                        "FOREX",
-                        "FUTURE",
-                        "INDEX",
-                        "TRANSACTION_MUTUAL_FUND",
-                        "TRANSACTION_OPTION",
-                        "PRODUCT",
-                    ],
-                )),
-            }
-        } else {
-            Err(serde::de::Error::missing_field("assetType"))
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -241,7 +158,7 @@ pub struct Future {
     pub multiplier: f64,
 
     #[serde(flatten)]
-    pub transaction_instrument: Box<TransactionInstrument>,
+    pub transaction_instrument: Box<DuplicatedKey<TransactionInstrument>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -253,7 +170,7 @@ pub struct Index {
     pub type_field: IndexType,
 
     #[serde(flatten)]
-    pub transaction_instrument: Box<TransactionInstrument>,
+    pub transaction_instrument: Box<DuplicatedKey<TransactionInstrument>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -288,7 +205,7 @@ pub struct TransactionOption {
     pub type_field: TransactionOptionType,
     pub underlying_symbol: String,
     pub underlying_cusip: String,
-    pub deliverable: Box<TransactionInstrument>,
+    pub deliverable: Box<DuplicatedKey<TransactionInstrument>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -298,7 +215,7 @@ pub struct TransactionAPIOptionDeliverable {
     pub strike_percent: i64,
     pub deliverable_number: i64,
     pub deliverable_units: f64,
-    pub deliverable: TransactionInstrument,
+    pub deliverable: DuplicatedKey<TransactionInstrument>,
     pub asset_type: AssetType,
 }
 
