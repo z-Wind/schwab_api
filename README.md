@@ -1,14 +1,29 @@
 # Schwab API
-[![CI](https://github.com/z-Wind/schwab_api/actions/workflows/ci.yml/badge.svg)](https://github.com/z-Wind/schwab_api/actions/workflows/ci.yml)
+[![CI][actions-badge]][actions-url]
+[![Crates.io][crates-badge]][crates-url]
+[![MIT licensed][mit-badge]][mit-url]
+[![docs][docs-badge]][docs-url]
+[![downloads][downloads-badge]][downloads-url]
+
+[crates-badge]: https://img.shields.io/crates/v/schwab_api.svg
+[crates-url]: https://crates.io/crates/schwab_api
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-url]: https://github.com/z-Wind/schwab_api/blob/main/LICENSE
+[actions-badge]: https://github.com/z-Wind/schwab_api/workflows/CI/badge.svg
+[actions-url]: https://github.com/z-Wind/schwab_api/actions?query=workflow%3ACI+branch%3Amain
+[docs-badge]: https://docs.rs/schwab_api/badge.svg
+[docs-url]: https://docs.rs/schwab_api
+[downloads-badge]: https://img.shields.io/crates/d/schwab_api.svg?style=flat-square
+[downloads-url]: https://crates.io/crates/schwab_api
 
 **This is not an official API or a stable recreation of the Charles Schwab API. Functionality may change due to updates made by Schwab.**
 
 ## Overview
-Currently, the API only supports individual developers.
+Currently, only supports the API of individual developers.
 
 ## Prerequisites
 1. To use the API, you need to apply for access on the [Charles Schwab Developer Portal](https://developer.schwab.com/home). Upon approval, you will receive the necessary Key and Secret.
-2. Create a self-signed certificate
+2. (Option) Create a self-signed certificate
     ```
     openssl req -newkey rsa:4096 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
     ```
@@ -46,7 +61,7 @@ async fn main() {
 ```toml
 # Cargo.toml
 [dependencies]
-schwab_api = "0.1"
+schwab_api = "0.0"
 ```
 
 ## Reference

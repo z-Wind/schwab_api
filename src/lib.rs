@@ -1,11 +1,11 @@
 //! **This is not an official API or a stable recreation of the Charles Schwab API. Functionality may change due to updates made by Schwab.**
 //!
 //! ## Overview
-//! Currently, the API only supports individual developers.
+//! Currently, only supports the API of individual developers.
 //!
 //! ## Prerequisites
 //! 1. To use the API, you need to apply for access on the [Charles Schwab Developer Portal](https://developer.schwab.com/home). Upon approval, you will receive the necessary Key and Secret.
-//! 2. Create a self-signed certificate
+//! 2. (Option) Create a self-signed certificate
 //!     ```bash
 //!     openssl req -newkey rsa:4096 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
 //!     ```
@@ -37,13 +37,6 @@
 //!     let rsp = req.send().await.unwrap();
 //!     println!("{:?}", rsp);
 //! }
-//! ```
-//!
-//! ## Installation
-//! ```toml
-//! # Cargo.toml
-//! [dependencies]
-//! schwab_api = "0.1"
 //! ```
 //!
 //! **Disclaimer:** *This is an unofficial API wrapper for Schwab. It is not endorsed by or affiliated with Schwab or any associated organization. Before using this package, make sure to read and understand the terms of service of the underlying API. The authors of this package accept no responsibility for any damage that might stem from its use. Refer to the LICENSE file for more details.*
