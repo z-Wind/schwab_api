@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::{serde_as, TimestampMilliSeconds};
 use std::collections::HashMap;
 
 use super::quote_response::option::ExpirationType;
@@ -29,6 +30,7 @@ pub struct OptionChain {
     pub is_chain_truncated: Option<bool>,
 }
 
+#[serde_as]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Underlying {
@@ -53,10 +55,12 @@ pub struct Underlying {
     pub percent_change: f64,
     pub quote_time: i64,
     pub symbol: String,
-    pub total_volume: i64,
-    pub trade_time: i64,
+    pub total_volume: u64,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
+#[serde_as]
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -76,10 +80,13 @@ pub struct OptionContract {
     pub low_price: f64,
     pub open_price: f64,
     pub close_price: f64,
-    pub total_volume: i64,
-    pub trade_date: Option<i64>,
-    pub quote_time_in_long: i64,
-    pub trade_time_in_long: i64,
+    pub total_volume: u64,
+    #[serde_as(as = "Option<TimestampMilliSeconds<i64>>")]
+    pub trade_date: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub quote_time_in_long: chrono::DateTime<chrono::Utc>,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub trade_time_in_long: chrono::DateTime<chrono::Utc>,
     pub net_change: f64,
     pub volatility: f64,
     pub delta: f64,
@@ -99,7 +106,8 @@ pub struct OptionContract {
     pub expiration_date: String,
     pub days_to_expiration: i64,
     pub expiration_type: ExpirationType,
-    pub last_trading_day: i64,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub last_trading_day: chrono::DateTime<chrono::Utc>,
     pub multiplier: f64,
     pub settlement_type: SettlementType,
     pub deliverable_note: String,

@@ -82,7 +82,7 @@ pub struct QuoteIndex {
     /// example: 20171188
     ///
     /// Aggregated shares traded throughout the day, including pre/post market hours.
-    pub total_volume: i64,
+    pub total_volume: u64,
 
     /// example: 1621376731304
     ///

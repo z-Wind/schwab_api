@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::{serde_as, TimestampMilliSeconds};
 
 use super::option::ContractType;
 
@@ -26,6 +27,7 @@ pub struct FutureOptionResponse {
 }
 
 /// Quote data of Option security
+#[serde_as]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteFutureOption {
@@ -123,7 +125,8 @@ pub struct QuoteFutureOption {
     /// example: 1621376892336
     ///
     /// Last quote time in milliseconds since Epoch
-    pub quote_time: i64,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub quote_time: chrono::DateTime<chrono::Utc>,
 
     /// example: Normal
     ///
@@ -148,12 +151,13 @@ pub struct QuoteFutureOption {
     /// example: 20171188
     ///
     /// Aggregated shares traded throughout the day, including pre/post market hours.
-    pub total_volume: i64,
+    pub total_volume: u64,
 
     /// example: 1621376731304
     ///
     /// Last trade time in milliseconds since Epoch
-    pub trade_time: i64,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub trade_time: chrono::DateTime<chrono::Utc>,
 }
 
 /// Reference data of Future Option security

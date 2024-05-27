@@ -20,10 +20,10 @@ pub struct Screener {
     pub last: Option<f64>,
     /// schwab security symbol
     pub symbol: String,
-    pub total_volume: i64,
+    pub total_volume: u64,
 
     // not in schema
-    pub volume: Option<i64>,
+    pub volume: Option<u64>,
     pub last_price: Option<f64>,
     pub net_change: Option<f64>,
     pub market_share: Option<f64>,
