@@ -31,7 +31,7 @@
 //!         .await
 //!         .unwrap();
 //!
-//!     let api = api::Api::new(token_checker);
+//!     let api = api::Api::new(token_checker).await.unwrap();
 //!
 //!     let req = api.get_quote("VTI".to_string()).await.unwrap();
 //!     let rsp = req.send().await.unwrap();

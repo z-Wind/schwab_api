@@ -20,10 +20,19 @@ pub struct Api<T: Tokener> {
 
 impl<T: Tokener> Api<T> {
     /// Create API Struct
-    pub fn new(tokener: T) -> Self {
+    /// # Panics
+    ///
+    /// Will panic if no symbol found
+    pub async fn new(tokener: T) -> Result<Self, Error> {
         let client = Client::new();
 
-        Api { tokener, client }
+        let api = Api { tokener, client };
+
+        if (api.get_quote("AAPL".to_string()).await?.send().await).is_err() {
+            api.tokener.redo_authorization().await?;
+        }
+
+        Ok(api)
     }
 
     pub async fn get_quotes(
@@ -463,7 +472,7 @@ mod tests {
             .await
             .unwrap();
 
-        Api::new(token_checker)
+        Api::new(token_checker).await.unwrap()
     }
 
     #[cfg_attr(

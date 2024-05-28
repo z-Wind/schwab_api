@@ -14,4 +14,6 @@ pub enum Error {
     Response(crate::model::ErrorResponse),
     #[error("ServiceError: {0:?}")]
     Service(crate::model::ServiceError),
+    #[error("Json error: {0}")]
+    Json(#[from] serde_json::Error),
 }

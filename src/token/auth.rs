@@ -7,7 +7,6 @@ use oauth2::{
 };
 use oauth2::{ClientSecret, Scope};
 use std::path::PathBuf;
-use std::time::SystemTime;
 use url::Url;
 
 use crate::error::Error;
@@ -63,17 +62,13 @@ impl Authorizer {
                 .expect("should have refresh_token")
                 .secret()
                 .to_string(),
-            refresh_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                + super::REFRESH_TOKEN_LIFETIME,
+            refresh_expires_in: chrono::Utc::now()
+                .checked_add_signed(super::REFRESH_TOKEN_LIFETIME)
+                .expect("refresh_expires_in"),
             access: token_result.access_token().secret().to_string(),
-            access_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                + super::ACCESS_TOKEN_LIFETIME,
+            access_expires_in: chrono::Utc::now()
+                .checked_add_signed(super::ACCESS_TOKEN_LIFETIME)
+                .expect("access_expires_in"),
             type_: token_result.token_type().as_ref().to_string(),
         };
 

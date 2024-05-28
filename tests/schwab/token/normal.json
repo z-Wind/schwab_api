@@ -1,7 +1,7 @@
 {
   "refresh": "",
-  "refresh_expires_in": 0,
+  "refresh_expires_in": "1970-01-01T00:00:00Z",
   "access": "",
-  "access_expires_in": 0,
-  "type_": ""
+  "access_expires_in": "1970-01-01T00:00:00Z",
+  "type": ""
 }

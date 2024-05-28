@@ -1,7 +1,7 @@
 //! APIs to access Market Data
 //! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production)
 
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder, Response, StatusCode};
 use std::collections::HashMap;
 
 use super::parameter::{
@@ -12,6 +12,13 @@ use crate::api::Error;
 use crate::model;
 
 use super::endpoints;
+
+async fn process_error(rsp: Response) -> Result<Error, Error> {
+    let json = rsp.text().await?;
+    dbg!(&json);
+    let error_response: model::ErrorResponse = serde_json::from_str(&json)?;
+    Ok(Error::Response(error_response))
+}
 
 /// Get Quotes by list of symbols.
 #[derive(Debug)]
@@ -507,8 +514,7 @@ impl GetOptionChainsRequest {
 
         let status = rsp.status();
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
-            return Err(Error::Response(error_response));
+            return Err(process_error(rsp).await?);
         }
 
         rsp.json::<model::OptionChain>()

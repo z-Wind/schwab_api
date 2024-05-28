@@ -3,12 +3,12 @@
 pub(crate) mod auth;
 pub(crate) mod local_server;
 
+use chrono::TimeDelta;
 use oauth2::TokenResponse;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use std::time::SystemTime;
 use tokio::sync::Mutex;
 
 use crate::error::Error;
@@ -16,13 +16,12 @@ use auth::Authorizer;
 
 pub trait Tokener {
     fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;
+
+    fn redo_authorization(&self) -> impl std::future::Future<Output = Result<(), Error>> + Send;
 }
 
-const MINUTE: u64 = 60;
-const HOUR: u64 = 60 * MINUTE;
-const DAY: u64 = 24 * HOUR;
-const ACCESS_TOKEN_LIFETIME: u64 = 25 * MINUTE; // 25 Minutes instead of 30 min
-const REFRESH_TOKEN_LIFETIME: u64 = 6 * DAY; // 6 days instead of 7 days
+const ACCESS_TOKEN_LIFETIME: TimeDelta = TimeDelta::minutes(25); // 25 Minutes instead of 30 min
+const REFRESH_TOKEN_LIFETIME: TimeDelta = TimeDelta::days(6); // 6 days instead of 7 days
 
 #[derive(Debug)]
 pub struct TokenChecker {
@@ -69,11 +68,9 @@ impl TokenChecker {
                 .await
                 .map_err(|e| Error::Token(e.to_string()))?;
             token.access.clone_from(rsp.access_token().secret());
-            token.access_expires_in = SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                + ACCESS_TOKEN_LIFETIME;
+            token.access_expires_in = chrono::Utc::now()
+                .checked_add_signed(ACCESS_TOKEN_LIFETIME)
+                .expect("access_expires_in");
 
             token.save(self.path.clone())?;
 
@@ -92,15 +89,24 @@ impl Tokener for TokenChecker {
         let access_token = self.token.lock().await.access.clone();
         Ok(access_token)
     }
+
+    /// must update token in Tokener
+    async fn redo_authorization(&self) -> Result<(), Error> {
+        let mut token = self.token.lock().await;
+        *token = self.authorizer.save(self.path.clone()).await?;
+
+        Ok(())
+    }
 }
 
 // Define a struct to hold the OAuth2 token
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct Token {
     refresh: String,
-    refresh_expires_in: u64,
+    refresh_expires_in: chrono::DateTime<chrono::Utc>,
     access: String,
-    access_expires_in: u64,
+    access_expires_in: chrono::DateTime<chrono::Utc>,
+    #[serde(rename = "type")]
     type_: String,
 }
 
@@ -129,19 +135,11 @@ impl Token {
     }
 
     fn is_refresh_valid(&self) -> bool {
-        SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
-            < self.refresh_expires_in
+        chrono::Utc::now() < self.refresh_expires_in
     }
 
     fn is_access_valid(&self) -> bool {
-        SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
-            < self.access_expires_in
+        chrono::Utc::now() < self.access_expires_in
     }
 }
 
@@ -198,16 +196,12 @@ mod tests {
     #[test]
     fn test_token_expire_in() {
         let token = Token {
-            refresh_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                - 1,
-            access_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                - 1,
+            refresh_expires_in: chrono::Utc::now()
+                .checked_sub_days(chrono::Days::new(1))
+                .unwrap(),
+            access_expires_in: chrono::Utc::now()
+                .checked_sub_days(chrono::Days::new(1))
+                .unwrap(),
             ..Default::default()
         };
 
@@ -215,16 +209,12 @@ mod tests {
         assert!(!token.is_access_valid());
 
         let token = Token {
-            refresh_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                + 1,
-            access_expires_in: SystemTime::now()
-                .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
-                .as_secs()
-                + 1,
+            refresh_expires_in: chrono::Utc::now()
+                .checked_add_days(chrono::Days::new(1))
+                .unwrap(),
+            access_expires_in: chrono::Utc::now()
+                .checked_add_days(chrono::Days::new(1))
+                .unwrap(),
             ..Default::default()
         };
 
