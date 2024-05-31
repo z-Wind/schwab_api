@@ -8,6 +8,8 @@ pub enum Error {
     Token(String),
     #[error("Reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
+    #[error("OrderRequestBuild error: {0}")]
+    OrderRequestBuild(crate::model::trader::order_request::OrderRequestBuilderError),
     #[error("QuoteError: {0:?}")]
     Quote(crate::model::QuoteError),
     #[error("ErrorResponse: {0:?}")]

@@ -23,6 +23,7 @@ use super::order::TaxLotMethod;
 use super::preview_order::Instruction;
 use crate::model::market_data::instrument::InstrumentAssetType;
 use crate::model::InstrumentResponse;
+use crate::Error;
 
 /// More Info in [Charles Schwab Developer Portal](https://developer.schwab.com/) : API Products -> Trader API - Individual -> Accounts and Trading Production -> Documentation -> Place Order Samples
 #[skip_serializing_none]
@@ -127,7 +128,7 @@ impl OrderRequest {
         symbol: InstrumentRequest,
         instruction: Instruction,
         quantity: f64,
-    ) -> Result<Self, OrderRequestBuilderError> {
+    ) -> Result<Self, Error> {
         let order_leg_collection = vec![OrderLegCollectionRequest {
             instruction,
             quantity,
@@ -140,6 +141,7 @@ impl OrderRequest {
             .order_strategy_type(OrderStrategyType::Single)
             .order_leg_collection(order_leg_collection)
             .build()
+            .map_err(|e| Error::OrderRequestBuild(e))
     }
 
     /// Create a limit order.
@@ -148,7 +150,7 @@ impl OrderRequest {
         instruction: Instruction,
         quantity: f64,
         price: f64,
-    ) -> Result<Self, OrderRequestBuilderError> {
+    ) -> Result<Self, Error> {
         let order_leg_collection = vec![OrderLegCollectionRequest {
             instruction,
             quantity,
@@ -163,6 +165,7 @@ impl OrderRequest {
             .order_strategy_type(OrderStrategyType::Single)
             .order_leg_collection(order_leg_collection)
             .build()
+            .map_err(|e| Error::OrderRequestBuild(e))
     }
 }
 
