@@ -141,7 +141,7 @@ impl OrderRequest {
             .order_strategy_type(OrderStrategyType::Single)
             .order_leg_collection(order_leg_collection)
             .build()
-            .map_err(|e| Error::OrderRequestBuild(e))
+            .map_err(Error::OrderRequestBuild)
     }
 
     /// Create a limit order.
@@ -165,7 +165,7 @@ impl OrderRequest {
             .order_strategy_type(OrderStrategyType::Single)
             .order_leg_collection(order_leg_collection)
             .build()
-            .map_err(|e| Error::OrderRequestBuild(e))
+            .map_err(Error::OrderRequestBuild)
     }
 }
 
