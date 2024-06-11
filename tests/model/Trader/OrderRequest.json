@@ -52,7 +52,7 @@
     "orderActivityCollection": [
         {
             "activityType": "EXECUTION",
-            "executionType": "FILLED",
+            "executionType": "FILL",
             "quantity": 0,
             "orderRemainingQuantity": 0,
             "executionLegs": [

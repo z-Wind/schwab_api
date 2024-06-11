@@ -398,7 +398,7 @@ pub enum ExecutionType {
     /// Part of your order was filled. The remaining part was canceled.
     ClosedPartialFill,
     /// Your order was completed in full.
-    Filled,
+    Fill,
     /// Your order was canceled at your request.
     Canceled,
 }
@@ -460,6 +460,18 @@ mod tests {
     }
 
     #[test]
+    fn test_de_order_real() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/Order_real.json"
+        ));
+
+        let val = serde_json::from_str::<Order>(json);
+        println!("{val:?}");
+        assert!(val.is_ok());
+    }
+
+    #[test]
     fn test_de_orders() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -472,7 +484,7 @@ mod tests {
     }
 
     #[test]
-    fn test_de_orders2() {
+    fn test_de_orders_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Orders_real.json"

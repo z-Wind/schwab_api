@@ -1204,7 +1204,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 11);
+        assert_eq!(result.len(), 15);
     }
 
     #[tokio::test]
@@ -1460,7 +1460,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.len(), 11);
+        assert_eq!(result.len(), 15);
     }
 
     #[tokio::test]
