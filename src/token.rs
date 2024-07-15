@@ -38,7 +38,35 @@ impl TokenChecker {
         redirect_url: String,
         certs_dir: PathBuf,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(client_id, secret, redirect_url, certs_dir);
+        let auth = Authorizer::new(
+            client_id,
+            secret,
+            redirect_url,
+            auth::AuthProcess::Auto { certs_dir },
+        );
+        let token = match Token::load(path.clone()) {
+            Ok(token) => token,
+            Err(_) => auth.save(path.clone()).await?,
+        };
+
+        let checker = Self {
+            path,
+            authorizer: auth,
+            token: Mutex::new(token),
+        };
+
+        checker.check_or_update().await?;
+
+        Ok(checker)
+    }
+
+    pub async fn new_with_auth_manually(
+        path: PathBuf,
+        client_id: String,
+        secret: String,
+        redirect_url: String,
+    ) -> Result<Self, Error> {
+        let auth = Authorizer::new(client_id, secret, redirect_url, auth::AuthProcess::Manual);
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
             Err(_) => auth.save(path.clone()).await?,
@@ -165,6 +193,28 @@ mod tests {
             secret.to_string(),
             "https://127.0.0.1:8080".to_string(),
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+        )
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_auth_manually() {
+        let path = dirs::home_dir()
+            .expect("home dir")
+            .join(".credentials")
+            .join("Schwab-rust.json");
+        #[allow(clippy::option_env_unwrap)]
+        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
+        #[allow(clippy::option_env_unwrap)]
+        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
+
+        TokenChecker::new_with_auth_manually(
+            path,
+            client_id.to_string(),
+            secret.to_string(),
+            "https://127.0.0.1:8080".to_string(),
         )
         .await
         .unwrap();

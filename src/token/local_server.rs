@@ -6,7 +6,6 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
-use serde::Deserialize;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
@@ -39,15 +38,8 @@ struct AppState {
     tx: async_channel::Sender<String>,
 }
 
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-struct AuthRequest {
-    code: String,
-    state: String,
-}
-
 async fn get_code(
-    Query(query): Query<AuthRequest>,
+    Query(query): Query<super::auth::AuthRequest>,
     State(csrf): State<CsrfToken>,
     State(tx): State<async_channel::Sender<String>>,
 ) -> impl IntoResponse {

@@ -1,3 +1,5 @@
+use axum::extract::Query;
+use http::uri::Uri;
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::async_http_client;
 use oauth2::{
@@ -6,6 +8,7 @@ use oauth2::{
     TokenUrl,
 };
 use oauth2::{ClientSecret, Scope};
+use serde::Deserialize;
 use std::path::PathBuf;
 use url::Url;
 
@@ -16,9 +19,21 @@ use crate::token::Token;
 type RequestTokenError = BasicRequestTokenError<oauth2::reqwest::Error<reqwest::Error>>;
 
 #[derive(Debug)]
+pub(super) enum AuthProcess {
+    Auto { certs_dir: PathBuf },
+    Manual,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct AuthRequest {
+    pub(super) code: String,
+    pub(super) state: String,
+}
+
+#[derive(Debug)]
 pub(super) struct Authorizer {
     client: BasicClient,
-    certs_dir: PathBuf,
+    process: AuthProcess,
 }
 
 impl Authorizer {
@@ -26,7 +41,7 @@ impl Authorizer {
         app_key: String,
         secret: String,
         redirect_url: String,
-        certs_dir: PathBuf,
+        process: AuthProcess,
     ) -> Self {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
@@ -38,21 +53,25 @@ impl Authorizer {
 
         let client = BasicClient::new(app_key, Some(secret), auth_url, Some(token_url))
             .set_redirect_uri(redirect_url);
-        Authorizer { client, certs_dir }
+        Authorizer { client, process }
     }
 
     async fn authorize(&self) -> Result<Token, RequestTokenError> {
         let (auth_url, csrf_token) = self.auth_code_url();
 
-        match open::that(auth_url.as_ref()) {
-            Ok(()) => println!("Opened '{auth_url}' successfully."),
-            Err(err) => {
-                print!("An error occurred when opening '{auth_url}': {err}");
-                println!("Please Open this URL in your browser manually\n{auth_url}",);
-            }
-        }
-
-        let auth_code = Self::auth_code(csrf_token, self.certs_dir.clone()).await;
+        let auth_code = match &self.process {
+            AuthProcess::Auto { certs_dir } => match open::that(auth_url.as_ref()) {
+                Ok(()) => {
+                    println!("Opened '{auth_url}' successfully.");
+                    Self::get_auth_code_with_local_server(csrf_token, certs_dir.clone()).await
+                }
+                Err(err) => {
+                    print!("An error occurred when auto opening: {err}");
+                    Self::get_auth_code_manually(&csrf_token, &auth_url)
+                }
+            },
+            AuthProcess::Manual => Self::get_auth_code_manually(&csrf_token, &auth_url),
+        };
 
         let token_result = self.refresh_token(auth_code).await?;
         // dbg!(&token_result);
@@ -84,10 +103,58 @@ impl Authorizer {
         (auth_url, csrf_token)
     }
 
-    async fn auth_code(csrf_state: CsrfToken, certs_dir: PathBuf) -> AuthorizationCode {
+    async fn get_auth_code_with_local_server(
+        csrf_state: CsrfToken,
+        certs_dir: PathBuf,
+    ) -> AuthorizationCode {
         let code = local_server::local_server(csrf_state, certs_dir).await;
 
         AuthorizationCode::new(code)
+    }
+
+    fn get_auth_code_manually(csrf: &CsrfToken, auth_url: &Url) -> AuthorizationCode {
+        println!(
+            r#"
+**************************************************************
+
+This is the manual login and token creation flow for schwab_api.
+Please follow these instructions exactly:
+
+ 1. Open the following link by copy-pasting it into the browser
+    of your choice:
+
+    {auth_url}
+
+ 2. Log in with your account credentials. You may be asked to
+    perform two-factor authentication using text messaging or
+    another method, as well as whether to trust the browser.
+
+ 3. When asked whether to allow your app access to your account,
+    select "Allow".
+
+ 4. Your browser should be redirected to your callback URI. Copy
+    the ENTIRE address, paste it into the following prompt, and press
+    Enter/Return.
+
+**************************************************************
+
+Redirect URL>"#
+        );
+
+        let mut input = String::new();
+        std::io::stdin()
+            .read_line(&mut input)
+            .unwrap_or_else(|err| panic!("error: {err}"));
+
+        let uri: Uri = input.trim().parse().expect("right uri");
+        Self::uri_to_auth_code(&uri, csrf)
+    }
+
+    fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> AuthorizationCode {
+        let Query(query): Query<AuthRequest> = Query::try_from_uri(uri).expect("right format");
+        assert!(&query.state == csrf.secret(), "CSRF check error");
+
+        AuthorizationCode::new(query.code)
     }
 
     async fn refresh_token(
@@ -141,12 +208,32 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_auth() {
+    async fn test_auth_auto() {
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
             REDIRECT_URL.to_string(),
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+            AuthProcess::Auto {
+                certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+            },
+        );
+
+        let token = auth.authorize().await.unwrap();
+        dbg!(&token);
+
+        // test refresh access token
+        let access_token = auth.access_token(&token.refresh).await.unwrap();
+        dbg!(&access_token);
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_auth_manually() {
+        let auth = Authorizer::new(
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            REDIRECT_URL.to_string(),
+            AuthProcess::Manual,
         );
 
         let token = auth.authorize().await.unwrap();
@@ -165,7 +252,9 @@ mod tests {
             CLIENTID.to_string(),
             SECRET.to_string(),
             REDIRECT_URL.to_string(),
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+            AuthProcess::Auto {
+                certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+            },
         );
 
         let (auth_url, csrf_token) = auth.auth_code_url();
@@ -201,8 +290,8 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
-    async fn test_get_auth_code() {
-        let auth_code = tokio::spawn(Authorizer::auth_code(
+    async fn test_get_auth_code_with_local_server() {
+        let auth_code = tokio::spawn(Authorizer::get_auth_code_with_local_server(
             CsrfToken::new("CSRF".to_string()),
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
         ));
@@ -223,5 +312,15 @@ mod tests {
             .unwrap();
         assert_eq!(auth_code.await.unwrap().secret(), "code");
         assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
+    }
+
+    #[test]
+    fn test_uri_to_auth_code() {
+        let csrf = CsrfToken::new("CSRF".to_string());
+        let uri: Uri = format!("https://127.0.0.1:8080/?state={}&code=code", csrf.secret())
+            .parse()
+            .unwrap();
+        let auth_code = Authorizer::uri_to_auth_code(&uri, &csrf);
+        assert_eq!(auth_code.secret(), "code");
     }
 }
