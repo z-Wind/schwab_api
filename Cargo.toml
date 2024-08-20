@@ -35,7 +35,7 @@ dirs = "5.0"
 url = "2.5"
 http = "1.1"
 axum = { version = "0.7", features = ["macros"] }
-axum-server = { version = "0.7", features = ["tls-rustls"] }
+axum-server = { version = "0.7", features = ["tls-rustls-no-provider"] }
 thiserror = "1.0"
 open = "5"
 async-channel = "2.3"
@@ -43,7 +43,7 @@ urlencoding = "2.1"
 derive_builder = "0.20"
 
 [dev-dependencies]
-tower = { version = "0.4", features = ["util"] }
+tower = { version = "0.5", features = ["util"] }
 serde_test = "1.0"
 mockito = "1.5"
 pretty_assertions = "1.4"

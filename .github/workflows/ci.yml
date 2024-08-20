@@ -37,10 +37,6 @@ jobs:
       - name: Rust Cache dependencies
         uses: Swatinem/rust-cache@v2
 
-      - name: install NASM for window
-        if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
-
       - name: Clippy
         run: cargo clippy --all-features --all-targets  -- -D warnings
 
@@ -64,10 +60,6 @@ jobs:
 
     - name: Install latest nextest release
       uses: taiki-e/install-action@nextest
-
-    - name: install NASM for window
-      if: matrix.os == 'windows-latest'
-      uses: ilammy/setup-nasm@v1
 
     - name: Run tests
       run: cargo nextest run --config-file ${{ github.workspace }}/.github/nextest.toml --profile ci
