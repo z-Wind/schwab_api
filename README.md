@@ -31,6 +31,7 @@ Currently, only supports the API of individual developers.
 ## Example
 ```rust
 use std::path::PathBuf;
+use reqwest::Client;
 
 use schwab_api::api;
 use schwab_api::token::TokenChecker;
@@ -45,11 +46,13 @@ async fn main() {
         .join(".credentials")
         .join("Schwab-rust.json");
     let certs_dir = PathBuf::from("your_certs_dir");
-    let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir)
+
+    let client = Client::new();
+    let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir, client)
         .await
         .unwrap();
 
-    let api = api::Api::new(token_checker).await.unwrap();
+    let api = api::Api::new(token_checker, client).await.unwrap();
 
     let req = api.get_quote("VTI".to_string()).await.unwrap();
     let rsp = req.send().await.unwrap();

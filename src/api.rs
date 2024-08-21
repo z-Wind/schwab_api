@@ -23,9 +23,7 @@ impl<T: Tokener> Api<T> {
     /// # Panics
     ///
     /// Will panic if no symbol found
-    pub async fn new(tokener: T) -> Result<Self, Error> {
-        let client = Client::new();
-
+    pub async fn new(tokener: T, client: Client) -> Result<Self, Error> {
         let api = Api { tokener, client };
 
         if (api.get_quote("AAPL".to_string()).await?.send().await).is_err() {
@@ -468,11 +466,13 @@ mod tests {
 
         let callback_url = "https://127.0.0.1:8080".to_string();
 
-        let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir)
-            .await
-            .unwrap();
+        let client = Client::new();
+        let token_checker =
+            TokenChecker::new(path, key, secret, callback_url, certs_dir, client.clone())
+                .await
+                .unwrap();
 
-        Api::new(token_checker).await.unwrap()
+        Api::new(token_checker, client).await.unwrap()
     }
 
     #[cfg_attr(

@@ -1,13 +1,11 @@
 use axum::extract::Query;
 use http::uri::Uri;
-use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
 use oauth2::{
-    basic::{BasicRequestTokenError, BasicTokenResponse},
-    AuthUrl, AuthorizationCode, ClientId, CsrfToken, RedirectUrl, RefreshToken, TokenResponse,
-    TokenUrl,
+    basic::{BasicClient, BasicRequestTokenError, BasicTokenResponse},
+    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointNotSet, EndpointSet,
+    HttpClientError, RedirectUrl, RefreshToken, Scope, TokenResponse, TokenUrl,
 };
-use oauth2::{ClientSecret, Scope};
+use reqwest::Client;
 use serde::Deserialize;
 use std::path::PathBuf;
 use url::Url;
@@ -16,7 +14,7 @@ use crate::error::Error;
 use crate::token::local_server;
 use crate::token::Token;
 
-type RequestTokenError = BasicRequestTokenError<oauth2::reqwest::Error<reqwest::Error>>;
+type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
 
 #[derive(Debug)]
 pub(super) enum AuthProcess {
@@ -32,8 +30,10 @@ pub(super) struct AuthRequest {
 
 #[derive(Debug)]
 pub(super) struct Authorizer {
-    client: BasicClient,
+    oauth2_client:
+        BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
     process: AuthProcess,
+    async_client: Client,
 }
 
 impl Authorizer {
@@ -42,6 +42,7 @@ impl Authorizer {
         secret: String,
         redirect_url: String,
         process: AuthProcess,
+        async_client: Client,
     ) -> Self {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
@@ -51,9 +52,16 @@ impl Authorizer {
             .expect("Invalid token endpoint URL");
         let redirect_url = RedirectUrl::new(redirect_url).expect("Invalid redirect URL");
 
-        let client = BasicClient::new(app_key, Some(secret), auth_url, Some(token_url))
+        let oauth2_client = BasicClient::new(app_key)
+            .set_client_secret(secret)
+            .set_auth_uri(auth_url)
+            .set_token_uri(token_url)
             .set_redirect_uri(redirect_url);
-        Authorizer { client, process }
+        Authorizer {
+            oauth2_client,
+            process,
+            async_client,
+        }
     }
 
     async fn authorize(&self) -> Result<Token, RequestTokenError> {
@@ -96,7 +104,7 @@ impl Authorizer {
 
     fn auth_code_url(&self) -> (Url, CsrfToken) {
         let (auth_url, csrf_token) = self
-            .client
+            .oauth2_client
             .authorize_url(CsrfToken::new_random)
             .add_scope(Scope::new("readonly".to_string()))
             .url();
@@ -161,9 +169,9 @@ Redirect URL>"#
         &self,
         auth_code: AuthorizationCode,
     ) -> Result<BasicTokenResponse, RequestTokenError> {
-        self.client
+        self.oauth2_client
             .exchange_code(auth_code)
-            .request_async(async_http_client)
+            .request_async(&self.async_client)
             .await
     }
 
@@ -172,9 +180,9 @@ Redirect URL>"#
         refresh_token: &str,
     ) -> Result<BasicTokenResponse, RequestTokenError> {
         let refresh_token = RefreshToken::new(refresh_token.to_string());
-        self.client
+        self.oauth2_client
             .exchange_refresh_token(&refresh_token)
-            .request_async(async_http_client)
+            .request_async(&self.async_client)
             .await
     }
 
@@ -216,6 +224,7 @@ mod tests {
             AuthProcess::Auto {
                 certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             },
+            Client::new(),
         );
 
         let token = auth.authorize().await.unwrap();
@@ -234,6 +243,7 @@ mod tests {
             secret_static().to_string(),
             REDIRECT_URL.to_string(),
             AuthProcess::Manual,
+            Client::new(),
         );
 
         let token = auth.authorize().await.unwrap();
@@ -255,6 +265,7 @@ mod tests {
             AuthProcess::Auto {
                 certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             },
+            Client::new(),
         );
 
         let (auth_url, csrf_token) = auth.auth_code_url();

@@ -5,6 +5,7 @@ pub(crate) mod local_server;
 
 use chrono::TimeDelta;
 use oauth2::TokenResponse;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -37,12 +38,14 @@ impl TokenChecker {
         secret: String,
         redirect_url: String,
         certs_dir: PathBuf,
+        async_client: Client,
     ) -> Result<Self, Error> {
         let auth = Authorizer::new(
             client_id,
             secret,
             redirect_url,
             auth::AuthProcess::Auto { certs_dir },
+            async_client,
         );
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
@@ -65,8 +68,15 @@ impl TokenChecker {
         client_id: String,
         secret: String,
         redirect_url: String,
+        async_client: Client,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(client_id, secret, redirect_url, auth::AuthProcess::Manual);
+        let auth = Authorizer::new(
+            client_id,
+            secret,
+            redirect_url,
+            auth::AuthProcess::Manual,
+            async_client,
+        );
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
             Err(_) => auth.save(path.clone()).await?,
@@ -190,6 +200,7 @@ mod tests {
             secret.to_string(),
             "https://127.0.0.1:8080".to_string(),
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+            Client::new(),
         )
         .await
         .unwrap();
@@ -212,6 +223,7 @@ mod tests {
             client_id.to_string(),
             secret.to_string(),
             "https://127.0.0.1:8080".to_string(),
+            Client::new(),
         )
         .await
         .unwrap();
