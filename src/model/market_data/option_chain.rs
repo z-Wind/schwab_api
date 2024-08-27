@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 use std::collections::HashMap;
 
+use super::quote_response::option::ExerciseType;
 use super::quote_response::option::ExpirationType;
 use super::quote_response::option::SettlementType;
 
@@ -75,12 +76,15 @@ pub struct OptionContract {
     pub mark_price: Option<f64>,
     pub bid_size: i64,
     pub ask_size: i64,
+    pub bid_ask_size: String,
     pub last_size: i64,
     pub high_price: f64,
     pub low_price: f64,
     pub open_price: f64,
     pub close_price: f64,
     pub total_volume: u64,
+    pub high52_week: f64,
+    pub low52_week: f64,
     #[serde_as(as = "Option<TimestampMilliSeconds<i64>>")]
     pub trade_date: Option<chrono::DateTime<chrono::Utc>>,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
@@ -118,6 +122,7 @@ pub struct OptionContract {
     pub is_penny_pilot: Option<bool>,
     pub intrinsic_value: f64,
     pub option_root: String,
+    pub exercise_type: ExerciseType,
 
     // not in schema
     pub bid: Option<f64>,

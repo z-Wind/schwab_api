@@ -93,7 +93,12 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
+
                 }
             ],
             "additionalProp2": [
@@ -153,7 +158,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -213,7 +222,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         },
@@ -275,7 +288,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp2": [
@@ -335,7 +352,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -395,7 +416,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         },
@@ -457,7 +482,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp2": [
@@ -517,7 +546,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -577,7 +610,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         }
@@ -641,7 +678,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp2": [
@@ -701,7 +742,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -761,7 +806,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         },
@@ -823,7 +872,12 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
+ 
                 }
             ],
             "additionalProp2": [
@@ -883,7 +937,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -943,7 +1001,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         },
@@ -1005,7 +1067,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp2": [
@@ -1065,7 +1131,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ],
             "additionalProp3": [
@@ -1125,7 +1195,11 @@
                     "markPercentChange": 0,
                     "isPennyPilot": true,
                     "intrinsicValue": 0,
-                    "optionRoot": "string"
+                    "optionRoot": "string",
+                    "high52Week": 0,
+                    "low52Week": 0,
+                    "bidAskSize": "string",
+                    "exerciseType": "A"
                 }
             ]
         }
