@@ -656,6 +656,20 @@ mod tests {
             .unwrap();
         let rsp = req.send().await.unwrap();
         dbg!(rsp);
+
+        let req = api
+            .get_instruments("AAPL".into(), Projection::Fundamental)
+            .await
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
+
+        let req = api
+            .get_instruments("SNOW".into(), Projection::Fundamental)
+            .await
+            .unwrap();
+        let rsp = req.send().await.unwrap();
+        dbg!(rsp);
     }
 
     #[cfg_attr(
