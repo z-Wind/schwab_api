@@ -62,6 +62,8 @@ pub enum UserPreferenceAccountColor {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -75,14 +77,20 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/UserPreferences_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<UserPreferences>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<UserPreferences>(json.clone()).unwrap();
+        dbg!(&val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

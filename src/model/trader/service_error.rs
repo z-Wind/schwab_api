@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceError {
@@ -21,6 +24,8 @@ pub struct ErrorDetail {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -34,26 +39,38 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/ServiceError_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<ServiceError>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<ServiceError>(json.clone()).unwrap();
+        dbg!(&val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 
     #[test]
-    fn test_de_real2() {
+    fn test_serde_real2() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/ServiceError_real2.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<ServiceError>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<ServiceError>(json.clone()).unwrap();
+        dbg!(&val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

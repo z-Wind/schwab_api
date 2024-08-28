@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -7,6 +8,9 @@ pub struct Instruments {
     pub instruments: Vec<InstrumentResponse>,
 }
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstrumentResponse {
@@ -27,6 +31,9 @@ pub struct InstrumentResponse {
     pub type_filed: Option<InstrumentAssetType>,
 }
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FundamentalInst {
@@ -35,7 +42,8 @@ pub struct FundamentalInst {
     pub low52: f64,
     pub dividend_amount: f64,
     pub dividend_yield: f64,
-    pub dividend_date: Option<String>,
+    #[serde(default, with = "custom_date_format")]
+    pub dividend_date: Option<NaiveDateTime>,
     pub pe_ratio: f64,
     pub peg_ratio: f64,
     pub pb_ratio: f64,
@@ -80,7 +88,8 @@ pub struct FundamentalInst {
     pub short_int_day_to_cover: f64,
     pub div_growth_rate3_year: f64,
     pub dividend_pay_amount: f64,
-    pub dividend_pay_date: Option<String>,
+    #[serde(default, with = "custom_date_format")]
+    pub dividend_pay_date: Option<NaiveDateTime>,
     pub beta: f64,
     pub vol1_day_avg: f64,
     pub vol10_day_avg: f64,
@@ -88,13 +97,17 @@ pub struct FundamentalInst {
     pub avg10_days_volume: f64,
     pub avg1_day_volume: f64,
     pub avg3_month_volume: f64,
-    pub declaration_date: Option<String>,
+    #[serde(default, with = "custom_date_format")]
+    pub declaration_date: Option<NaiveDateTime>,
     pub dividend_freq: i64,
     pub eps: f64,
-    pub corpaction_date: Option<String>,
+    #[serde(default, with = "custom_date_format")]
+    pub corpaction_date: Option<NaiveDateTime>,
     pub dtn_volume: f64,
-    pub next_dividend_pay_date: Option<String>,
-    pub next_dividend_date: Option<String>,
+    #[serde(default, with = "custom_date_format")]
+    pub next_dividend_pay_date: Option<NaiveDateTime>,
+    #[serde(default, with = "custom_date_format")]
+    pub next_dividend_date: Option<NaiveDateTime>,
     pub fund_leverage_factor: f64,
     pub fund_strategy: Option<String>,
 }
@@ -149,9 +162,41 @@ pub enum InstrumentAssetType {
     Unknown,
 }
 
+mod custom_date_format {
+    use chrono::NaiveDateTime;
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.f";
+
+    pub fn serialize<S>(date: &Option<NaiveDateTime>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match date {
+            Some(date) => {
+                let s = date.format(FORMAT).to_string();
+                serializer.serialize_str(&s)
+            }
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<NaiveDateTime>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let date = NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)?;
+
+        Ok(Some(date))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
 
     #[test]
     fn test_de() {
@@ -166,14 +211,29 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Instruments_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<Instruments>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<Instruments>(json.clone()).unwrap();
+        dbg!(&val);
+
+        let message = assert_json_matches_no_panic(
+            &val,
+            &json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
+        )
+        .unwrap_err();
+
+        let re =
+            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
+                .unwrap();
+        let message = re.replace_all(&message, "");
+        let message = message.trim();
+        println!("{message}");
+        assert_eq!(message, "");
     }
 }

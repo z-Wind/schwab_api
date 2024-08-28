@@ -7,6 +7,8 @@ use super::quote_response::option::SettlementType;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpirationChain {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
     pub expiration_list: Vec<Expiration>,
 }
 
@@ -16,19 +18,22 @@ pub struct ExpirationChain {
 #[serde(rename_all = "camelCase")]
 pub struct Expiration {
     pub days_to_expiration: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expiration: Option<String>,
     pub expiration_type: ExpirationType,
     pub standard: bool,
     pub settlement_type: Option<SettlementType>,
     pub option_roots: Option<String>,
 
-    // not in schama
+    // not in schema
     pub expiration_date: chrono::NaiveDate,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
 
     #[test]
     fn test_de() {
@@ -43,14 +48,20 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/ExpirationChain_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<ExpirationChain>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<ExpirationChain>(json.clone()).unwrap();
+        dbg!(&val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

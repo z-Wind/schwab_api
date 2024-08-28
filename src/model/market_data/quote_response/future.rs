@@ -26,6 +26,9 @@ pub struct FutureResponse {
 
 /// Quote data of Future security
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteFuture {
@@ -136,7 +139,7 @@ pub struct QuoteFuture {
     /// example: false
     ///
     /// quoted during trading session
-    pub quote_in_session: Option<bool>,
+    pub quoted_in_session: Option<bool>,
 
     /// example: Normal
     ///
@@ -173,6 +176,9 @@ pub struct QuoteFuture {
 
 /// Reference data of Future security
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceFuture {
@@ -230,7 +236,7 @@ pub struct ReferenceFuture {
     /// Futures product symbol
     pub product: String,
 
-    // not in schama
+    // not in schema
     pub future_is_tradable: Option<bool>,
 }
 

@@ -22,6 +22,9 @@ pub struct IndexResponse {
     pub realtime: bool,
     pub quote: QuoteIndex,
     pub reference: ReferenceIndex,
+
+    // not in schama
+    pub fundamental: Option<super::equity::Fundamental>,
 }
 
 /// Quote data of Index security

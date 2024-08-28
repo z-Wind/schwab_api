@@ -318,6 +318,7 @@ impl QuoteResponse {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
     use float_cmp::assert_approx_eq;
 
     #[test]
@@ -333,17 +334,34 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/QuoteResponse_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<QuoteResponseMap>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<QuoteResponseMap>(json.clone()).unwrap();
+        dbg!(&val);
 
-        let result = val.unwrap().responses.remove("AAPL").unwrap();
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
+    }
+
+    #[test]
+    fn test_methods() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/QuoteResponse_real.json"
+        ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        let mut val = serde_json::from_value::<QuoteResponseMap>(json.clone()).unwrap();
+
+        let result = val.responses.remove("AAPL").unwrap();
         assert_eq!("AAPL", result.symbol());
         assert_approx_eq!(f64, 199.62, result.n52week_high().unwrap());
         assert_approx_eq!(f64, 164.075, result.n52week_low().unwrap());

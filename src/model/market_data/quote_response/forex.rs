@@ -9,6 +9,7 @@ pub struct ForexResponse {
     /// example: 1234567890
     ///
     /// SSID of instrument
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ssid: Option<i64>,
 
     /// example: AAPL
@@ -138,6 +139,9 @@ pub struct QuoteForex {
 }
 
 /// Reference data of Forex security
+#[serde_with::apply(
+Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceForex {

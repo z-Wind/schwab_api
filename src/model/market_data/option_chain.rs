@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_with::{serde_as, TimestampMilliSeconds};
 use std::collections::HashMap;
 
+use super::quote_response::option::ExerciseType;
 use super::quote_response::option::ExpirationType;
 use super::quote_response::option::SettlementType;
 
@@ -11,6 +12,7 @@ use super::quote_response::option::SettlementType;
 pub struct OptionChain {
     pub symbol: String,
     pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub underlying: Option<Underlying>,
     pub strategy: Strategy,
     pub interval: f64,
@@ -61,6 +63,9 @@ pub struct Underlying {
 }
 
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -103,7 +108,7 @@ pub struct OptionContract {
     pub is_non_standard: Option<bool>,
     pub option_deliverables_list: Vec<OptionDeliverable>,
     pub strike_price: f64,
-    pub expiration_date: String,
+    pub expiration_date: chrono::DateTime<chrono::Utc>,
     pub days_to_expiration: i64,
     pub expiration_type: ExpirationType,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
@@ -124,6 +129,10 @@ pub struct OptionContract {
     pub ask: Option<f64>,
     pub last: Option<f64>,
     pub mark: Option<f64>,
+    pub bid_ask_size: Option<String>,
+    pub exercise_type: Option<ExerciseType>,
+    pub high_52_week: Option<f64>,
+    pub low_52_week: Option<f64>,
     pub extrinsic_value: Option<f64>,
     pub in_the_money: Option<bool>,
     pub mini: Option<bool>,
@@ -137,6 +146,7 @@ pub struct OptionDeliverable {
     pub symbol: String,
     pub asset_type: String,
     pub deliverable_units: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub currency_type: Option<String>,
 }
 
@@ -184,6 +194,8 @@ pub enum PutCall {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -197,14 +209,29 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/OptionChain_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<OptionChain>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<OptionChain>(json.clone()).unwrap();
+        // dbg!(&val);
+
+        let message = assert_json_matches_no_panic(
+            &val,
+            &json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
+        )
+        .unwrap_err();
+
+        let re =
+            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
+                .unwrap();
+        let message = re.replace_all(&message, "");
+        let message = message.trim();
+        println!("{message}");
+        assert_eq!(message, "");
     }
 }

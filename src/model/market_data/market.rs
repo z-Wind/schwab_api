@@ -5,10 +5,13 @@ use std::collections::HashMap;
 pub type Markets = HashMap<String, HashMap<String, Hours>>;
 
 #[allow(clippy::struct_field_names)]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hours {
-    pub date: String,
+    pub date: chrono::NaiveDate,
     pub market_type: MarketType,
     pub exchange: Option<String>,
     pub category: Option<String>,
@@ -47,6 +50,8 @@ pub enum MarketType {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -60,14 +65,27 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/Markets_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<Markets>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<Markets>(json.clone()).unwrap();
+        dbg!(&val);
+
+        let message = assert_json_matches_no_panic(
+            &val,
+            &json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
+        )
+        .unwrap_err();
+
+        let re = regex::Regex::new(r"(?:json atoms at path.*start.*are not equal.*\n.*\n.*\n.*\n.*)|(?:json atoms at path.*end.*are not equal.*\n.*\n.*\n.*\n.*)").unwrap();
+        let message = re.replace_all(&message, "");
+        let message = message.trim();
+        println!("{message}");
+        assert_eq!(message, "");
     }
 }

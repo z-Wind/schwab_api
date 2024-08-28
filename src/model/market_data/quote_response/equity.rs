@@ -3,6 +3,9 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use serde_with::{serde_as, TimestampMilliSeconds};
 
 /// Quote info of Equity security
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EquityResponse {
@@ -95,6 +98,9 @@ pub struct ExtendedMarket {
 }
 
 /// Fundamentals of a security
+#[serde_with::apply(
+Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fundamental {
@@ -176,10 +182,16 @@ pub struct Fundamental {
     ///
     /// P/E Ratio
     pub pe_ratio: f64,
+
+    // not in schema
+    pub last_earnings_date: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 /// Quote data of Equity security
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteEquity {
@@ -324,9 +336,16 @@ pub struct QuoteEquity {
     ///
     /// Option Risk/Volatility Measurement
     pub volatility: Option<f64>,
+
+    // not in schema
+    pub post_market_change: Option<f64>,
+    pub post_market_percent_change: Option<f64>,
 }
 
 /// Reference data of Equity security
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceEquity {

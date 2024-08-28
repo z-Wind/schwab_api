@@ -215,6 +215,9 @@ pub struct QuoteOption {
 
 /// Reference data of Option security
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceOption {
@@ -250,7 +253,7 @@ pub struct ReferenceOption {
     pub exchange_name: String,
 
     /// option contract exercise type America or European
-    pub exercies_type: Option<ExerciseType>,
+    pub exercise_type: Option<ExerciseType>,
 
     /// example: 20
     ///
@@ -307,7 +310,7 @@ pub struct ReferenceOption {
     /// A company, index or fund name
     pub underlying: String,
 
-    // not in schama
+    // not in schema
     pub uv_expiration_type: Option<String>,
 }
 

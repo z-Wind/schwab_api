@@ -49,6 +49,7 @@ mockito = "1.5"
 pretty_assertions = "1.4"
 assert-json-diff = "2.0"
 float-cmp = "0.9"
+regex = "1.10"
 
 [features]
 test_online = []

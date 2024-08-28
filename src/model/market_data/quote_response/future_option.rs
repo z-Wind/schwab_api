@@ -161,6 +161,7 @@ pub struct QuoteFutureOption {
 }
 
 /// Reference data of Future Option security
+#[serde_as]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceFutureOption {
@@ -186,7 +187,8 @@ pub struct ReferenceFutureOption {
     pub multiplier: f64,
 
     /// date of expiration in long
-    pub expiration_date: i64,
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
+    pub expiration_date: chrono::DateTime<chrono::Utc>,
 
     /// Style of expiration
     pub expiration_style: String,

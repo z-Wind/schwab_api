@@ -3,6 +3,9 @@ use serde_json::Value;
 
 use super::accounts::AssetType;
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
@@ -39,6 +42,9 @@ pub struct UserDetails {
     pub broker_rep_code: String,
 }
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransferItem {
@@ -148,6 +154,9 @@ pub struct Forex {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Future {
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     /// default: false
     pub active_contract: bool,
     #[serde(rename = "type")]
@@ -156,21 +165,18 @@ pub struct Future {
     pub last_trading_date: chrono::DateTime<chrono::Utc>,
     pub first_notice_date: chrono::DateTime<chrono::Utc>,
     pub multiplier: f64,
-
-    #[serde(flatten)]
-    pub transaction_instrument: Box<DuplicatedKey<TransactionInstrument>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Index {
+    #[serde(flatten)]
+    pub transaction_base_instrument: TransactionBaseInstrument,
+
     /// default: false
     pub active_contract: bool,
     #[serde(rename = "type")]
     pub type_field: IndexType,
-
-    #[serde(flatten)]
-    pub transaction_instrument: Box<DuplicatedKey<TransactionInstrument>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -229,6 +235,9 @@ pub struct Product {
     pub type_field: ProductType,
 }
 
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionBaseInstrument {
@@ -237,6 +246,10 @@ pub struct TransactionBaseInstrument {
     pub description: Option<String>,
     pub instrument_id: i64,
     pub net_change: Option<f64>,
+
+    // not in schema
+    pub status: Option<String>,
+    pub closing_price: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -452,6 +465,8 @@ pub enum TransferItemPositionEffect {
 mod tests {
     use super::*;
 
+    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -465,26 +480,56 @@ mod tests {
     }
 
     #[test]
-    fn test_de_real() {
+    fn test_serde_real() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Transactions_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<Vec<Transaction>>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<Vec<Transaction>>(json.clone()).unwrap();
+        dbg!(&val);
+
+        let message = assert_json_matches_no_panic(
+            &val,
+            &json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
+        )
+        .unwrap_err();
+
+        let re =
+            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
+                .unwrap();
+        let message = re.replace_all(&message, "");
+        let message = message.trim();
+        println!("{message}");
+        assert_eq!(message, "");
     }
 
     #[test]
-    fn test_de_real2() {
+    fn test_serde_real2() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Transaction_real.json"
         ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
-        let val = serde_json::from_str::<Transaction>(json);
-        println!("{val:?}");
-        assert!(val.is_ok());
+        let val = serde_json::from_value::<Transaction>(json.clone()).unwrap();
+        dbg!(&val);
+
+        let message = assert_json_matches_no_panic(
+            &val,
+            &json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
+        )
+        .unwrap_err();
+
+        let re =
+            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
+                .unwrap();
+        let message = re.replace_all(&message, "");
+        let message = message.trim();
+        println!("{message}");
+        assert_eq!(message, "");
     }
 }
