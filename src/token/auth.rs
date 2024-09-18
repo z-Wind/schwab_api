@@ -34,7 +34,6 @@ pub(super) struct Authorizer {
         BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
     process: AuthProcess,
     async_client: Client,
-    redirect_url: String,
 }
 
 impl Authorizer {
@@ -51,7 +50,6 @@ impl Authorizer {
             .expect("Invalid authorization endpoint URL");
         let token_url = TokenUrl::new("https://api.schwabapi.com/v1/oauth/token".to_string())
             .expect("Invalid token endpoint URL");
-        let redirect_url_str = redirect_url.clone();
         let redirect_url = RedirectUrl::new(redirect_url).expect("Invalid redirect URL");
 
         let oauth2_client = BasicClient::new(app_key)
@@ -60,10 +58,9 @@ impl Authorizer {
             .set_token_uri(token_url)
             .set_redirect_uri(redirect_url);
         Authorizer {
-            oauth2_client: oauth2_client,
-            process: process,
-            async_client: async_client,
-            redirect_url: redirect_url_str,
+            oauth2_client,
+            process,
+            async_client,
         }
     }
 
@@ -74,10 +71,15 @@ impl Authorizer {
             AuthProcess::Auto { certs_dir } => match open::that(auth_url.as_ref()) {
                 Ok(()) => {
                     println!("Opened '{auth_url}' successfully.");
+                    let redirect_url = self
+                        .oauth2_client
+                        .redirect_uri()
+                        .expect("redirect_url")
+                        .url();
                     Self::get_auth_code_with_local_server(
                         csrf_token,
                         certs_dir.clone(),
-                        &self.redirect_url,
+                        redirect_url,
                     )
                     .await
                 }
@@ -122,7 +124,7 @@ impl Authorizer {
     async fn get_auth_code_with_local_server(
         csrf_state: CsrfToken,
         certs_dir: PathBuf,
-        redirect_url: &String,
+        redirect_url: &Url,
     ) -> AuthorizationCode {
         let code = local_server::local_server(csrf_state, certs_dir, redirect_url).await;
 
@@ -316,7 +318,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
     async fn test_get_auth_code_with_local_server() {
-        async fn get_auth_code(redirect_url: String) -> AuthorizationCode {
+        async fn get_auth_code(redirect_url: Url) -> AuthorizationCode {
             Authorizer::get_auth_code_with_local_server(
                 CsrfToken::new("CSRF".to_string()),
                 PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
@@ -325,7 +327,7 @@ mod tests {
             .await
         }
 
-        let redirect_url = "https://127.0.0.1:8081".to_string();
+        let redirect_url = "https://127.0.0.1:8081".parse().unwrap();
         let auth_code = tokio::spawn(get_auth_code(redirect_url));
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)
