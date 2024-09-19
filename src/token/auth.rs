@@ -71,7 +71,17 @@ impl Authorizer {
             AuthProcess::Auto { certs_dir } => match open::that(auth_url.as_ref()) {
                 Ok(()) => {
                     println!("Opened '{auth_url}' successfully.");
-                    Self::get_auth_code_with_local_server(csrf_token, certs_dir.clone()).await
+                    let redirect_url = self
+                        .oauth2_client
+                        .redirect_uri()
+                        .expect("redirect_url")
+                        .url();
+                    Self::get_auth_code_with_local_server(
+                        csrf_token,
+                        certs_dir.clone(),
+                        redirect_url,
+                    )
+                    .await
                 }
                 Err(err) => {
                     print!("An error occurred when auto opening: {err}");
@@ -114,8 +124,9 @@ impl Authorizer {
     async fn get_auth_code_with_local_server(
         csrf_state: CsrfToken,
         certs_dir: PathBuf,
+        redirect_url: &Url,
     ) -> AuthorizationCode {
-        let code = local_server::local_server(csrf_state, certs_dir).await;
+        let code = local_server::local_server(csrf_state, certs_dir, redirect_url).await;
 
         AuthorizationCode::new(code)
     }
@@ -203,7 +214,11 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
 
-    const REDIRECT_URL: &str = "https://127.0.0.1:8080";
+    fn callback_url_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_CALLBACK_URL").expect("There should be SCHWAB CALLBACK URL")
+    }
+
     fn client_id_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
         option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY")
@@ -220,7 +235,7 @@ mod tests {
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
-            REDIRECT_URL.to_string(),
+            callback_url_static().to_string(),
             AuthProcess::Auto {
                 certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             },
@@ -241,7 +256,7 @@ mod tests {
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
-            REDIRECT_URL.to_string(),
+            callback_url_static().to_string(),
             AuthProcess::Manual,
             Client::new(),
         );
@@ -258,6 +273,7 @@ mod tests {
     fn test_get_auth_code_url() {
         const CLIENTID: &str = "CLIENTID";
         const SECRET: &str = "SECRET";
+        const REDIRECT_URL: &str = "https://127.0.0.1:8080";
         let auth = Authorizer::new(
             CLIENTID.to_string(),
             SECRET.to_string(),
@@ -302,10 +318,17 @@ mod tests {
     #[tokio::test]
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
     async fn test_get_auth_code_with_local_server() {
-        let auth_code = tokio::spawn(Authorizer::get_auth_code_with_local_server(
-            CsrfToken::new("CSRF".to_string()),
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
-        ));
+        async fn get_auth_code(redirect_url: Url) -> AuthorizationCode {
+            Authorizer::get_auth_code_with_local_server(
+                CsrfToken::new("CSRF".to_string()),
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
+                &redirect_url,
+            )
+            .await
+        }
+
+        let redirect_url = "https://127.0.0.1:8081".parse().unwrap();
+        let auth_code = tokio::spawn(get_auth_code(redirect_url));
         let client = reqwest::Client::builder()
             .danger_accept_invalid_certs(true)
             .build()
@@ -314,7 +337,7 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
 
         let body = client
-            .get("https://127.0.0.1:8080/?state=CSRF&code=code")
+            .get("https://127.0.0.1:8081/?state=CSRF&code=code")
             .send()
             .await
             .unwrap()

@@ -8,8 +8,13 @@ use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
 use std::net::SocketAddr;
 use std::path::PathBuf;
+use url::Url;
 
-pub(super) async fn local_server(csrf: CsrfToken, certs_dir: PathBuf) -> String {
+pub(super) async fn local_server(
+    csrf: CsrfToken,
+    certs_dir: PathBuf,
+    redirect_url: &Url,
+) -> String {
     let (tx, rx) = async_channel::unbounded();
 
     let app_state = AppState { csrf, tx };
@@ -19,7 +24,8 @@ pub(super) async fn local_server(csrf: CsrfToken, certs_dir: PathBuf) -> String 
         .await
         .expect("certs setting ok");
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    // Derive SocketAddr from redirect_url
+    let addr = parse_socket_addr(redirect_url).expect("SocketAddr");
 
     tokio::spawn(axum_server::bind_rustls(addr, config).serve(app(app_state).into_make_service()));
 
@@ -57,6 +63,20 @@ async fn get_code(
     content
 }
 
+fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
+    let Some(hostname) = url.host_str() else {
+        return Err("No hostname found in URL".to_string());
+    };
+
+    let port = url.port().unwrap_or(443); // default to HTTPS port if not specified
+
+    let addr = format!("{hostname}:{port}");
+    match addr.parse::<SocketAddr>() {
+        Ok(addr) => Ok(addr),
+        Err(err) => Err(format!("Failed to parse socket address: {err}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -69,6 +89,43 @@ mod tests {
 
     fn config(csrf: CsrfToken, tx: async_channel::Sender<String>) -> AppState {
         AppState { csrf, tx }
+    }
+
+    #[test]
+    fn test_parse_socket_addr() {
+        // Valid URL with specified port
+        let expected_addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+        let addr = parse_socket_addr(&"https://127.0.0.1:8080".parse().unwrap()).unwrap();
+        assert_eq!(addr, expected_addr);
+
+        // Valid URL with default HTTPS port
+        let expected_addr = SocketAddr::from(([127, 0, 0, 1], 443));
+        let addr = parse_socket_addr(&"https://127.0.0.1".parse().unwrap()).unwrap();
+        assert_eq!(addr, expected_addr);
+
+        // URL without hostname
+        let err = parse_socket_addr(&"https:///path".parse().unwrap()).unwrap_err();
+        assert_eq!(
+            err,
+            "Failed to parse socket address: invalid socket address syntax"
+        );
+
+        // URL with non-standard port
+        let expected_addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+        let addr = parse_socket_addr(&"https://127.0.0.1:3000".parse().unwrap()).unwrap();
+        assert_eq!(addr, expected_addr);
+
+        // URL with IP address and port
+        let expected_addr = SocketAddr::from(([192, 168, 1, 1], 8080));
+        let addr = parse_socket_addr(&"https://192.168.1.1:8080".parse().unwrap()).unwrap();
+        assert_eq!(addr, expected_addr);
+
+        // URL with hostname and port; for now, this is not supported
+        let addr = parse_socket_addr(&"http://example.com:80".parse().unwrap()).unwrap_err();
+        assert_eq!(
+            addr,
+            "Failed to parse socket address: invalid socket address syntax"
+        );
     }
 
     #[tokio::test]
