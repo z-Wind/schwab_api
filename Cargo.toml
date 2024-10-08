@@ -1,6 +1,6 @@
 [package]
 name = "schwab_api"
-version = "0.0.3-alpha.1"
+version = "0.0.3-rc.1"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/z-Wind/schwab_api"
@@ -19,11 +19,11 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_with = { version = "3.9", features = ["chrono_0_4"] }
+serde_with = { version = "3.11", features = ["chrono_0_4"] }
 serde_repr = "0.1"
 governor = "0.6"
 chrono = { version = "0.4", features = ["serde", "clock"] }
-oauth2 = "=5.0.0-alpha.4"
+oauth2 = "=5.0.0-rc.1"
 tokio = { version = "1", features = [
     "rt-multi-thread",
     "macros",
@@ -48,8 +48,8 @@ serde_test = "1.0"
 mockito = "1.5"
 pretty_assertions = "1.4"
 assert-json-diff = "2.0"
-float-cmp = "0.9"
-regex = "1.10"
+float-cmp = "0.10"
+regex = "1.11"
 
 [features]
 test_online = []
