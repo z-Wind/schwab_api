@@ -35,7 +35,6 @@ pub struct SecuritiesAccountBase {
 pub struct MarginAccount {
     #[serde(flatten)]
     pub securities_account_base: SecuritiesAccountBase,
-
     pub initial_balances: Option<MarginInitialBalance>,
     pub current_balances: Option<MarginBalance>,
     pub projected_balances: Option<MarginBalance>,
@@ -49,7 +48,8 @@ pub struct MarginInitialBalance {
     pub bond_value: f64,
     pub buying_power: f64,
     pub cash_balance: f64,
-    pub cash_available_for_trading: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cash_available_for_trading: Option<f64>,
     pub cash_receipts: f64,
     pub day_trading_buying_power: f64,
     pub day_trading_buying_power_call: f64,
@@ -66,42 +66,61 @@ pub struct MarginInitialBalance {
     pub margin_equity: f64,
     pub money_market_fund: f64,
     pub mutual_fund_value: f64,
-    pub reg_tcall: f64,
+    pub reg_t_call: f64,
     pub short_margin_value: f64,
     pub short_option_market_value: f64,
     pub short_stock_value: f64,
     pub total_cash: f64,
     pub is_in_call: bool,
-    pub unsettled_cash: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unsettled_cash: Option<f64>,
     pub pending_deposits: f64,
     pub margin_balance: f64,
     pub short_balance: f64,
     pub account_value: f64,
 }
 
-#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginBalance {
-    pub available_funds: f64,
-    pub available_funds_non_marginable_trade: f64,
-    pub buying_power: f64,
-    pub buying_power_non_marginable_trade: f64,
-    pub day_trading_buying_power: f64,
-    pub day_trading_buying_power_call: f64,
-    pub equity: f64,
-    pub equity_percentage: f64,
-    pub long_margin_value: f64,
-    pub maintenance_call: f64,
-    pub maintenance_requirement: f64,
-    pub margin_balance: f64,
-    pub reg_tcall: f64,
-    pub short_balance: f64,
-    pub short_margin_value: f64,
-    pub sma: f64,
-    pub is_in_call: bool,
-    pub stock_buying_power: f64,
-    pub option_buying_power: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_funds: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub available_funds_non_marginable_trade: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub buying_power: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub buying_power_non_marginable_trade: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub day_trading_buying_power: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub day_trading_buying_power_call: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equity: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equity_percentage: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub long_margin_value: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maintenance_call: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maintenance_requirement: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub margin_balance: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reg_t_call: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_balance: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_margin_value: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sma: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_in_call: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stock_buying_power: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub option_buying_power: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
