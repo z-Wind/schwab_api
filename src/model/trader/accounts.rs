@@ -1,5 +1,5 @@
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 pub type Accounts = Vec<Account>;
 
@@ -80,46 +80,28 @@ pub struct MarginInitialBalance {
     pub account_value: f64,
 }
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginBalance {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub available_funds: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub available_funds_non_marginable_trade: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub buying_power: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub buying_power_non_marginable_trade: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub day_trading_buying_power: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub day_trading_buying_power_call: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub equity: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub equity_percentage: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub long_margin_value: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub maintenance_call: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub maintenance_requirement: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub margin_balance: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub reg_t_call: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub short_balance: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub short_margin_value: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub sma: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub is_in_call: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stock_buying_power: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub option_buying_power: Option<f64>,
 }
 
