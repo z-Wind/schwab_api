@@ -14,7 +14,7 @@ use parameter::{Market, Projection, TransactionType};
 /// Interacting with the Schwab API.
 #[derive(Debug)]
 pub struct Api<T: Tokener> {
-    tokener: T,
+    pub tokener: T,
     client: Client,
 }
 
