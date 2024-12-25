@@ -1,5 +1,3 @@
-use axum::extract::Query;
-use http::uri::Uri;
 use oauth2::{
     basic::{BasicClient, BasicRequestTokenError, BasicTokenResponse},
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointNotSet, EndpointSet,
@@ -11,7 +9,7 @@ use std::path::PathBuf;
 use url::Url;
 
 use crate::error::Error;
-use crate::token::local_server;
+use crate::token::utils::{AuthContext, ChannelMessenger};
 use crate::token::Token;
 
 type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
@@ -57,6 +55,7 @@ impl Authorizer {
             .set_auth_uri(auth_url)
             .set_token_uri(token_url)
             .set_redirect_uri(redirect_url);
+
         Authorizer {
             oauth2_client,
             process,
@@ -64,32 +63,19 @@ impl Authorizer {
         }
     }
 
-    async fn authorize(&self) -> Result<Token, RequestTokenError> {
-        let (auth_url, csrf_token) = self.auth_code_url();
-
-        let auth_code = match &self.process {
-            AuthProcess::Auto { certs_dir } => match open::that(auth_url.as_ref()) {
-                Ok(()) => {
-                    println!("Opened '{auth_url}' successfully.");
-                    let redirect_url = self
-                        .oauth2_client
-                        .redirect_uri()
-                        .expect("redirect_url")
-                        .url();
-                    Self::get_auth_code_with_local_server(
-                        csrf_token,
-                        certs_dir.clone(),
-                        redirect_url,
-                    )
-                    .await
-                }
-                Err(err) => {
-                    print!("An error occurred when auto opening: {err}");
-                    Self::get_auth_code_manually(&csrf_token, &auth_url)
-                }
-            },
-            AuthProcess::Manual => Self::get_auth_code_manually(&csrf_token, &auth_url),
-        };
+    async fn authorize(
+        &self,
+        messenger: &mut Box<dyn ChannelMessenger + Send>,
+    ) -> Result<Token, Box<dyn std::error::Error>> {
+        let context = self.create_auth_context();
+        messenger.with_context(context).await?;
+        messenger.send_auth_message().await?;
+        let auth_code = AuthorizationCode::new(
+            messenger
+                .receive_auth_message()
+                .await
+                .expect("Failed to get auth message."),
+        );
 
         let token_result = self.refresh_token(auth_code).await?;
         // dbg!(&token_result);
@@ -121,61 +107,6 @@ impl Authorizer {
         (auth_url, csrf_token)
     }
 
-    async fn get_auth_code_with_local_server(
-        csrf_state: CsrfToken,
-        certs_dir: PathBuf,
-        redirect_url: &Url,
-    ) -> AuthorizationCode {
-        let code = local_server::local_server(csrf_state, certs_dir, redirect_url).await;
-
-        AuthorizationCode::new(code)
-    }
-
-    fn get_auth_code_manually(csrf: &CsrfToken, auth_url: &Url) -> AuthorizationCode {
-        println!(
-            r#"
-**************************************************************
-
-This is the manual login and token creation flow for schwab_api.
-Please follow these instructions exactly:
-
- 1. Open the following link by copy-pasting it into the browser
-    of your choice:
-
-    {auth_url}
-
- 2. Log in with your account credentials. You may be asked to
-    perform two-factor authentication using text messaging or
-    another method, as well as whether to trust the browser.
-
- 3. When asked whether to allow your app access to your account,
-    select "Allow".
-
- 4. Your browser should be redirected to your callback URI. Copy
-    the ENTIRE address, paste it into the following prompt, and press
-    Enter/Return.
-
-**************************************************************
-
-Redirect URL>"#
-        );
-
-        let mut input = String::new();
-        std::io::stdin()
-            .read_line(&mut input)
-            .unwrap_or_else(|err| panic!("error: {err}"));
-
-        let uri: Uri = input.trim().parse().expect("right uri");
-        Self::uri_to_auth_code(&uri, csrf)
-    }
-
-    fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> AuthorizationCode {
-        let Query(query): Query<AuthRequest> = Query::try_from_uri(uri).expect("right format");
-        assert!(&query.state == csrf.secret(), "CSRF check error");
-
-        AuthorizationCode::new(query.code)
-    }
-
     async fn refresh_token(
         &self,
         auth_code: AuthorizationCode,
@@ -197,9 +128,33 @@ Redirect URL>"#
             .await
     }
 
-    pub(super) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
+    pub fn create_auth_context(&self) -> AuthContext {
+        let (auth_url, csrf_token) = self.auth_code_url();
+        let context = AuthContext {
+            url: Some(auth_url),
+            csrf: Some(csrf_token),
+            redirect_url: Some(
+                self.oauth2_client
+                    .redirect_uri()
+                    .expect("redirect_url")
+                    .url()
+                    .clone(),
+            ),
+            certs_dir: match &self.process {
+                AuthProcess::Auto { certs_dir } => Some(certs_dir.clone()),
+                AuthProcess::Manual => None,
+            },
+        };
+        context
+    }
+
+    pub(super) async fn save(
+        &mut self,
+        path: PathBuf,
+        messenger: &mut Box<dyn ChannelMessenger + Send>,
+    ) -> Result<Token, Error> {
         let token = self
-            .authorize()
+            .authorize(messenger)
             .await
             .map_err(|e| Error::Token(e.to_string()))?;
         token.save(path)?;
@@ -210,6 +165,9 @@ Redirect URL>"#
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::token::local_server::LocalServerMessenger;
+    use crate::token::stdio_messenger::StdioMessenger;
 
     use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
@@ -242,7 +200,10 @@ mod tests {
             Client::new(),
         );
 
-        let token = auth.authorize().await.unwrap();
+        let context = auth.create_auth_context();
+        let mut messenger: Box<dyn ChannelMessenger + Send> =
+            Box::new(LocalServerMessenger::new(&context).await);
+        let token = auth.authorize(&mut messenger).await.unwrap();
         dbg!(&token);
 
         // test refresh access token
@@ -260,8 +221,8 @@ mod tests {
             AuthProcess::Manual,
             Client::new(),
         );
-
-        let token = auth.authorize().await.unwrap();
+        let mut messenger: Box<dyn ChannelMessenger + Send> = Box::new(StdioMessenger::new());
+        let token = auth.authorize(&mut messenger).await.unwrap();
         dbg!(&token);
 
         // test refresh access token
@@ -319,12 +280,15 @@ mod tests {
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
     async fn test_get_auth_code_with_local_server() {
         async fn get_auth_code(redirect_url: Url) -> AuthorizationCode {
-            Authorizer::get_auth_code_with_local_server(
-                CsrfToken::new("CSRF".to_string()),
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
-                &redirect_url,
-            )
-            .await
+            let context = AuthContext {
+                url: Some(redirect_url.clone()),
+                csrf: Some(CsrfToken::new("CSRF".to_string())),
+                redirect_url: Some(redirect_url.clone()),
+                certs_dir: Some(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs")),
+            };
+            let messenger = LocalServerMessenger::new(&context).await;
+            messenger.send_auth_message().await.unwrap();
+            AuthorizationCode::new(messenger.receive_auth_message().await.unwrap())
         }
 
         let redirect_url = "https://127.0.0.1:8081".parse().unwrap();
@@ -346,15 +310,5 @@ mod tests {
             .unwrap();
         assert_eq!(auth_code.await.unwrap().secret(), "code");
         assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
-    }
-
-    #[test]
-    fn test_uri_to_auth_code() {
-        let csrf = CsrfToken::new("CSRF".to_string());
-        let uri: Uri = format!("https://127.0.0.1:8080/?state={}&code=code", csrf.secret())
-            .parse()
-            .unwrap();
-        let auth_code = Authorizer::uri_to_auth_code(&uri, &csrf);
-        assert_eq!(auth_code.secret(), "code");
     }
 }

@@ -41,6 +41,7 @@ open = "5"
 async-channel = "2.3"
 urlencoding = "2.1"
 derive_builder = "0.20"
+async-trait = "0.1.83"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

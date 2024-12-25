@@ -2,8 +2,12 @@
 
 pub(crate) mod auth;
 pub(crate) mod local_server;
+pub(crate) mod stdio_messenger;
+pub(crate) mod utils;
 
+use async_trait;
 use chrono::TimeDelta;
+use local_server::LocalServerMessenger;
 use oauth2::TokenResponse;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -11,14 +15,16 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use tokio::sync::Mutex;
+use utils::ChannelMessenger;
 
 use crate::error::Error;
 use auth::Authorizer;
 
+#[async_trait::async_trait]
 pub trait Tokener {
-    fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;
+    async fn get_access_token(&self) -> Result<String, Error>;
 
-    fn redo_authorization(&self) -> impl std::future::Future<Output = Result<(), Error>> + Send;
+    async fn redo_authorization(&self) -> Result<(), Error>;
 }
 
 const ACCESS_TOKEN_LIFETIME: TimeDelta = TimeDelta::minutes(25); // 25 Minutes instead of 30 min
@@ -27,8 +33,9 @@ const REFRESH_TOKEN_LIFETIME: TimeDelta = TimeDelta::days(6); // 6 days instead 
 #[derive(Debug)]
 pub struct TokenChecker {
     path: PathBuf,
-    authorizer: Authorizer,
+    authorizer: Mutex<Authorizer>,
     token: Mutex<Token>,
+    messenger: Mutex<Box<dyn ChannelMessenger + Send>>,
 }
 
 impl TokenChecker {
@@ -40,22 +47,59 @@ impl TokenChecker {
         certs_dir: PathBuf,
         async_client: Client,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(
+        let mut auth = Authorizer::new(
             client_id,
             secret,
             redirect_url,
             auth::AuthProcess::Auto { certs_dir },
             async_client,
         );
+        let context = auth.create_auth_context();
+        let mut messenger: Box<dyn ChannelMessenger + Send> =
+            Box::new(LocalServerMessenger::new(&context).await);
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
-            Err(_) => auth.save(path.clone()).await?,
+            Err(_) => auth.save(path.clone(), &mut messenger).await?,
         };
 
         let checker = Self {
             path,
-            authorizer: auth,
+            authorizer: Mutex::new(auth),
             token: Mutex::new(token),
+            messenger: Mutex::new(messenger),
+        };
+
+        checker.check_or_update().await?;
+
+        Ok(checker)
+    }
+
+    pub async fn new_with_custom_auth(
+        path: PathBuf,
+        client_id: String,
+        secret: String,
+        redirect_url: String,
+        async_client: Client,
+        mut messenger: Box<dyn ChannelMessenger + Send>,
+    ) -> Result<Self, Error> {
+        let mut auth = Authorizer::new(
+            client_id,
+            secret,
+            redirect_url,
+            auth::AuthProcess::Manual,
+            async_client,
+        );
+
+        let token = match Token::load(path.clone()) {
+            Ok(token) => token,
+            Err(_) => auth.save(path.clone(), &mut messenger).await?,
+        };
+
+        let checker = Self {
+            path,
+            authorizer: Mutex::new(auth),
+            token: Mutex::new(token),
+            messenger: Mutex::new(messenger),
         };
 
         checker.check_or_update().await?;
@@ -70,27 +114,17 @@ impl TokenChecker {
         redirect_url: String,
         async_client: Client,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(
+        let messenger: Box<dyn ChannelMessenger + Send> =
+            Box::new(stdio_messenger::StdioMessenger::new());
+        Self::new_with_custom_auth(
+            path,
             client_id,
             secret,
             redirect_url,
-            auth::AuthProcess::Manual,
             async_client,
-        );
-        let token = match Token::load(path.clone()) {
-            Ok(token) => token,
-            Err(_) => auth.save(path.clone()).await?,
-        };
-
-        let checker = Self {
-            path,
-            authorizer: auth,
-            token: Mutex::new(token),
-        };
-
-        checker.check_or_update().await?;
-
-        Ok(checker)
+            messenger,
+        )
+        .await
     }
 
     async fn check_or_update(&self) -> Result<(), Error> {
@@ -100,7 +134,13 @@ impl TokenChecker {
         }
 
         if token.is_refresh_valid() {
-            if let Ok(rsp) = self.authorizer.access_token(&token.refresh).await {
+            if let Ok(rsp) = self
+                .authorizer
+                .lock()
+                .await
+                .access_token(&token.refresh)
+                .await
+            {
                 token.access.clone_from(rsp.access_token().secret());
                 token.access_expires_in = chrono::Utc::now()
                     .checked_add_signed(ACCESS_TOKEN_LIFETIME)
@@ -112,12 +152,18 @@ impl TokenChecker {
             }
         }
 
-        *token = self.authorizer.save(self.path.clone()).await?;
-
+        let mut messenger = self.messenger.lock().await;
+        *token = self
+            .authorizer
+            .lock()
+            .await
+            .save(self.path.clone(), &mut *messenger)
+            .await?;
         Ok(())
     }
 }
 
+#[async_trait::async_trait]
 impl Tokener for TokenChecker {
     async fn get_access_token(&self) -> Result<String, Error> {
         self.check_or_update().await?;
@@ -127,8 +173,12 @@ impl Tokener for TokenChecker {
 
     /// must update token in Tokener
     async fn redo_authorization(&self) -> Result<(), Error> {
+        let mut authorizer = self.authorizer.lock().await;
+        let mut messenger = self.messenger.lock().await;
+
+        let fut = authorizer.save(self.path.clone(), &mut *messenger);
         let mut token = self.token.lock().await;
-        *token = self.authorizer.save(self.path.clone()).await?;
+        *token = fut.await?;
 
         Ok(())
     }
@@ -225,8 +275,7 @@ mod tests {
             "https://127.0.0.1:8080".to_string(),
             Client::new(),
         )
-        .await
-        .unwrap();
+        .await;
     }
 
     #[test]
