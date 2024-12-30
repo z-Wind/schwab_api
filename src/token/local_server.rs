@@ -7,66 +7,77 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
-use std::{net::SocketAddr, result::Result};
+use std::{net::SocketAddr, path::Path, result::Result};
 use url::Url;
 
-use super::utils::{AuthContext, ChannelMessenger};
+use super::auth::{AuthContext, ChannelMessenger};
+use crate::error::Error;
 
 #[derive(Debug)]
 pub struct LocalServerMessenger {
-    rx: Receiver<String>,
-    app_state: AppState,
-    addr: SocketAddr,
     config: RustlsConfig,
-    url: Url,
+
+    addr: Option<SocketAddr>,
+    rx: Option<Receiver<String>>,
+    app_state: Option<AppState>,
+    auth_url: Option<Url>,
 }
 
 impl LocalServerMessenger {
-    pub async fn new(context: &AuthContext) -> Self {
-        let (tx, rx) = async_channel::unbounded();
-        let certs_dir = context.certs_dir.as_ref().expect("certs_dir");
-        let csrf = context.csrf.as_ref().expect("csrf").clone();
-        let redirect_uri = context.redirect_url.as_ref().expect("redirect_url");
-        let auth_url = context.url.as_ref().expect("url").clone();
-
+    pub(crate) async fn new(certs_dir: &Path) -> Self {
         Self {
-            rx: rx,
-            app_state: AppState { csrf, tx: tx },
-            addr: parse_socket_addr(redirect_uri).expect("SocketAddr"),
             config: RustlsConfig::from_pem_file(
                 certs_dir.join("cert.pem"),
                 certs_dir.join("key.pem"),
             )
             .await
             .expect("certs setting ok"),
-            url: auth_url,
+
+            addr: None,
+            rx: None,
+            app_state: None,
+            auth_url: None,
         }
     }
 }
 
-#[async_trait::async_trait]
 impl ChannelMessenger for LocalServerMessenger {
-    #[allow(unused_variables)]
-    async fn with_context(&self, context: AuthContext) -> Result<(), Box<dyn std::error::Error>> {
-        // Technically, we should set the attributes to be Options
-        // and then build them here. Because this is a first-party messenger,
-        // we can bake it into the constructor instead
+    async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
+        let (tx, rx) = async_channel::unbounded();
+        let csrf = context.csrf.as_ref().expect("csrf").clone();
+        let redirect_uri = context.redirect_url.as_ref().expect("redirect_url");
+
+        self.app_state = Some(AppState { csrf, tx });
+        self.rx = Some(rx);
+        self.auth_url = Some(context.auth_url.as_ref().expect("url").clone());
+        self.addr = Some(parse_socket_addr(redirect_uri).expect("SocketAddr"));
+
         Ok(())
     }
 
-    async fn send_auth_message(&self) -> Result<(), Box<dyn std::error::Error>> {
-        open::that(self.url.as_ref())?;
+    async fn send_auth_message(&self) -> Result<(), Error> {
+        open::that(self.auth_url.as_ref().expect("auth_url").as_ref())?;
 
         Ok(())
     }
 
-    async fn receive_auth_message(&self) -> Result<String, Box<dyn std::error::Error>> {
+    async fn receive_auth_message(&self) -> Result<String, Error> {
+        let service = app(self.app_state.as_ref().expect("app_state").clone()).into_make_service();
         tokio::spawn(
-            axum_server::bind_rustls(self.addr, self.config.clone())
-                .serve(app(self.app_state.clone()).into_make_service()),
+            axum_server::bind_rustls(
+                *self.addr.as_ref().expect("SocketAddr"),
+                self.config.clone(),
+            )
+            .serve(service),
         );
 
-        let code = self.rx.recv().await.expect("receive code");
+        let code = self
+            .rx
+            .as_ref()
+            .expect("rx")
+            .recv()
+            .await
+            .expect("receive code");
         Ok(code)
     }
 }

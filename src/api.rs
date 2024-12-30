@@ -445,9 +445,10 @@ mod tests {
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
     use crate::model::trader::preview_order::Instruction;
+    use crate::token::local_server::LocalServerMessenger;
     use crate::token::TokenChecker;
 
-    async fn client() -> Api<TokenChecker> {
+    async fn client() -> Api<TokenChecker<LocalServerMessenger>> {
         #[allow(clippy::option_env_unwrap)]
         let key = option_env!("SCHWAB_API_KEY")
             .expect("There should be SCHWAB API KEY")

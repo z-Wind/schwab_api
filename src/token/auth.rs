@@ -9,7 +9,6 @@ use std::path::PathBuf;
 use url::Url;
 
 use crate::error::Error;
-use crate::token::utils::{AuthContext, ChannelMessenger};
 use crate::token::Token;
 
 type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
@@ -27,21 +26,23 @@ pub(super) struct AuthRequest {
 }
 
 #[derive(Debug)]
-pub(super) struct Authorizer {
+pub(super) struct Authorizer<CM: ChannelMessenger> {
     oauth2_client:
         BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
     process: AuthProcess,
     async_client: Client,
+    messenger: CM,
 }
 
-impl Authorizer {
-    pub(super) fn new(
+impl<CM: ChannelMessenger> Authorizer<CM> {
+    pub(super) async fn new(
         app_key: String,
         secret: String,
         redirect_url: String,
         process: AuthProcess,
         async_client: Client,
-    ) -> Self {
+        messenger: CM,
+    ) -> Result<Self, Error> {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
         let auth_url = AuthUrl::new("https://api.schwabapi.com/v1/oauth/authorize".to_string())
@@ -56,28 +57,34 @@ impl Authorizer {
             .set_token_uri(token_url)
             .set_redirect_uri(redirect_url);
 
-        Authorizer {
+        let mut auth = Authorizer {
             oauth2_client,
             process,
             async_client,
-        }
+            messenger,
+        };
+        let context = auth.create_auth_context();
+        auth.messenger.with_context(context).await?;
+
+        Ok(auth)
     }
 
-    async fn authorize(
-        &self,
-        messenger: &mut Box<dyn ChannelMessenger + Send>,
-    ) -> Result<Token, Box<dyn std::error::Error>> {
-        let context = self.create_auth_context();
-        messenger.with_context(context).await?;
-        messenger.send_auth_message().await?;
-        let auth_code = AuthorizationCode::new(
-            messenger
-                .receive_auth_message()
-                .await
-                .expect("Failed to get auth message."),
-        );
+    async fn authorize(&self) -> Result<Token, Error> {
+        let auth_code = {
+            self.messenger.send_auth_message().await?;
+            AuthorizationCode::new(
+                self.messenger
+                    .receive_auth_message()
+                    .await
+                    .expect("Failed to get auth message."),
+            )
+        };
 
-        let token_result = self.refresh_token(auth_code).await?;
+        let token_result = self
+            .refresh_token(auth_code)
+            .await
+            .map_err(|e| Error::Token(e.to_string()))?;
+
         // dbg!(&token_result);
         let token = Token {
             refresh: token_result
@@ -131,7 +138,7 @@ impl Authorizer {
     pub fn create_auth_context(&self) -> AuthContext {
         let (auth_url, csrf_token) = self.auth_code_url();
         let context = AuthContext {
-            url: Some(auth_url),
+            auth_url: Some(auth_url),
             csrf: Some(csrf_token),
             redirect_url: Some(
                 self.oauth2_client
@@ -148,18 +155,49 @@ impl Authorizer {
         context
     }
 
-    pub(super) async fn save(
-        &mut self,
-        path: PathBuf,
-        messenger: &mut Box<dyn ChannelMessenger + Send>,
-    ) -> Result<Token, Error> {
+    pub(super) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
         let token = self
-            .authorize(messenger)
+            .authorize()
             .await
             .map_err(|e| Error::Token(e.to_string()))?;
         token.save(path)?;
         Ok(token)
     }
+}
+
+#[derive(Debug)]
+pub struct AuthContext {
+    pub auth_url: Option<Url>,
+    pub csrf: Option<CsrfToken>,
+    pub redirect_url: Option<Url>,
+    pub certs_dir: Option<PathBuf>,
+}
+
+/// A trait for sending and receiving messages through a channel.
+///
+/// Implementors of this trait provide a way to send messages to a recipient
+/// and receive responses.
+pub trait ChannelMessenger: Sync {
+    fn with_context(
+        &mut self,
+        context: AuthContext,
+    ) -> impl std::future::Future<Output = Result<(), Error>> + Send;
+
+    /// Transmits a message through the `tx` channel.
+    ///
+    /// # Arguments
+    ///
+    /// * `message`: The message to be sent.
+    fn send_auth_message(&self) -> impl std::future::Future<Output = Result<(), Error>> + Send;
+
+    /// Receives a message from the `rx` channel.
+    ///
+    /// # Returns
+    ///
+    /// The received message as a `String`.
+    fn receive_auth_message(
+        &self,
+    ) -> impl std::future::Future<Output = Result<String, Error>> + Send;
 }
 
 #[cfg(test)]
@@ -190,6 +228,10 @@ mod tests {
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_auth_auto() {
+        let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+
+        let messenger = LocalServerMessenger::new(&certs_dir).await;
+
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
@@ -198,12 +240,12 @@ mod tests {
                 certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             },
             Client::new(),
-        );
+            messenger,
+        )
+        .await
+        .unwrap();
 
-        let context = auth.create_auth_context();
-        let mut messenger: Box<dyn ChannelMessenger + Send> =
-            Box::new(LocalServerMessenger::new(&context).await);
-        let token = auth.authorize(&mut messenger).await.unwrap();
+        let token = auth.authorize().await.unwrap();
         dbg!(&token);
 
         // test refresh access token
@@ -214,15 +256,20 @@ mod tests {
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_auth_manually() {
+        let messenger = StdioMessenger::new();
+
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
             callback_url_static().to_string(),
             AuthProcess::Manual,
             Client::new(),
-        );
-        let mut messenger: Box<dyn ChannelMessenger + Send> = Box::new(StdioMessenger::new());
-        let token = auth.authorize(&mut messenger).await.unwrap();
+            messenger,
+        )
+        .await
+        .unwrap();
+
+        let token = auth.authorize().await.unwrap();
         dbg!(&token);
 
         // test refresh access token
@@ -230,8 +277,10 @@ mod tests {
         dbg!(&access_token);
     }
 
-    #[test]
-    fn test_get_auth_code_url() {
+    #[tokio::test]
+    async fn test_get_auth_code_url() {
+        let messenger = StdioMessenger::new();
+
         const CLIENTID: &str = "CLIENTID";
         const SECRET: &str = "SECRET";
         const REDIRECT_URL: &str = "https://127.0.0.1:8080";
@@ -243,7 +292,10 @@ mod tests {
                 certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             },
             Client::new(),
-        );
+            messenger,
+        )
+        .await
+        .unwrap();
 
         let (auth_url, csrf_token) = auth.auth_code_url();
 
@@ -280,13 +332,18 @@ mod tests {
     #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
     async fn test_get_auth_code_with_local_server() {
         async fn get_auth_code(redirect_url: Url) -> AuthorizationCode {
+            let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+
+            let mut messenger = LocalServerMessenger::new(&certs_dir).await;
+
             let context = AuthContext {
-                url: Some(redirect_url.clone()),
+                auth_url: Some(redirect_url.clone()),
                 csrf: Some(CsrfToken::new("CSRF".to_string())),
                 redirect_url: Some(redirect_url.clone()),
-                certs_dir: Some(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs")),
+                certs_dir: Some(certs_dir),
             };
-            let messenger = LocalServerMessenger::new(&context).await;
+            messenger.with_context(context).await.unwrap();
+
             messenger.send_auth_message().await.unwrap();
             AuthorizationCode::new(messenger.receive_auth_message().await.unwrap())
         }

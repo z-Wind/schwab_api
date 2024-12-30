@@ -1,23 +1,22 @@
-use async_trait;
+//! A messenger that uses standard input/output.
+
 use axum::extract::Query;
 use http::Uri;
 use oauth2::CsrfToken;
-use tokio::sync::Mutex;
 
-/// A messenger that uses standard input/output.
-use crate::token::{auth::AuthRequest, utils::AuthContext, utils::ChannelMessenger};
+use crate::error::Error;
+use crate::token::{auth::AuthContext, auth::AuthRequest, auth::ChannelMessenger};
 
 #[derive(Debug)]
 pub struct StdioMessenger {
-    context: Mutex<Option<AuthContext>>,
+    context: Option<AuthContext>,
 }
 
 impl StdioMessenger {
     pub fn new() -> Self {
-        Self {
-            context: Mutex::new(None),
-        }
+        Self { context: None }
     }
+
     fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> String {
         let Query(query): Query<AuthRequest> = Query::try_from_uri(uri).expect("right format");
         assert!(&query.state == csrf.secret(), "CSRF check error");
@@ -26,16 +25,15 @@ impl StdioMessenger {
     }
 }
 
-#[async_trait::async_trait]
 impl ChannelMessenger for StdioMessenger {
-    async fn with_context(&self, context: AuthContext) -> Result<(), Box<dyn std::error::Error>> {
-        *self.context.lock().await = Some(context);
+    async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
+        self.context = Some(context);
         Ok(())
     }
-    async fn send_auth_message(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let context_lock = self.context.lock().await;
-        let context = context_lock.as_ref().expect("context not set");
-        let auth_url = context.url.as_ref().expect("auth url not set");
+
+    async fn send_auth_message(&self) -> Result<(), Error> {
+        let context = self.context.as_ref().expect("context not set");
+        let auth_url = context.auth_url.as_ref().expect("auth url not set");
         let message = format!(
             r#"
 **************************************************************
@@ -68,13 +66,12 @@ Redirect URL>"#
         Ok(())
     }
 
-    async fn receive_auth_message(&self) -> Result<String, Box<dyn std::error::Error>> {
+    async fn receive_auth_message(&self) -> Result<String, Error> {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
         let uri: Uri = input.trim().parse().expect("right uri");
 
-        let context_lock = self.context.lock().await;
-        let context = context_lock.as_ref().expect("context not set");
+        let context = self.context.as_ref().expect("context not set");
         let csrf = context.csrf.as_ref().expect("auth csrf not set");
 
         Ok(Self::uri_to_auth_code(&uri, csrf))
