@@ -24,6 +24,9 @@ pub struct LocalServerMessenger {
 }
 
 impl LocalServerMessenger {
+    /// # Panics
+    ///
+    /// Will panic without cert.pem and key.pem
     pub async fn new(certs_dir: &Path) -> Self {
         Self {
             config: RustlsConfig::from_pem_file(
@@ -234,7 +237,7 @@ mod tests {
         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
 
         let body = client
-            .get(format!("{}/?state=CSRF&code=code", redirect_url))
+            .get(format!("{redirect_url}/?state=CSRF&code=code"))
             .send()
             .await
             .unwrap()

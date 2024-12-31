@@ -8,14 +8,15 @@ use super::{AuthContext, ChannelMessenger};
 use crate::error::Error;
 use crate::token::auth::AuthRequest;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct StdioMessenger {
     context: Option<AuthContext>,
 }
 
 impl StdioMessenger {
+    #[must_use]
     pub fn new() -> Self {
-        Self { context: None }
+        Self::default()
     }
 
     fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> String {
@@ -63,7 +64,7 @@ Please follow these instructions exactly:
 Redirect URL>"#
         );
 
-        println!("{}", message);
+        println!("{message}");
         Ok(())
     }
 

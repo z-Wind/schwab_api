@@ -222,11 +222,11 @@ pub struct QuoteEquity {
     ///
     /// Number of shares for ask
     pub ask_size: i64,
-    #[serde_as(as = "TimestampMilliSeconds<i64>")]
 
     /// example: 1621376892336
     ///
     /// Last ask time in milliseconds since Epoch
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub ask_time: chrono::DateTime<chrono::Utc>,
 
     /// example: XNYS
@@ -244,11 +244,11 @@ pub struct QuoteEquity {
     ///
     /// Number of shares for bid
     pub bid_size: i64,
-    #[serde_as(as = "TimestampMilliSeconds<i64>")]
 
     /// example: 1621376892336
     ///
     /// Last bid time in milliseconds since Epoch
+    #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub bid_time: chrono::DateTime<chrono::Utc>,
 
     /// example: 126.27
@@ -490,7 +490,6 @@ pub enum DivFrequency {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FundStrategy {
     ///  "A" - Active
-
     #[serde(rename = "A")]
     Active,
 

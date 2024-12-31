@@ -227,11 +227,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_auth_code_url() {
-        let messenger = StdioMessenger::new();
-
         const CLIENTID: &str = "CLIENTID";
         const SECRET: &str = "SECRET";
         const REDIRECT_URL: &str = "https://127.0.0.1:8080";
+        let messenger = StdioMessenger::new();
+
         let auth = Authorizer::new(
             CLIENTID.to_string(),
             SECRET.to_string(),
