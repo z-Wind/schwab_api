@@ -1,23 +1,22 @@
 //! Structs and utilities for Authorization.
 
 pub(crate) mod auth;
-pub(crate) mod local_server;
-pub(crate) mod stdio_messenger;
+pub mod channel_messenger;
 
 use chrono::TimeDelta;
-use local_server::LocalServerMessenger;
 use oauth2::TokenResponse;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use stdio_messenger::StdioMessenger;
 use tokio::sync::Mutex;
 
 use crate::error::Error;
 use auth::Authorizer;
-use auth::ChannelMessenger;
+use channel_messenger::local_server::LocalServerMessenger;
+use channel_messenger::stdio_messenger::StdioMessenger;
+use channel_messenger::ChannelMessenger;
 
 pub trait Tokener {
     fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;
@@ -44,15 +43,8 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
         async_client: Client,
         messenger: CM,
     ) -> Result<Self, Error> {
-        let authorizer = Authorizer::new(
-            client_id,
-            secret,
-            redirect_url,
-            auth::AuthProcess::Manual,
-            async_client,
-            messenger,
-        )
-        .await?;
+        let authorizer =
+            Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
@@ -105,15 +97,8 @@ impl TokenChecker<LocalServerMessenger> {
     ) -> Result<Self, Error> {
         let messenger = LocalServerMessenger::new(&certs_dir).await;
 
-        let authorizer = Authorizer::new(
-            client_id,
-            secret,
-            redirect_url,
-            auth::AuthProcess::Auto { certs_dir },
-            async_client,
-            messenger,
-        )
-        .await?;
+        let authorizer =
+            Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
         let token = match Token::load(path.clone()) {
             Ok(token) => token,

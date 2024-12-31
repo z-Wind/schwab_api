@@ -4,8 +4,9 @@ use axum::extract::Query;
 use http::Uri;
 use oauth2::CsrfToken;
 
+use super::{AuthContext, ChannelMessenger};
 use crate::error::Error;
-use crate::token::{auth::AuthContext, auth::AuthRequest, auth::ChannelMessenger};
+use crate::token::auth::AuthRequest;
 
 #[derive(Debug)]
 pub struct StdioMessenger {
@@ -89,5 +90,22 @@ mod tests {
             .unwrap();
         let auth_code = StdioMessenger::uri_to_auth_code(&uri, &csrf);
         assert_eq!(auth_code, "code");
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
+    async fn test_stdio_messenger() {
+        let context = AuthContext {
+            auth_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+            csrf: Some(CsrfToken::new("CSRF".to_string())),
+            redirect_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+        };
+
+        let mut messenger = StdioMessenger::new();
+        messenger.with_context(context).await.unwrap();
+        messenger.send_auth_message().await.unwrap();
+
+        // you should input https://127.0.0.1:8081/?state=CSRF&code=code
+        assert_eq!("code", messenger.receive_auth_message().await.unwrap());
     }
 }

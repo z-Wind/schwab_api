@@ -10,8 +10,8 @@ use oauth2::CsrfToken;
 use std::{net::SocketAddr, path::Path, result::Result};
 use url::Url;
 
-use super::auth::{AuthContext, ChannelMessenger};
-use crate::error::Error;
+use super::{AuthContext, ChannelMessenger};
+use crate::{error::Error, token::auth::AuthRequest};
 
 #[derive(Debug)]
 pub struct LocalServerMessenger {
@@ -24,7 +24,7 @@ pub struct LocalServerMessenger {
 }
 
 impl LocalServerMessenger {
-    pub(crate) async fn new(certs_dir: &Path) -> Self {
+    pub async fn new(certs_dir: &Path) -> Self {
         Self {
             config: RustlsConfig::from_pem_file(
                 certs_dir.join("cert.pem"),
@@ -95,7 +95,7 @@ struct AppState {
 }
 
 async fn get_code(
-    Query(query): Query<super::auth::AuthRequest>,
+    Query(query): Query<AuthRequest>,
     State(csrf): State<CsrfToken>,
     State(tx): State<async_channel::Sender<String>>,
 ) -> impl IntoResponse {
@@ -130,11 +130,13 @@ fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use axum::{
         body::Body,
         http::{Request, StatusCode, Uri},
     };
     use pretty_assertions::assert_eq;
+    use std::path::PathBuf;
     use tower::ServiceExt; // for `oneshot` and `ready`
 
     fn config(csrf: CsrfToken, tx: async_channel::Sender<String>) -> AppState {
@@ -202,5 +204,44 @@ mod tests {
             "Schwab returned the following code:\ncode\nYou can now safely close this browser window."
         );
         assert_eq!(rx.recv().await.unwrap(), "code");
+    }
+
+    #[tokio::test]
+    #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
+    async fn test_receive_auth_message() {
+        let redirect_url = "https://127.0.0.1:8081";
+
+        let auth_code = tokio::spawn(async {
+            let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+
+            let mut messenger = LocalServerMessenger::new(&certs_dir).await;
+
+            let context = AuthContext {
+                auth_url: Some(redirect_url.parse().unwrap()),
+                csrf: Some(CsrfToken::new("CSRF".to_string())),
+                redirect_url: Some(redirect_url.parse().unwrap()),
+            };
+            messenger.with_context(context).await.unwrap();
+
+            messenger.receive_auth_message().await.unwrap()
+        });
+
+        let client = reqwest::Client::builder()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .unwrap();
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+
+        let body = client
+            .get(format!("{}/?state=CSRF&code=code", redirect_url))
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
+        assert_eq!(auth_code.await.unwrap(), "code");
+        assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
     }
 }

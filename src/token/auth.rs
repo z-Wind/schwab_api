@@ -8,16 +8,11 @@ use serde::Deserialize;
 use std::path::PathBuf;
 use url::Url;
 
+use super::channel_messenger::{AuthContext, ChannelMessenger};
 use crate::error::Error;
 use crate::token::Token;
 
 type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
-
-#[derive(Debug)]
-pub(super) enum AuthProcess {
-    Auto { certs_dir: PathBuf },
-    Manual,
-}
 
 #[derive(Debug, Deserialize)]
 pub(super) struct AuthRequest {
@@ -29,7 +24,6 @@ pub(super) struct AuthRequest {
 pub(super) struct Authorizer<CM: ChannelMessenger> {
     oauth2_client:
         BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
-    process: AuthProcess,
     async_client: Client,
     messenger: CM,
 }
@@ -39,7 +33,6 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
         app_key: String,
         secret: String,
         redirect_url: String,
-        process: AuthProcess,
         async_client: Client,
         messenger: CM,
     ) -> Result<Self, Error> {
@@ -59,7 +52,6 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
 
         let mut auth = Authorizer {
             oauth2_client,
-            process,
             async_client,
             messenger,
         };
@@ -147,10 +139,6 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
                     .url()
                     .clone(),
             ),
-            certs_dir: match &self.process {
-                AuthProcess::Auto { certs_dir } => Some(certs_dir.clone()),
-                AuthProcess::Manual => None,
-            },
         };
         context
     }
@@ -165,50 +153,15 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
     }
 }
 
-#[derive(Debug)]
-pub struct AuthContext {
-    pub auth_url: Option<Url>,
-    pub csrf: Option<CsrfToken>,
-    pub redirect_url: Option<Url>,
-    pub certs_dir: Option<PathBuf>,
-}
-
-/// A trait for sending and receiving messages through a channel.
-///
-/// Implementors of this trait provide a way to send messages to a recipient
-/// and receive responses.
-pub trait ChannelMessenger: Sync {
-    fn with_context(
-        &mut self,
-        context: AuthContext,
-    ) -> impl std::future::Future<Output = Result<(), Error>> + Send;
-
-    /// Transmits a message through the `tx` channel.
-    ///
-    /// # Arguments
-    ///
-    /// * `message`: The message to be sent.
-    fn send_auth_message(&self) -> impl std::future::Future<Output = Result<(), Error>> + Send;
-
-    /// Receives a message from the `rx` channel.
-    ///
-    /// # Returns
-    ///
-    /// The received message as a `String`.
-    fn receive_auth_message(
-        &self,
-    ) -> impl std::future::Future<Output = Result<String, Error>> + Send;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use crate::token::local_server::LocalServerMessenger;
-    use crate::token::stdio_messenger::StdioMessenger;
-
     use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
+
+    use crate::token::channel_messenger::local_server::LocalServerMessenger;
+    use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
 
     fn callback_url_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
@@ -227,18 +180,14 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_auth_auto() {
+    async fn test_auth_local_server() {
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
-
         let messenger = LocalServerMessenger::new(&certs_dir).await;
 
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
             callback_url_static().to_string(),
-            AuthProcess::Auto {
-                certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
-            },
             Client::new(),
             messenger,
         )
@@ -255,14 +204,13 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_auth_manually() {
+    async fn test_auth_stdio() {
         let messenger = StdioMessenger::new();
 
         let auth = Authorizer::new(
             client_id_static().to_string(),
             secret_static().to_string(),
             callback_url_static().to_string(),
-            AuthProcess::Manual,
             Client::new(),
             messenger,
         )
@@ -288,9 +236,6 @@ mod tests {
             CLIENTID.to_string(),
             SECRET.to_string(),
             REDIRECT_URL.to_string(),
-            AuthProcess::Auto {
-                certs_dir: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
-            },
             Client::new(),
             messenger,
         )
@@ -326,46 +271,5 @@ mod tests {
             &Cow::Borrowed("readonly")
         );
         assert!(!csrf_token.secret().is_empty());
-    }
-
-    #[tokio::test]
-    #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
-    async fn test_get_auth_code_with_local_server() {
-        async fn get_auth_code(redirect_url: Url) -> AuthorizationCode {
-            let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
-
-            let mut messenger = LocalServerMessenger::new(&certs_dir).await;
-
-            let context = AuthContext {
-                auth_url: Some(redirect_url.clone()),
-                csrf: Some(CsrfToken::new("CSRF".to_string())),
-                redirect_url: Some(redirect_url.clone()),
-                certs_dir: Some(certs_dir),
-            };
-            messenger.with_context(context).await.unwrap();
-
-            messenger.send_auth_message().await.unwrap();
-            AuthorizationCode::new(messenger.receive_auth_message().await.unwrap())
-        }
-
-        let redirect_url = "https://127.0.0.1:8081".parse().unwrap();
-        let auth_code = tokio::spawn(get_auth_code(redirect_url));
-        let client = reqwest::Client::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .unwrap();
-
-        tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
-
-        let body = client
-            .get("https://127.0.0.1:8081/?state=CSRF&code=code")
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
-        assert_eq!(auth_code.await.unwrap().secret(), "code");
-        assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
     }
 }
