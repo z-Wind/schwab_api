@@ -127,7 +127,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .await
     }
 
-    pub fn create_auth_context(&self) -> AuthContext {
+    fn create_auth_context(&self) -> AuthContext {
         let (auth_url, csrf_token) = self.auth_code_url();
         let context = AuthContext {
             auth_url: Some(auth_url),

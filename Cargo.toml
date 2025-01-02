@@ -1,6 +1,6 @@
 [package]
 name = "schwab_api"
-version = "0.0.3-rc.1"
+version = "0.0.3-rc.2"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/z-Wind/schwab_api"
@@ -19,9 +19,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_with = { version = "3.11", features = ["chrono_0_4"] }
+serde_with = { version = "3.12", features = ["chrono_0_4"] }
 serde_repr = "0.1"
-governor = "0.7"
+governor = "0.8"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 oauth2 = "=5.0.0-rc.1"
 tokio = { version = "1", features = [
@@ -33,8 +33,8 @@ tokio = { version = "1", features = [
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 dirs = "5.0"
 url = "2.5"
-http = "1.1"
-axum = { version = "0.7", features = ["macros"] }
+http = "1.2"
+axum = { version = "0.8", features = ["macros"] }
 axum-server = { version = "0.7", features = ["tls-rustls-no-provider"] }
 thiserror = "2.0"
 open = "5"

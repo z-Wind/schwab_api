@@ -5,6 +5,10 @@ pub mod stdio_messenger;
 use oauth2::CsrfToken;
 use url::Url;
 
+pub use compound_messenger::CompoundMessenger;
+pub use local_server::LocalServerMessenger;
+pub use stdio_messenger::StdioMessenger;
+
 use crate::Error;
 
 #[derive(Debug, Clone)]
