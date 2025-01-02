@@ -47,28 +47,54 @@ impl LocalServerMessenger {
 impl ChannelMessenger for LocalServerMessenger {
     async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
         let (tx, rx) = async_channel::unbounded();
-        let csrf = context.csrf.as_ref().expect("csrf").clone();
-        let redirect_uri = context.redirect_url.as_ref().expect("redirect_url");
+        let csrf = context
+            .csrf
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No CSRF".to_string()))?
+            .clone();
+        let redirect_uri = context
+            .redirect_url
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No redirect_url".to_string()))?;
 
         self.app_state = Some(AppState { csrf, tx });
         self.rx = Some(rx);
-        self.auth_url = Some(context.auth_url.as_ref().expect("url").clone());
-        self.addr = Some(parse_socket_addr(redirect_uri).expect("SocketAddr"));
+        self.auth_url = Some(
+            context
+                .auth_url
+                .as_ref()
+                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
+                .clone(),
+        );
+        self.addr = Some(parse_socket_addr(redirect_uri).map_err(Error::ChannelMessenger)?);
 
         Ok(())
     }
 
     async fn send_auth_message(&self) -> Result<(), Error> {
-        open::that(self.auth_url.as_ref().expect("auth_url").as_ref())?;
+        open::that(
+            self.auth_url
+                .as_ref()
+                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
+                .as_ref(),
+        )?;
 
         Ok(())
     }
 
     async fn receive_auth_message(&self) -> Result<String, Error> {
-        let service = app(self.app_state.as_ref().expect("app_state").clone()).into_make_service();
+        let service = app(self
+            .app_state
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No app_state".to_string()))?
+            .clone())
+        .into_make_service();
         tokio::spawn(
             axum_server::bind_rustls(
-                *self.addr.as_ref().expect("SocketAddr"),
+                *self
+                    .addr
+                    .as_ref()
+                    .ok_or(Error::ChannelMessenger("No SocketAddr".to_string()))?,
                 self.config.clone(),
             )
             .serve(service),
@@ -77,10 +103,10 @@ impl ChannelMessenger for LocalServerMessenger {
         let code = self
             .rx
             .as_ref()
-            .expect("rx")
+            .ok_or(Error::ChannelMessenger("No rx".to_string()))?
             .recv()
             .await
-            .expect("receive code");
+            .map_err(|e| Error::ChannelMessenger(format!("{e:?}")))?;
         Ok(code)
     }
 }
@@ -184,7 +210,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_local_server() {
+    async fn test_router() {
         let (tx, rx) = async_channel::unbounded();
         let csrf = CsrfToken::new_random();
 
@@ -210,41 +236,24 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "If the test is performed manually on Linux, it may fail for HTTPS."]
-    async fn test_receive_auth_message() {
-        let redirect_url = "https://127.0.0.1:8081";
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_local_server_messenger() {
+        let context = AuthContext {
+            auth_url: Some(
+                "https://127.0.0.1:8081/?state=CSRF&code=code"
+                    .parse()
+                    .unwrap(),
+            ),
+            csrf: Some(CsrfToken::new("CSRF".to_string())),
+            redirect_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+        };
 
-        let auth_code = tokio::spawn(async {
-            let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+        let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+        let mut messenger = LocalServerMessenger::new(&certs_dir).await;
 
-            let mut messenger = LocalServerMessenger::new(&certs_dir).await;
+        messenger.with_context(context).await.unwrap();
+        messenger.send_auth_message().await.unwrap();
 
-            let context = AuthContext {
-                auth_url: Some(redirect_url.parse().unwrap()),
-                csrf: Some(CsrfToken::new("CSRF".to_string())),
-                redirect_url: Some(redirect_url.parse().unwrap()),
-            };
-            messenger.with_context(context).await.unwrap();
-
-            messenger.receive_auth_message().await.unwrap()
-        });
-
-        let client = reqwest::Client::builder()
-            .danger_accept_invalid_certs(true)
-            .build()
-            .unwrap();
-
-        tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
-
-        let body = client
-            .get(format!("{redirect_url}/?state=CSRF&code=code"))
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
-        assert_eq!(auth_code.await.unwrap(), "code");
-        assert_eq!(body, "Schwab returned the following code:\ncode\nYou can now safely close this browser window.");
+        assert_eq!("code", messenger.receive_auth_message().await.unwrap());
     }
 }

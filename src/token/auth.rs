@@ -160,22 +160,52 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
 
+    use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
     use crate::token::channel_messenger::local_server::LocalServerMessenger;
     use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
 
-    fn callback_url_static() -> &'static str {
-        #[allow(clippy::option_env_unwrap)]
-        option_env!("SCHWAB_CALLBACK_URL").expect("There should be SCHWAB CALLBACK URL")
-    }
-
     fn client_id_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
-        option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY")
+        option_env!("SCHWAB_API_KEY")
+            .expect("The environment variable SCHWAB_API_KEY sholud be set")
     }
 
     fn secret_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
-        option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET")
+        option_env!("SCHWAB_SECRET").expect("The environment variable SCHWAB_SECRET sholud be set")
+    }
+
+    fn callback_url_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_CALLBACK_URL")
+            .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for compound verification. Should be --nocapture"]
+    async fn test_auth_compound() {
+        let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+        let messenger = CompoundMessenger::new(
+            LocalServerMessenger::new(&certs_dir).await,
+            StdioMessenger::new(),
+        );
+
+        let auth = Authorizer::new(
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
+            Client::new(),
+            messenger,
+        )
+        .await
+        .unwrap();
+
+        let token = auth.authorize().await.unwrap();
+        dbg!(&token);
+
+        // test refresh access token
+        let access_token = auth.access_token(&token.refresh).await.unwrap();
+        dbg!(&access_token);
     }
 
     #[tokio::test]
@@ -203,7 +233,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
     async fn test_auth_stdio() {
         let messenger = StdioMessenger::new();
 

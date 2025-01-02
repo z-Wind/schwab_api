@@ -87,7 +87,7 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
 }
 
 impl TokenChecker<LocalServerMessenger> {
-    pub async fn new(
+    pub async fn new_with_local_server(
         path: PathBuf,
         client_id: String,
         secret: String,
@@ -118,7 +118,7 @@ impl TokenChecker<LocalServerMessenger> {
 }
 
 impl TokenChecker<StdioMessenger> {
-    pub async fn new_with_auth_manually(
+    pub async fn new_with_stdio(
         path: PathBuf,
         client_id: String,
         secret: String,
@@ -202,23 +202,64 @@ impl Token {
 mod tests {
     use super::*;
 
+    use channel_messenger::compound_messenger::CompoundMessenger;
+
+    fn client_id_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_API_KEY")
+            .expect("The environment variable SCHWAB_API_KEY sholud be set")
+    }
+
+    fn secret_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_SECRET").expect("The environment variable SCHWAB_SECRET sholud be set")
+    }
+
+    fn callback_url_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_CALLBACK_URL")
+            .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
+    }
+
     #[tokio::test]
-    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_token_checker_new() {
+    #[ignore = "Testing manually for verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_custom_auth() {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
             .join("Schwab-rust.json");
-        #[allow(clippy::option_env_unwrap)]
-        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
-        #[allow(clippy::option_env_unwrap)]
-        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
-        TokenChecker::new(
+        let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
+        let messenger = CompoundMessenger::new(
+            LocalServerMessenger::new(&certs_dir).await,
+            StdioMessenger::new(),
+        );
+
+        TokenChecker::new_with_custom_auth(
             path,
-            client_id.to_string(),
-            secret.to_string(),
-            "https://127.0.0.1:8080".to_string(),
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
+            Client::new(),
+            messenger,
+        )
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_local_server() {
+        let path = dirs::home_dir()
+            .expect("home dir")
+            .join(".credentials")
+            .join("Schwab-rust.json");
+
+        TokenChecker::new_with_local_server(
+            path,
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             Client::new(),
         )
@@ -227,22 +268,18 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_token_checker_new_with_auth_manually() {
+    #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_stdio() {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
             .join("Schwab-rust.json");
-        #[allow(clippy::option_env_unwrap)]
-        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
-        #[allow(clippy::option_env_unwrap)]
-        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
-        TokenChecker::new_with_auth_manually(
+        TokenChecker::new_with_stdio(
             path,
-            client_id.to_string(),
-            secret.to_string(),
-            "https://127.0.0.1:8080".to_string(),
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
             Client::new(),
         )
         .await

@@ -34,8 +34,14 @@ impl ChannelMessenger for StdioMessenger {
     }
 
     async fn send_auth_message(&self) -> Result<(), Error> {
-        let context = self.context.as_ref().expect("context not set");
-        let auth_url = context.auth_url.as_ref().expect("auth url not set");
+        let context = self
+            .context
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No context".to_string()))?;
+        let auth_url = context
+            .auth_url
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?;
         let message = format!(
             r#"
 **************************************************************
@@ -71,10 +77,19 @@ Redirect URL>"#
     async fn receive_auth_message(&self) -> Result<String, Error> {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
-        let uri: Uri = input.trim().parse().expect("right uri");
+        let uri: Uri = input
+            .trim()
+            .parse()
+            .map_err(|e| Error::ChannelMessenger(format!("{e:?}")))?;
 
-        let context = self.context.as_ref().expect("context not set");
-        let csrf = context.csrf.as_ref().expect("auth csrf not set");
+        let context = self
+            .context
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No context".to_string()))?;
+        let csrf = context
+            .csrf
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No CSRF".to_string()))?;
 
         Ok(Self::uri_to_auth_code(&uri, csrf))
     }

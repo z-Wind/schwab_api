@@ -1,3 +1,4 @@
+pub mod compound_messenger;
 pub mod local_server;
 pub mod stdio_messenger;
 
@@ -6,7 +7,7 @@ use url::Url;
 
 use crate::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AuthContext {
     pub auth_url: Option<Url>,
     pub csrf: Option<CsrfToken>,
@@ -17,7 +18,7 @@ pub struct AuthContext {
 ///
 /// Implementors of this trait provide a way to send messages to a recipient
 /// and receive responses.
-pub trait ChannelMessenger: Sync {
+pub trait ChannelMessenger: Sync + Send {
     fn with_context(
         &mut self,
         context: AuthContext,
