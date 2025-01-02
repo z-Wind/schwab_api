@@ -1,7 +1,7 @@
 //! Structs and utilities for Authorization.
 
 pub(crate) mod auth;
-pub(crate) mod local_server;
+pub mod channel_messenger;
 
 use chrono::TimeDelta;
 use oauth2::TokenResponse;
@@ -14,6 +14,9 @@ use tokio::sync::Mutex;
 
 use crate::error::Error;
 use auth::Authorizer;
+use channel_messenger::local_server::LocalServerMessenger;
+use channel_messenger::stdio_messenger::StdioMessenger;
+use channel_messenger::ChannelMessenger;
 
 pub trait Tokener {
     fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;
@@ -25,66 +28,32 @@ const ACCESS_TOKEN_LIFETIME: TimeDelta = TimeDelta::minutes(25); // 25 Minutes i
 const REFRESH_TOKEN_LIFETIME: TimeDelta = TimeDelta::days(6); // 6 days instead of 7 days
 
 #[derive(Debug)]
-pub struct TokenChecker {
+pub struct TokenChecker<CM: ChannelMessenger> {
     path: PathBuf,
-    authorizer: Authorizer,
+    authorizer: Authorizer<CM>,
     token: Mutex<Token>,
 }
 
-impl TokenChecker {
-    pub async fn new(
-        path: PathBuf,
-        client_id: String,
-        secret: String,
-        redirect_url: String,
-        certs_dir: PathBuf,
-        async_client: Client,
-    ) -> Result<Self, Error> {
-        let auth = Authorizer::new(
-            client_id,
-            secret,
-            redirect_url,
-            auth::AuthProcess::Auto { certs_dir },
-            async_client,
-        );
-        let token = match Token::load(path.clone()) {
-            Ok(token) => token,
-            Err(_) => auth.save(path.clone()).await?,
-        };
-
-        let checker = Self {
-            path,
-            authorizer: auth,
-            token: Mutex::new(token),
-        };
-
-        checker.check_or_update().await?;
-
-        Ok(checker)
-    }
-
-    pub async fn new_with_auth_manually(
+impl<CM: ChannelMessenger> TokenChecker<CM> {
+    pub async fn new_with_custom_auth(
         path: PathBuf,
         client_id: String,
         secret: String,
         redirect_url: String,
         async_client: Client,
+        messenger: CM,
     ) -> Result<Self, Error> {
-        let auth = Authorizer::new(
-            client_id,
-            secret,
-            redirect_url,
-            auth::AuthProcess::Manual,
-            async_client,
-        );
+        let authorizer =
+            Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
+
         let token = match Token::load(path.clone()) {
             Ok(token) => token,
-            Err(_) => auth.save(path.clone()).await?,
+            Err(_) => authorizer.save(path.clone()).await?,
         };
 
         let checker = Self {
             path,
-            authorizer: auth,
+            authorizer,
             token: Mutex::new(token),
         };
 
@@ -113,12 +82,63 @@ impl TokenChecker {
         }
 
         *token = self.authorizer.save(self.path.clone()).await?;
-
         Ok(())
     }
 }
 
-impl Tokener for TokenChecker {
+impl TokenChecker<LocalServerMessenger> {
+    pub async fn new_with_local_server(
+        path: PathBuf,
+        client_id: String,
+        secret: String,
+        redirect_url: String,
+        certs_dir: PathBuf,
+        async_client: Client,
+    ) -> Result<Self, Error> {
+        let messenger = LocalServerMessenger::new(&certs_dir).await;
+
+        let authorizer =
+            Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
+
+        let token = match Token::load(path.clone()) {
+            Ok(token) => token,
+            Err(_) => authorizer.save(path.clone()).await?,
+        };
+
+        let checker = Self {
+            path,
+            authorizer,
+            token: Mutex::new(token),
+        };
+
+        checker.check_or_update().await?;
+
+        Ok(checker)
+    }
+}
+
+impl TokenChecker<StdioMessenger> {
+    pub async fn new_with_stdio(
+        path: PathBuf,
+        client_id: String,
+        secret: String,
+        redirect_url: String,
+        async_client: Client,
+    ) -> Result<Self, Error> {
+        let messenger = StdioMessenger::new();
+        Self::new_with_custom_auth(
+            path,
+            client_id,
+            secret,
+            redirect_url,
+            async_client,
+            messenger,
+        )
+        .await
+    }
+}
+
+impl<CM: ChannelMessenger> Tokener for TokenChecker<CM> {
     async fn get_access_token(&self) -> Result<String, Error> {
         self.check_or_update().await?;
         let access_token = self.token.lock().await.access.clone();
@@ -182,23 +202,64 @@ impl Token {
 mod tests {
     use super::*;
 
+    use channel_messenger::compound_messenger::CompoundMessenger;
+
+    fn client_id_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_API_KEY")
+            .expect("The environment variable SCHWAB_API_KEY sholud be set")
+    }
+
+    fn secret_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_SECRET").expect("The environment variable SCHWAB_SECRET sholud be set")
+    }
+
+    fn callback_url_static() -> &'static str {
+        #[allow(clippy::option_env_unwrap)]
+        option_env!("SCHWAB_CALLBACK_URL")
+            .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
+    }
+
     #[tokio::test]
-    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_token_checker_new() {
+    #[ignore = "Testing manually for verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_custom_auth() {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
             .join("Schwab-rust.json");
-        #[allow(clippy::option_env_unwrap)]
-        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
-        #[allow(clippy::option_env_unwrap)]
-        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
-        TokenChecker::new(
+        let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
+        let messenger = CompoundMessenger::new(
+            LocalServerMessenger::new(&certs_dir).await,
+            StdioMessenger::new(),
+        );
+
+        TokenChecker::new_with_custom_auth(
             path,
-            client_id.to_string(),
-            secret.to_string(),
-            "https://127.0.0.1:8080".to_string(),
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
+            Client::new(),
+            messenger,
+        )
+        .await
+        .unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_local_server() {
+        let path = dirs::home_dir()
+            .expect("home dir")
+            .join(".credentials")
+            .join("Schwab-rust.json");
+
+        TokenChecker::new_with_local_server(
+            path,
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs"),
             Client::new(),
         )
@@ -207,22 +268,18 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
-    async fn test_token_checker_new_with_auth_manually() {
+    #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
+    async fn test_token_checker_new_with_stdio() {
         let path = dirs::home_dir()
             .expect("home dir")
             .join(".credentials")
             .join("Schwab-rust.json");
-        #[allow(clippy::option_env_unwrap)]
-        let client_id = option_env!("SCHWAB_API_KEY").expect("There should be SCHWAB API KEY");
-        #[allow(clippy::option_env_unwrap)]
-        let secret = option_env!("SCHWAB_SECRET").expect("There should be SCHWAB SECRET");
 
-        TokenChecker::new_with_auth_manually(
+        TokenChecker::new_with_stdio(
             path,
-            client_id.to_string(),
-            secret.to_string(),
-            "https://127.0.0.1:8080".to_string(),
+            client_id_static().to_string(),
+            secret_static().to_string(),
+            callback_url_static().to_string(),
             Client::new(),
         )
         .await

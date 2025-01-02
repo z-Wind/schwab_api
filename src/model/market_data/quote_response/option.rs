@@ -339,7 +339,6 @@ pub enum ExerciseType {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExpirationType {
     /// M for End Of Month Expiration Calendar Cycle. (To match the last business day of the month)
-
     #[serde(rename = "M")]
     Month,
 

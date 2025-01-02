@@ -1,3 +1,4 @@
+use async_channel::Receiver;
 use axum::{
     extract::{FromRef, Query, State},
     response::IntoResponse,
@@ -6,30 +7,108 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
-use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::{net::SocketAddr, path::Path, result::Result};
 use url::Url;
 
-pub(super) async fn local_server(
-    csrf: CsrfToken,
-    certs_dir: PathBuf,
-    redirect_url: &Url,
-) -> String {
-    let (tx, rx) = async_channel::unbounded();
+use super::{AuthContext, ChannelMessenger};
+use crate::{error::Error, token::auth::AuthRequest};
 
-    let app_state = AppState { csrf, tx };
+#[derive(Debug)]
+pub struct LocalServerMessenger {
+    config: RustlsConfig,
 
-    // configure certificate and private key used by https
-    let config = RustlsConfig::from_pem_file(certs_dir.join("cert.pem"), certs_dir.join("key.pem"))
-        .await
-        .expect("certs setting ok");
+    addr: Option<SocketAddr>,
+    rx: Option<Receiver<String>>,
+    app_state: Option<AppState>,
+    auth_url: Option<Url>,
+}
 
-    // Derive SocketAddr from redirect_url
-    let addr = parse_socket_addr(redirect_url).expect("SocketAddr");
+impl LocalServerMessenger {
+    /// # Panics
+    ///
+    /// Will panic without cert.pem and key.pem
+    pub async fn new(certs_dir: &Path) -> Self {
+        Self {
+            config: RustlsConfig::from_pem_file(
+                certs_dir.join("cert.pem"),
+                certs_dir.join("key.pem"),
+            )
+            .await
+            .expect("certs setting ok"),
 
-    tokio::spawn(axum_server::bind_rustls(addr, config).serve(app(app_state).into_make_service()));
+            addr: None,
+            rx: None,
+            app_state: None,
+            auth_url: None,
+        }
+    }
+}
 
-    rx.recv().await.expect("receive code")
+impl ChannelMessenger for LocalServerMessenger {
+    async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
+        let (tx, rx) = async_channel::unbounded();
+        let csrf = context
+            .csrf
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No CSRF".to_string()))?
+            .clone();
+        let redirect_uri = context
+            .redirect_url
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No redirect_url".to_string()))?;
+
+        self.app_state = Some(AppState { csrf, tx });
+        self.rx = Some(rx);
+        self.auth_url = Some(
+            context
+                .auth_url
+                .as_ref()
+                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
+                .clone(),
+        );
+        self.addr = Some(parse_socket_addr(redirect_uri).map_err(Error::ChannelMessenger)?);
+
+        Ok(())
+    }
+
+    async fn send_auth_message(&self) -> Result<(), Error> {
+        open::that(
+            self.auth_url
+                .as_ref()
+                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
+                .as_ref(),
+        )?;
+
+        Ok(())
+    }
+
+    async fn receive_auth_message(&self) -> Result<String, Error> {
+        let service = app(self
+            .app_state
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No app_state".to_string()))?
+            .clone())
+        .into_make_service();
+        tokio::spawn(
+            axum_server::bind_rustls(
+                *self
+                    .addr
+                    .as_ref()
+                    .ok_or(Error::ChannelMessenger("No SocketAddr".to_string()))?,
+                self.config.clone(),
+            )
+            .serve(service),
+        );
+
+        let code = self
+            .rx
+            .as_ref()
+            .ok_or(Error::ChannelMessenger("No rx".to_string()))?
+            .recv()
+            .await
+            .map_err(|e| Error::ChannelMessenger(format!("{e:?}")))?;
+        Ok(code)
+    }
 }
 
 fn app(app_state: AppState) -> Router {
@@ -38,14 +117,14 @@ fn app(app_state: AppState) -> Router {
         .with_state(app_state)
 }
 
-#[derive(Clone, FromRef)]
+#[derive(Debug, Clone, FromRef)]
 struct AppState {
     csrf: CsrfToken,
     tx: async_channel::Sender<String>,
 }
 
 async fn get_code(
-    Query(query): Query<super::auth::AuthRequest>,
+    Query(query): Query<AuthRequest>,
     State(csrf): State<CsrfToken>,
     State(tx): State<async_channel::Sender<String>>,
 ) -> impl IntoResponse {
@@ -80,11 +159,13 @@ fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use axum::{
         body::Body,
         http::{Request, StatusCode, Uri},
     };
     use pretty_assertions::assert_eq;
+    use std::path::PathBuf;
     use tower::ServiceExt; // for `oneshot` and `ready`
 
     fn config(csrf: CsrfToken, tx: async_channel::Sender<String>) -> AppState {
@@ -129,7 +210,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_local_server() {
+    async fn test_router() {
         let (tx, rx) = async_channel::unbounded();
         let csrf = CsrfToken::new_random();
 
@@ -152,5 +233,27 @@ mod tests {
             "Schwab returned the following code:\ncode\nYou can now safely close this browser window."
         );
         assert_eq!(rx.recv().await.unwrap(), "code");
+    }
+
+    #[tokio::test]
+    #[ignore = "Testing manually for browser verification. Should be --nocapture"]
+    async fn test_local_server_messenger() {
+        let context = AuthContext {
+            auth_url: Some(
+                "https://127.0.0.1:8081/?state=CSRF&code=code"
+                    .parse()
+                    .unwrap(),
+            ),
+            csrf: Some(CsrfToken::new("CSRF".to_string())),
+            redirect_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+        };
+
+        let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
+        let mut messenger = LocalServerMessenger::new(&certs_dir).await;
+
+        messenger.with_context(context).await.unwrap();
+        messenger.send_auth_message().await.unwrap();
+
+        assert_eq!("code", messenger.receive_auth_message().await.unwrap());
     }
 }

@@ -30,7 +30,7 @@
 //!     let certs_dir = PathBuf::from("your_certs_dir");
 //!
 //!     let client = Client::new();
-//!     let token_checker = TokenChecker::new(path, key, secret, callback_url, certs_dir, client.clone())
+//!     let token_checker = TokenChecker::new_with_local_server(path, key, secret, callback_url, certs_dir, client.clone())
 //!         .await
 //!         .unwrap();
 //!

@@ -168,6 +168,7 @@ mod custom_date_format {
 
     const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.f";
 
+    #[allow(clippy::ref_option)]
     pub fn serialize<S>(date: &Option<NaiveDateTime>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

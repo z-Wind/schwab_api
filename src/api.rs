@@ -14,7 +14,7 @@ use parameter::{Market, Projection, TransactionType};
 /// Interacting with the Schwab API.
 #[derive(Debug)]
 pub struct Api<T: Tokener> {
-    tokener: T,
+    pub tokener: T,
     client: Client,
 }
 
@@ -445,16 +445,26 @@ mod tests {
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
     use crate::model::trader::preview_order::Instruction;
+    use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
+    use crate::token::channel_messenger::local_server::LocalServerMessenger;
+    use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
+    use crate::token::channel_messenger::ChannelMessenger;
     use crate::token::TokenChecker;
 
-    async fn client() -> Api<TokenChecker> {
+    async fn client() -> Api<TokenChecker<impl ChannelMessenger>> {
         #[allow(clippy::option_env_unwrap)]
         let key = option_env!("SCHWAB_API_KEY")
-            .expect("There should be SCHWAB API KEY")
+            .expect("The environment variable SCHWAB_API_KEY sholud be set")
             .to_string();
+
         #[allow(clippy::option_env_unwrap)]
         let secret = option_env!("SCHWAB_SECRET")
-            .expect("There should be SCHWAB SECRET")
+            .expect("The environment variable SCHWAB_SECRET sholud be set")
+            .to_string();
+
+        #[allow(clippy::option_env_unwrap)]
+        let callback_url = option_env!("SCHWAB_CALLBACK_URL")
+            .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
             .to_string();
 
         let path = dirs::home_dir()
@@ -463,14 +473,22 @@ mod tests {
             .join("Schwab-rust.json");
 
         let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
-
-        let callback_url = "https://127.0.0.1:8080".to_string();
+        let messenger = CompoundMessenger::new(
+            LocalServerMessenger::new(&certs_dir).await,
+            StdioMessenger::new(),
+        );
 
         let client = Client::new();
-        let token_checker =
-            TokenChecker::new(path, key, secret, callback_url, certs_dir, client.clone())
-                .await
-                .unwrap();
+        let token_checker = TokenChecker::new_with_custom_auth(
+            path,
+            key,
+            secret,
+            callback_url,
+            client.clone(),
+            messenger,
+        )
+        .await
+        .unwrap();
 
         Api::new(token_checker, client).await.unwrap()
     }

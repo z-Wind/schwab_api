@@ -18,4 +18,6 @@ pub enum Error {
     Service(crate::model::ServiceError),
     #[error("Json error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("ChannelMessenger error: {0}")]
+    ChannelMessenger(String),
 }
