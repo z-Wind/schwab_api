@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use serde_with::{serde_as, TimestampMilliSeconds};
+use serde_with::{TimestampMilliSeconds, serde_as};
 
 /// Quote info of Equity security
 #[serde_with::apply(

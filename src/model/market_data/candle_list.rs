@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_with::{serde_as, TimestampMilliSeconds};
+use serde_with::{TimestampMilliSeconds, serde_as};
 
 #[serde_as]
 #[serde_with::apply(
@@ -38,7 +38,7 @@ pub struct Candle {
 mod tests {
     use super::*;
 
-    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
 
     #[test]
     fn test_de() {

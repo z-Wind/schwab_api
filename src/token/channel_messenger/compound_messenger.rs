@@ -40,7 +40,7 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
                 _ => {
                     return Err(Error::ChannelMessenger(
                         "No Messengers available to send".to_string(),
-                    ))
+                    ));
                 }
             };
 
@@ -49,7 +49,6 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
                 Err(e) => {
                     println!("error:{e}, select next messenger");
                     self.select.fetch_add(1, Ordering::AcqRel);
-                    continue;
                 }
             }
         }

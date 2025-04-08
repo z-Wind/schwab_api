@@ -14,9 +14,9 @@ use tokio::sync::Mutex;
 
 use crate::error::Error;
 use auth::Authorizer;
+use channel_messenger::ChannelMessenger;
 use channel_messenger::local_server::LocalServerMessenger;
 use channel_messenger::stdio_messenger::StdioMessenger;
-use channel_messenger::ChannelMessenger;
 
 pub trait Tokener {
     fn get_access_token(&self) -> impl std::future::Future<Output = Result<String, Error>> + Send;

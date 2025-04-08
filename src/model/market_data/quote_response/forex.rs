@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_with::{serde_as, TimestampMilliSeconds};
+use serde_with::{TimestampMilliSeconds, serde_as};
 
 /// Quote info of Forex security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -1,7 +1,7 @@
 use oauth2::{
-    basic::{BasicClient, BasicRequestTokenError, BasicTokenResponse},
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointNotSet, EndpointSet,
     HttpClientError, RedirectUrl, RefreshToken, Scope, TokenResponse, TokenUrl,
+    basic::{BasicClient, BasicRequestTokenError, BasicTokenResponse},
 };
 use reqwest::Client;
 use serde::Deserialize;

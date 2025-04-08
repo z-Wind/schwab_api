@@ -11,9 +11,9 @@ pub use market_data::instrument::Instruments;
 pub use market_data::market::Markets;
 pub use market_data::mover::Mover;
 pub use market_data::option_chain::OptionChain;
-pub use market_data::quote_response::quote_error::QuoteError;
 pub use market_data::quote_response::QuoteResponse;
 pub(crate) use market_data::quote_response::QuoteResponseMap;
+pub use market_data::quote_response::quote_error::QuoteError;
 
 pub use trader::account_number::AccountNumbers;
 pub use trader::accounts::Account;

@@ -21,9 +21,9 @@ use super::order::StopPriceLinkType;
 use super::order::StopType;
 use super::order::TaxLotMethod;
 use super::preview_order::Instruction;
-use crate::model::market_data::instrument::InstrumentAssetType;
-use crate::model::InstrumentResponse;
 use crate::Error;
+use crate::model::InstrumentResponse;
+use crate::model::market_data::instrument::InstrumentAssetType;
 
 /// More Info in [Charles Schwab Developer Portal](https://developer.schwab.com/) : API Products -> Trader API - Individual -> Accounts and Trading Production -> Documentation -> Place Order Samples
 #[skip_serializing_none]
@@ -327,7 +327,7 @@ impl From<InstrumentResponse> for InstrumentRequest {
 mod tests {
     use super::*;
 
-    use assert_json_diff::{assert_json_matches, CompareMode, Config, NumericMode};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
     use serde_json::json;
 
     #[test]

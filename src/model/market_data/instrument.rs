@@ -197,7 +197,7 @@ mod custom_date_format {
 mod tests {
     use super::*;
 
-    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
 
     #[test]
     fn test_de() {

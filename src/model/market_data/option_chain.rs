@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use serde_with::{serde_as, TimestampMilliSeconds};
+use serde_with::{TimestampMilliSeconds, serde_as};
 use std::collections::HashMap;
 
 use super::quote_response::option::ExerciseType;
@@ -194,7 +194,7 @@ pub enum PutCall {
 mod tests {
     use super::*;
 
-    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
 
     #[test]
     fn test_de() {

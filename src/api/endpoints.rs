@@ -30,7 +30,7 @@ impl EndpointAccount {
         match self {
             EndpointAccount::AccountNumbers => "/accounts/accountNumbers".to_string(),
             EndpointAccount::Accounts => "/accounts".to_string(),
-            EndpointAccount::Account { ref account_number } => {
+            EndpointAccount::Account { account_number } => {
                 let account_number = encode(account_number);
                 format!("/accounts/{account_number}")
             }
@@ -86,19 +86,19 @@ impl EndpointOrder {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointOrder::OrdersAccount { ref account_number } => {
+            EndpointOrder::OrdersAccount { account_number } => {
                 let account_number = encode(account_number);
                 format!("/accounts/{account_number}/orders")
             }
             EndpointOrder::Order {
-                ref account_number,
+                account_number,
                 order_id,
             } => {
                 let account_number = encode(account_number);
                 format!("/accounts/{account_number}/orders/{order_id}")
             }
             EndpointOrder::Orders => "/orders".to_string(),
-            EndpointOrder::PreviewOrderAccount { ref account_number } => {
+            EndpointOrder::PreviewOrderAccount { account_number } => {
                 let account_number = encode(account_number);
                 format!("/accounts/{account_number}/previewOrder")
             }
@@ -133,12 +133,12 @@ impl EndpointTransaction {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointTransaction::TransactionsAccount { ref account_number } => {
+            EndpointTransaction::TransactionsAccount { account_number } => {
                 let account_number = encode(account_number);
                 format!("/accounts/{account_number}/transactions")
             }
             EndpointTransaction::Transaction {
-                ref account_number,
+                account_number,
                 transaction_id,
             } => {
                 let account_number = encode(account_number);
@@ -193,7 +193,7 @@ impl EndpointQuote {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointQuote::Quotes => "/quotes".to_string(),
-            EndpointQuote::Quote { ref symbol_id } => {
+            EndpointQuote::Quote { symbol_id } => {
                 let symbol_id = encode(symbol_id);
                 format!("/{symbol_id}/quotes")
             }
@@ -284,7 +284,7 @@ impl EndpointMover {
     /// defines the URL for the specified Endpoint
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
-            EndpointMover::Mover { ref symbol_id } => {
+            EndpointMover::Mover { symbol_id } => {
                 let symbol_id = encode(symbol_id);
                 format!("/movers/{symbol_id}")
             }
@@ -348,7 +348,7 @@ impl EndpointInstrument {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointInstrument::Instruments => "/instruments".to_string(),
-            EndpointInstrument::Instrutment { ref cusip_id } => {
+            EndpointInstrument::Instrutment { cusip_id } => {
                 let cusip_id = encode(cusip_id);
                 format!("/instruments/{cusip_id}")
             }

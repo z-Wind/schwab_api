@@ -1,4 +1,4 @@
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 
 use super::accounts::AssetType;
@@ -465,7 +465,7 @@ pub enum TransferItemPositionEffect {
 mod tests {
     use super::*;
 
-    use assert_json_diff::{assert_json_matches_no_panic, CompareMode, Config, NumericMode};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
 
     #[test]
     fn test_de() {

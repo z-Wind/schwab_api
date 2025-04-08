@@ -1,9 +1,9 @@
 use async_channel::Receiver;
 use axum::{
+    Router,
     extract::{FromRef, Query, State},
     response::IntoResponse,
     routing::get,
-    Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
