@@ -129,7 +129,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
 
     fn create_auth_context(&self) -> AuthContext {
         let (auth_url, csrf_token) = self.auth_code_url();
-        let context = AuthContext {
+        AuthContext {
             auth_url: Some(auth_url),
             csrf: Some(csrf_token),
             redirect_url: Some(
@@ -139,8 +139,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
                     .url()
                     .clone(),
             ),
-        };
-        context
+        }
     }
 
     pub(super) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
