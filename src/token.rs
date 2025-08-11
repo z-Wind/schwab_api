@@ -68,17 +68,17 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
             return Ok(());
         }
 
-        if token.is_refresh_valid() {
-            if let Ok(rsp) = self.authorizer.access_token(&token.refresh).await {
-                token.access.clone_from(rsp.access_token().secret());
-                token.access_expires_in = chrono::Utc::now()
-                    .checked_add_signed(ACCESS_TOKEN_LIFETIME)
-                    .expect("access_expires_in");
+        if token.is_refresh_valid()
+            && let Ok(rsp) = self.authorizer.access_token(&token.refresh).await
+        {
+            token.access.clone_from(rsp.access_token().secret());
+            token.access_expires_in = chrono::Utc::now()
+                .checked_add_signed(ACCESS_TOKEN_LIFETIME)
+                .expect("access_expires_in");
 
-                token.save(self.path.clone())?;
+            token.save(self.path.clone())?;
 
-                return Ok(());
-            }
+            return Ok(());
         }
 
         *token = self.authorizer.save(self.path.clone()).await?;

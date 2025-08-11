@@ -587,11 +587,12 @@ mod tests {
         let api = client().await;
         let req = api.get_option_chains(symbol).await.unwrap();
         let rsp = req.send().await.unwrap();
-        if let Some(v) = rsp.call_exp_date_map.into_values().next() {
-            if let Some(mut v) = v.into_values().next() {
-                return v.pop().expect("must exist").symbol;
-            }
+        if let Some(v) = rsp.call_exp_date_map.into_values().next()
+            && let Some(mut v) = v.into_values().next()
+        {
+            return v.pop().expect("must exist").symbol;
         }
+
         unreachable!()
     }
 

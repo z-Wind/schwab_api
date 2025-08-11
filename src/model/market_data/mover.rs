@@ -8,7 +8,6 @@ pub struct Mover {
 }
 
 /// Security info of most moved with in an index
-/// #[serde_with::apply(
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
 )]

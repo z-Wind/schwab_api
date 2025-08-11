@@ -50,7 +50,7 @@ pub struct OrderRequest {
     pub price_link_type: Option<PriceLinkType>,
     pub price: Option<f64>,
     pub tax_lot_method: Option<TaxLotMethod>,
-    /// xml: OrderedMap { "name": "orderLegCollection", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "orderLegCollection", "wrapped": true }
     pub order_leg_collection: Option<Vec<OrderLegCollectionRequest>>,
     pub activation_price: Option<f64>,
     pub special_instruction: Option<SpecialInstruction>,
@@ -64,11 +64,11 @@ pub struct OrderRequest {
     pub entered_time: Option<chrono::DateTime<chrono::Utc>>,
     pub close_time: Option<chrono::DateTime<chrono::Utc>>,
     pub account_number: Option<i64>,
-    /// xml: OrderedMap { "name": "orderActivity", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "orderActivity", "wrapped": true }
     pub order_activity_collection: Option<Vec<OrderActivity>>,
-    /// xml: OrderedMap { "name": "replacingOrder", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "replacingOrder", "wrapped": true }
     pub replacing_order_collection: Option<Vec<String>>,
-    /// xml: OrderedMap { "name": "childOrder", "wrapped": true }
+    /// xml: `OrderedMap` { "name": "childOrder", "wrapped": true }
     pub child_order_strategies: Option<Vec<OrderRequest>>,
     pub status_description: Option<String>,
 }
