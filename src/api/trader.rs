@@ -1,7 +1,7 @@
 //! APIs to access Account Balances & Positions, to perform trading activities
 //! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production)
 
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder, StatusCode, header::{HeaderMap}};
 
 use super::endpoints;
 use super::parameter::{Status, TransactionType};
@@ -357,18 +357,33 @@ impl PostAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<(), Error> {
+    pub async fn send(self) -> Result<i64, Error> {
         let req = self.build();
+
         let rsp = req.send().await?;
 
         let status = rsp.status();
+
         if status != StatusCode::CREATED {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
         }
 
-        Ok(())
+        parse_order_id_from_headers(rsp.headers())
     }
+}
+
+fn parse_order_id_from_headers(headers: &HeaderMap) -> Result<i64, Error> {
+    headers
+        .get("location")
+        .ok_or_else(|| Error::OrderIdParseError("No location header in response.".to_string()))?
+        .to_str()
+        .map_err(|e| Error::OrderIdParseError(e.to_string()))?
+        .split('/')
+        .last()
+        .ok_or_else(|| Error::OrderIdParseError("No slashes found in location header.".to_string()))?
+        .parse::<i64>()
+        .map_err(|e| Error::OrderIdParseError(e.to_string()))
 }
 
 /// Get a specific order by its ID, for a specific account
@@ -490,6 +505,7 @@ impl DeleteAccountOrderRequest {
         let rsp = req.send().await?;
 
         let status = rsp.status();
+        
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
@@ -554,7 +570,7 @@ impl PutAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<(), Error> {
+    pub async fn send(self) -> Result<i64, Error> {
         let req = self.build();
         let rsp = req.send().await?;
 
@@ -564,7 +580,7 @@ impl PutAccountOrderRequest {
             return Err(Error::Service(error_response));
         }
 
-        Ok(())
+        parse_order_id_from_headers(rsp.headers())
     }
 }
 

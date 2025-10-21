@@ -20,4 +20,6 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("ChannelMessenger error: {0}")]
     ChannelMessenger(String),
+    #[error("Order Id parse error: {0}")]
+    OrderIdParseError(String),
 }
