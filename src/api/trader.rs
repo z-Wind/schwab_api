@@ -380,7 +380,7 @@ fn parse_order_id_from_headers(headers: &HeaderMap) -> Result<i64, Error> {
         .to_str()
         .map_err(|e| Error::OrderIdParseError(e.to_string()))?
         .split('/')
-        .last()
+        .next_back()
         .ok_or_else(|| Error::OrderIdParseError("No slashes found in location header.".to_string()))?
         .parse::<i64>()
         .map_err(|e| Error::OrderIdParseError(e.to_string()))
