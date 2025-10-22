@@ -986,6 +986,36 @@ mod tests {
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
+    use reqwest::header::HeaderValue;
+
+    #[tokio::test]
+    async fn test_parse_order_id_from_headers() {
+        let mut header_map = HeaderMap::new();
+        let url = "https://fake.url/order/123456";
+        let value = HeaderValue::from_str(url).unwrap();
+        header_map.insert("location", value);
+
+        let result = parse_order_id_from_headers(&header_map);
+
+        // Check happy path
+        assert_eq!(result.unwrap(), 123_456);
+
+        // Check for failure when location missing
+        header_map.remove("location");
+        let result = parse_order_id_from_headers(&header_map);
+        assert!(matches!(result, Err(Error::OrderIdParseError(..))));
+
+        // Check for failure when not parsable to i64
+        let url = "https://fake.url/order/not_an_i64";
+        let value = HeaderValue::from_str(url).unwrap();
+        header_map.insert("location", value);
+        let result = parse_order_id_from_headers(&header_map);
+        assert!(matches!(result, Err(Error::OrderIdParseError(..))));
+
+        // We don't currently test the "not a String" or next_back() failures as it does not appear
+        // to be possible to construct a HeaderValue without a String.
+        
+    }
 
     #[tokio::test]
     async fn test_get_account_numbers_request() {
@@ -1241,6 +1271,7 @@ mod tests {
             .mock("POST", "/accounts/account_number/orders")
             .with_status(201)
             .with_header("content-type", "application/json")
+            .with_header("location", "https://order.id/12345")
             .match_body(mockito::Matcher::Json(
                 serde_json::to_value(body.clone()).unwrap(),
             ))
@@ -1266,6 +1297,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 12345);
     }
 
     #[tokio::test]
@@ -1376,6 +1408,7 @@ mod tests {
             .mock("PUT", "/accounts/account_number/orders/123")
             .with_status(201)
             .with_header("content-type", "application/json")
+            .with_header("location", "https://order.id/12345")
             .match_body(Matcher::Json(serde_json::to_value(body.clone()).unwrap()))
             .create_async()
             .await;
@@ -1401,6 +1434,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 12345);
     }
 
     #[tokio::test]
