@@ -822,26 +822,15 @@ mod tests {
             .post_account_order(account_number().await, order_post.clone())
             .await
             .unwrap();
-        req.send().await.unwrap();
+        let order_id = req.send().await.unwrap();
 
         // post check
         let req = api
-            .get_account_orders(
-                account_number().await,
-                chrono::Local::now()
-                    .checked_sub_days(chrono::Days::new(1))
-                    .unwrap()
-                    .to_utc(),
-                chrono::Local::now()
-                    .checked_add_days(chrono::Days::new(1))
-                    .unwrap()
-                    .to_utc(),
-            )
+            .get_account_order(account_number().await, order_id)
             .await
             .unwrap();
-        let orders = req.send().await.unwrap();
-        dbg!(&orders);
-        let order_post_check = orders[0].clone();
+        let order_post_check = req.send().await.unwrap();
+        dbg!(&order_post_check);
         assert_eq!(
             order_post_check.session,
             model::trader::order::Session::Normal
@@ -879,10 +868,9 @@ mod tests {
             .put_account_order(account_number().await, order_id, order_put.clone())
             .await
             .unwrap();
-        req.send().await.unwrap();
+        let order_id = req.send().await.unwrap();
 
         // put check
-        let order_id = order_id + 1;
         let req = api
             .get_account_order(account_number().await, order_id)
             .await
