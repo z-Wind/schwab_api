@@ -1,7 +1,7 @@
 //! APIs to access Account Balances & Positions, to perform trading activities
 //! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Retail%20Trader%20API%20Production)
 
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder, StatusCode, header::HeaderMap};
 
 use super::endpoints;
 use super::parameter::{Status, TransactionType};
@@ -357,18 +357,31 @@ impl PostAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<(), Error> {
+    pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
+
         let rsp = req.send().await?;
 
         let status = rsp.status();
+
         if status != StatusCode::CREATED {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
         }
 
-        Ok(())
+        Ok(parse_order_id_from_headers(rsp.headers()))
     }
+}
+
+fn parse_order_id_from_headers(headers: &HeaderMap) -> Option<i64> {
+    let url = headers.get("location")?.to_str().ok()?;
+
+    url::Url::parse(url)
+        .ok()?
+        .path_segments()?
+        .next_back()?
+        .parse::<i64>()
+        .ok()
 }
 
 /// Get a specific order by its ID, for a specific account
@@ -490,6 +503,7 @@ impl DeleteAccountOrderRequest {
         let rsp = req.send().await?;
 
         let status = rsp.status();
+
         if status != StatusCode::OK {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
@@ -554,7 +568,7 @@ impl PutAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<(), Error> {
+    pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
 
@@ -564,7 +578,7 @@ impl PutAccountOrderRequest {
             return Err(Error::Service(error_response));
         }
 
-        Ok(())
+        Ok(parse_order_id_from_headers(rsp.headers()))
     }
 }
 
@@ -970,6 +984,39 @@ mod tests {
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
+    use reqwest::header::HeaderValue;
+
+    #[tokio::test]
+    async fn test_parse_order_id_from_headers() {
+        let mut header_map = HeaderMap::new();
+        let url = endpoints::EndpointOrder::Order {
+            account_number: "account_number".to_string(),
+            order_id: 123_456,
+        }
+        .url();
+        let value = HeaderValue::from_str(&url).unwrap();
+        header_map.insert("location", value);
+
+        let result = parse_order_id_from_headers(&header_map);
+
+        // Check happy path
+        assert_eq!(result.unwrap(), 123_456);
+
+        // Check for failure when location missing
+        header_map.remove("location");
+        let result = parse_order_id_from_headers(&header_map);
+        assert_eq!(result, None,);
+
+        // Check for failure when not parsable to i64
+        let url = "https://api.schwabapi.com/trader/v1/accounts/accountNumber/orders/not_an_i64";
+        let value = HeaderValue::from_str(url).unwrap();
+        header_map.insert("location", value);
+        let result = parse_order_id_from_headers(&header_map);
+        assert_eq!(result, None);
+
+        // We don't currently test the "not a String" or next_back() failures as it does not appear
+        // to be possible to construct a HeaderValue without a String.
+    }
 
     #[tokio::test]
     async fn test_get_account_numbers_request() {
@@ -1225,6 +1272,14 @@ mod tests {
             .mock("POST", "/accounts/account_number/orders")
             .with_status(201)
             .with_header("content-type", "application/json")
+            .with_header(
+                "location",
+                &endpoints::EndpointOrder::Order {
+                    account_number: "account_number".to_string(),
+                    order_id: 123_456,
+                }
+                .url(),
+            )
             .match_body(mockito::Matcher::Json(
                 serde_json::to_value(body.clone()).unwrap(),
             ))
@@ -1250,6 +1305,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Some(123_456));
     }
 
     #[tokio::test]
@@ -1360,6 +1416,14 @@ mod tests {
             .mock("PUT", "/accounts/account_number/orders/123")
             .with_status(201)
             .with_header("content-type", "application/json")
+            .with_header(
+                "location",
+                &endpoints::EndpointOrder::Order {
+                    account_number: "account_number".to_string(),
+                    order_id: 123_456,
+                }
+                .url(),
+            )
             .match_body(Matcher::Json(serde_json::to_value(body.clone()).unwrap()))
             .create_async()
             .await;
@@ -1385,6 +1449,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), Some(123_456));
     }
 
     #[tokio::test]
