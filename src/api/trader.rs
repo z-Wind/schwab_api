@@ -357,7 +357,7 @@ impl PostAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<i64, Error> {
+    pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
 
         let rsp = req.send().await?;
@@ -369,24 +369,19 @@ impl PostAccountOrderRequest {
             return Err(Error::Service(error_response));
         }
 
-        parse_order_id_from_headers(rsp.headers())
+        Ok(parse_order_id_from_headers(rsp.headers()))
     }
 }
 
-fn parse_order_id_from_headers(headers: &HeaderMap) -> Result<i64, Error> {
-    let url = headers
-        .get("location")
-        .ok_or_else(|| Error::OrderIdParseError("No location header in response.".to_string()))?
-        .to_str()
-        .map_err(|e| Error::OrderIdParseError(e.to_string()))?;
+fn parse_order_id_from_headers(headers: &HeaderMap) -> Option<i64> {
+    let url = headers.get("location")?.to_str().ok()?;
 
-    let url = url::Url::parse(url).map_err(|e| Error::OrderIdParseError(e.to_string()))?;
-
-    url.path_segments()
-        .and_then(|mut segments| segments.next_back())
-        .ok_or_else(|| Error::OrderIdParseError("No order id in location header.".to_string()))?
+    url::Url::parse(url)
+        .ok()?
+        .path_segments()?
+        .next_back()?
         .parse::<i64>()
-        .map_err(|e| Error::OrderIdParseError(e.to_string()))
+        .ok()
 }
 
 /// Get a specific order by its ID, for a specific account
@@ -573,7 +568,7 @@ impl PutAccountOrderRequest {
         self.req.json(&self.body)
     }
 
-    pub async fn send(self) -> Result<i64, Error> {
+    pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
 
@@ -583,7 +578,7 @@ impl PutAccountOrderRequest {
             return Err(Error::Service(error_response));
         }
 
-        parse_order_id_from_headers(rsp.headers())
+        Ok(parse_order_id_from_headers(rsp.headers()))
     }
 }
 
@@ -1010,17 +1005,14 @@ mod tests {
         // Check for failure when location missing
         header_map.remove("location");
         let result = parse_order_id_from_headers(&header_map);
-        assert!(matches!(
-            result,
-            Err(Error::OrderIdParseError(s)) if s == "No location header in response."
-        ));
+        assert_eq!(result, None,);
 
         // Check for failure when not parsable to i64
         let url = "https://api.schwabapi.com/trader/v1/accounts/accountNumber/orders/not_an_i64";
         let value = HeaderValue::from_str(url).unwrap();
         header_map.insert("location", value);
         let result = parse_order_id_from_headers(&header_map);
-        assert!(matches!(result, Err(Error::OrderIdParseError(..))));
+        assert_eq!(result, None);
 
         // We don't currently test the "not a String" or next_back() failures as it does not appear
         // to be possible to construct a HeaderValue without a String.
@@ -1313,7 +1305,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), 123456);
+        assert_eq!(result.unwrap(), Some(123_456));
     }
 
     #[tokio::test]
@@ -1457,7 +1449,7 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), 123456);
+        assert_eq!(result.unwrap(), Some(123_456));
     }
 
     #[tokio::test]

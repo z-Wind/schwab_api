@@ -822,7 +822,7 @@ mod tests {
             .post_account_order(account_number().await, order_post.clone())
             .await
             .unwrap();
-        let order_id = req.send().await.unwrap();
+        let order_id = req.send().await.unwrap().unwrap();
 
         // post check
         let req = api
@@ -868,7 +868,7 @@ mod tests {
             .put_account_order(account_number().await, order_id, order_put.clone())
             .await
             .unwrap();
-        let order_id = req.send().await.unwrap();
+        let order_id = req.send().await.unwrap().unwrap();
 
         // put check
         let req = api
