@@ -244,7 +244,7 @@ pub struct TransactionBaseInstrument {
     pub cusip: Option<String>,
     pub symbol: String,
     pub description: Option<String>,
-    pub instrument_id: i64,
+    pub instrument_id: Option<i64>,
     pub net_change: Option<f64>,
 
     // not in schema

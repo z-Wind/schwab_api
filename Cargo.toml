@@ -1,6 +1,6 @@
 [package]
 name = "schwab_api"
-version = "0.0.3"
+version = "0.0.4"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/z-Wind/schwab_api"

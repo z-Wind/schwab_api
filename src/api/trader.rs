@@ -703,7 +703,7 @@ pub struct PostAccountPreviewOrderRequest {
     /// The encrypted ID of the account
     account_number: String,
 
-    body: model::PreviewOrder,
+    body: model::OrderRequest,
 }
 
 impl PostAccountPreviewOrderRequest {
@@ -715,7 +715,7 @@ impl PostAccountPreviewOrderRequest {
         client: &Client,
         access_token: String,
         account_number: String,
-        body: model::PreviewOrder,
+        body: model::OrderRequest,
     ) -> Self {
         let req = client
             .post(Self::endpoint(account_number.clone()).url())
@@ -723,7 +723,7 @@ impl PostAccountPreviewOrderRequest {
         Self::new_with(req, account_number, body)
     }
 
-    fn new_with(req: RequestBuilder, account_number: String, body: model::PreviewOrder) -> Self {
+    fn new_with(req: RequestBuilder, account_number: String, body: model::OrderRequest) -> Self {
         Self {
             req,
             account_number,
@@ -744,6 +744,12 @@ impl PostAccountPreviewOrderRequest {
             let error_response = rsp.json::<model::ServiceError>().await?;
             return Err(Error::Service(error_response));
         }
+
+        // let json = rsp.text().await.unwrap();
+        // dbg!(&json);
+        // let v: model::PreviewOrder = serde_json::from_str(&json).unwrap();
+        // println!("{:#?}", v);
+        // panic!();
 
         rsp.json::<model::PreviewOrder>()
             .await
@@ -1539,7 +1545,7 @@ mod tests {
 
         // define parameter
         let account_number = "account_number".to_string();
-        let body = model::PreviewOrder::default();
+        let body = model::OrderRequest::default();
 
         // Create a mock
         let mock = server
@@ -1549,6 +1555,63 @@ mod tests {
             .with_body_from_file(concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/tests/model/Trader/PreviewOrder.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.post(format!(
+            "{url}{}",
+            PostAccountPreviewOrderRequest::endpoint(account_number.clone()).url_endpoint()
+        ));
+
+        let req =
+            PostAccountPreviewOrderRequest::new_with(req, account_number.clone(), body.clone());
+
+        // check initial value
+        assert_eq!(req.account_number, account_number);
+        assert_eq!(req.body, body);
+
+        // check setter
+        // none
+
+        dbg!(&req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        let result = result.unwrap();
+        assert_eq!(result.order_id, 0);
+    }
+
+    #[tokio::test]
+    async fn test_post_account_preview_order_request_real() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let account_number = "account_number".to_string();
+
+        let body = model::OrderRequest::limit(
+            model::InstrumentRequest::Equity {
+                symbol: "VEA".to_string(),
+            },
+            model::Instruction::Buy,
+            1.0,
+            10.0,
+        )
+        .unwrap();
+
+        // Create a mock
+        let mock = server
+            .mock("POST", "/accounts/account_number/previewOrder")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/Trader/PreviewOrder_real.json"
             ))
             .create_async()
             .await;

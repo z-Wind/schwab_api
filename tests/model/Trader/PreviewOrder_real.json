@@ -1,0 +1,118 @@
+{
+  "orderId": 0,
+  "orderStrategy": {
+    "accountNumber": "12345678",
+    "advancedOrderType": "NONE",
+    "closeTime": "2025-10-23T06:21:44Z",
+    "enteredTime": "2025-10-23T06:21:44Z",
+    "orderBalance": {
+      "orderValue": 10.0,
+      "projectedAvailableFund": -9.5,
+      "projectedBuyingPower": -9.5,
+      "projectedCommission": 0.0
+    },
+    "orderStrategyType": "SINGLE",
+    "orderVersion": 1,
+    "session": "NORMAL",
+    "status": "REJECTED",
+    "discretionary": false,
+    "duration": "DAY",
+    "filledQuantity": 0.0,
+    "orderType": "LIMIT",
+    "orderValue": 10.0,
+    "price": 10.0,
+    "quantity": 1.0,
+    "remainingQuantity": 0.0,
+    "sellNonMarginableFirst": false,
+    "strategy": "NONE",
+    "amountIndicator": "SHARES",
+    "orderLegs": [
+      {
+        "askPrice": 60.83,
+        "bidPrice": 60.72,
+        "lastPrice": 60.71,
+        "markPrice": 60.79,
+        "projectedCommission": 0.0,
+        "finalSymbol": "VEA",
+        "legId": 1,
+        "assetType": "COLLECTIVE_INVESTMENT",
+        "instruction": "BUY",
+        "positionEffect": "OPENING",
+        "instrument": {
+          "assetType": "COLLECTIVE_INVESTMENT",
+          "symbol": "VEA",
+          "description": "VANGUARD FTSE DEVELOPED MKTS ETF IV",
+          "type": "EXCHANGE_TRADED_FUND"
+        }
+      }
+    ]
+  },
+  "orderValidationResult": {
+    "rejects": [
+      {
+        "activityMessage": "You do not have enough available cash/buying power for this order.",
+        "originalSeverity": "REJECT"
+      }
+    ],
+    "warns": [
+      {
+        "activityMessage": "This buy order was accepted without sufficient settled funds to trade in your account. If you subsequently sell this security without first delivering sufficient cash by settlement date, you may incur a trading restriction requiring settled cash up front for future purchases. ",
+        "originalSeverity": "WARN"
+      }
+    ]
+  },
+  "commissionAndFee": {
+    "commission": {
+      "commissionLegs": [
+        {
+          "commissionValues": [
+            {
+              "value": 0.0,
+              "type": "BASE_CHARGE"
+            },
+            {
+              "value": 0.0,
+              "type": "COMMISSION"
+            }
+          ]
+        }
+      ]
+    },
+    "fee": {
+      "feeLegs": [
+        {
+          "feeValues": [
+            {
+              "value": 0.0,
+              "type": "SEC_FEE"
+            },
+            {
+              "value": 0.0,
+              "type": "OPT_REG_FEE"
+            },
+            {
+              "value": 0.0,
+              "type": "TAF_FEE"
+            }
+          ]
+        }
+      ]
+    },
+    "trueCommission": {
+      "commissionLegs": [
+        {
+          "commissionValues": [
+            {
+              "value": 0.0,
+              "type": "BASE_CHARGE"
+            },
+            {
+              "value": 0.0,
+              "type": "COMMISSION"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
