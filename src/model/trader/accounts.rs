@@ -255,7 +255,7 @@ pub struct AccountOption {
     /// xml: `OrderedMap` { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<AccountAPIOptionDeliverable>,
     pub put_call: AccountOptionPullCall,
-    pub option_multiplier: i64,
+    pub option_multiplier: Option<i64>,
     #[serde(rename = "type")]
     pub type_field: AccountOptionType,
     pub underlying_symbol: String,
@@ -282,13 +282,13 @@ pub struct AccountCollectiveInvestment {
     pub accounts_base_instrument: AccountsBaseInstrument,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountAPIOptionDeliverable {
-    pub symbol: i64,
+    pub symbol: String,
     pub deliverable_units: f64,
-    pub api_currency_type: APICurrencyType,
-    pub asset_type: AssetType,
+    pub api_currency_type: Option<APICurrencyType>,
+    pub asset_type: Option<AssetType>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -296,7 +296,7 @@ pub struct AccountAPIOptionDeliverable {
 pub struct AccountsBaseInstrument {
     pub cusip: String,
     pub symbol: String,
-    pub description: String,
+    pub description: Option<String>,
     pub instrument_id: i64,
     pub net_change: Option<f64>,
 }
