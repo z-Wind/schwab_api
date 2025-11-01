@@ -1,0 +1,59 @@
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "NET_DEBIT",
+  "complexOrderStrategyType": "COVERED",
+  "quantity": 1.0,
+  "filledQuantity": 0.0,
+  "remainingQuantity": 1.0,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "AutoRoute",
+  "price": 10.0,
+  "orderLegCollection": [
+    {
+      "orderLegType": "EQUITY",
+      "legId": 1,
+      "instrument": {
+        "assetType": "EQUITY",
+        "cusip": "345370860",
+        "symbol": "F",
+        "instrumentId": 2947182
+      },
+      "instruction": "BUY",
+      "positionEffect": "OPENING",
+      "quantity": 100.0
+    },
+    {
+      "orderLegType": "OPTION",
+      "legId": 2,
+      "instrument": {
+        "assetType": "OPTION",
+        "cusip": "0F....CK60014000",
+        "symbol": "F     260320C00014000",
+        "description": "FORD MTR CO DEL 03/20/2026 $14 Call",
+        "instrumentId": 241079162,
+        "type": "VANILLA",
+        "putCall": "CALL",
+        "underlyingSymbol": "F",
+        "optionDeliverables": [
+          {
+            "symbol": "F",
+            "deliverableUnits": 100.0
+          }
+        ]
+      },
+      "instruction": "SELL_TO_OPEN",
+      "positionEffect": "OPENING",
+      "quantity": 1.0
+    }
+  ],
+  "orderStrategyType": "SINGLE",
+  "orderId": 1234567890123,
+  "cancelable": true,
+  "editable": true,
+  "status": "PENDING_ACTIVATION",
+  "enteredTime": "2025-10-31T20:09:15+0000",
+  "tag": "TA_FAKE",
+  "accountNumber": 12345678
+}
+
