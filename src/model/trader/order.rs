@@ -469,8 +469,10 @@ mod tests {
         let val = serde_json::from_str::<Order>(json);
         println!("{val:?}");
         assert!(val.is_ok());
+    }
 
-        // Second real order
+    #[test]
+    fn test_de_order_real2() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Order_real2.json"
