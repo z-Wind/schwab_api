@@ -25,7 +25,8 @@ pub struct PreviewOrder {
 pub struct OrderStrategy {
     pub account_number: String,
     pub advanced_order_type: AdvancedOrderType,
-    pub close_time: chrono::DateTime<chrono::Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub close_time: Option<chrono::DateTime<chrono::Utc>>,
     pub entered_time: chrono::DateTime<chrono::Utc>,
     pub order_balance: OrderBalance,
     pub order_strategy_type: OrderStrategyType,
@@ -69,7 +70,8 @@ pub struct OrderLeg {
     pub projected_commission: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quantity: Option<f64>,
-    pub final_symbol: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub final_symbol: Option<String>,
     pub leg_id: i64,
     pub asset_type: AssetType,
     pub instruction: Instruction,
@@ -310,6 +312,24 @@ mod tests {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/PreviewOrder_real.json"
+        ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        let val = serde_json::from_value::<PreviewOrder>(json.clone()).unwrap();
+        dbg!(&val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
+    }
+
+    #[test]
+    fn test_serde_real2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/Trader/PreviewOrder_real2.json"
         ));
         let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
