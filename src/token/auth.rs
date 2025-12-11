@@ -83,11 +83,11 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
                 .refresh_token()
                 .expect("should have refresh_token")
                 .secret()
-                .to_string(),
+                .clone(),
             refresh_expires_in: chrono::Utc::now()
                 .checked_add_signed(super::REFRESH_TOKEN_LIFETIME)
                 .expect("refresh_expires_in"),
-            access: token_result.access_token().secret().to_string(),
+            access: token_result.access_token().secret().clone(),
             access_expires_in: chrono::Utc::now()
                 .checked_add_signed(super::ACCESS_TOKEN_LIFETIME)
                 .expect("access_expires_in"),

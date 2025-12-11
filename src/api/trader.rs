@@ -1086,7 +1086,7 @@ mod tests {
             .mock("GET", "/accounts")
             .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded(
                 "fields".into(),
-                fields.to_string(),
+                fields.clone(),
             )]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1140,7 +1140,7 @@ mod tests {
             .mock("GET", "/accounts/account_number")
             .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded(
                 "fields".into(),
-                fields.to_string(),
+                fields.clone(),
             )]))
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -1671,7 +1671,7 @@ mod tests {
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("startDate".into(), start_date.format("%+").to_string()),
                 Matcher::UrlEncoded("endDate".into(), end_date.format("%+").to_string()),
-                Matcher::UrlEncoded("symbol".into(), symbol.to_string()),
+                Matcher::UrlEncoded("symbol".into(), symbol.clone()),
                 Matcher::UrlEncoded("types".into(), "RECEIVE_AND_DELIVER".into()),
             ]))
             .with_status(200)
