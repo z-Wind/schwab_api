@@ -6,6 +6,8 @@ pub mod parameter;
 pub mod trader;
 
 use reqwest::Client;
+use std::fs;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::token::Tokener;
 use crate::{error::Error, model};
@@ -434,13 +436,38 @@ impl<T: Tokener> Api<T> {
     }
 }
 
+fn save_raw_json(folder: &str, model: &str, json: &str) {
+    if let Err(e) = fs::create_dir_all(folder) {
+        eprintln!("Failed to create directory {folder}: {e}");
+        return;
+    }
+
+    let formatted_json = serde_json::from_str::<serde_json::Value>(json)
+        .and_then(|parsed| serde_json::to_string_pretty(&parsed))
+        .unwrap_or_else(|_| json.to_string());
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    let file_path = format!("{folder}/error_{model}_{timestamp}.json");
+
+    if let Err(e) = fs::write(&file_path, formatted_json) {
+        eprintln!("Failed to save JSON to {file_path}: {e}");
+    } else {
+        println!("Error JSON saved to {file_path}");
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     use float_cmp::assert_approx_eq;
     use pretty_assertions::assert_eq;
+    use std::path::Path;
     use std::path::PathBuf;
+    use tempfile::tempdir;
 
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
@@ -1090,5 +1117,65 @@ mod tests {
         let req = api.get_user_preference().await.unwrap();
         let rsp = req.send().await.unwrap();
         dbg!(rsp);
+    }
+
+    #[tokio::test]
+    async fn test_save_raw_json_creates_formatted_file() {
+        let dir = tempdir().expect("Failed to create temp dir");
+        let temp_path = dir.path();
+
+        let model_name = "test_model";
+        let raw_json = r#"{"id":1,"name":"test","status":"active"}"#;
+        let expected_substring = "\"name\": \"test\"";
+
+        save_raw_json(temp_path.to_str().unwrap(), model_name, raw_json);
+
+        let entries = fs::read_dir(temp_path).expect("Should be able to read temp directory");
+        let found = entries.flatten().any(|entry| {
+            let file_name = entry.file_name().to_string_lossy().into_owned();
+            if file_name.contains(model_name)
+                && Path::new(&file_name)
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("json"))
+            {
+                let content = fs::read_to_string(entry.path()).expect("Should read file content");
+
+                assert!(
+                    content.contains(expected_substring),
+                    "JSON should be pretty-printed"
+                );
+                assert!(
+                    content.contains('\n'),
+                    "Pretty-printed JSON should contain newlines"
+                );
+                return true;
+            }
+            false
+        });
+
+        assert!(found, "JSON file should exist in the temp directory");
+    }
+
+    #[tokio::test]
+    async fn test_save_raw_json_handles_invalid_json() {
+        let dir = tempdir().expect("Failed to create temp dir");
+        let temp_path = dir.path();
+
+        let model_name = "invalid_test";
+        let invalid_json = "{ not a json }";
+
+        save_raw_json(temp_path.to_str().unwrap(), model_name, invalid_json);
+
+        let entries = fs::read_dir(temp_path).expect("Should read temp directory");
+        let found = entries.flatten().any(|entry| {
+            let file_name = entry.file_name().to_string_lossy().into_owned();
+            if file_name.contains(model_name) {
+                let content = fs::read_to_string(entry.path()).unwrap();
+                return content == invalid_json;
+            }
+            false
+        });
+
+        assert!(found, "Invalid JSON should still be saved as raw text");
     }
 }

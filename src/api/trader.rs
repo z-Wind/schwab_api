@@ -5,6 +5,7 @@ use reqwest::{Client, RequestBuilder, StatusCode, header::HeaderMap};
 
 use super::endpoints;
 use super::parameter::{Status, TransactionType};
+use super::save_raw_json;
 use crate::api::Error;
 use crate::model;
 
@@ -35,16 +36,23 @@ impl GetAccountNumbersRequest {
     pub async fn send(self) -> Result<model::AccountNumbers, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<model::AccountNumbers>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "AccountNumbers", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -101,16 +109,23 @@ impl GetAccountsRequest {
     pub async fn send(self) -> Result<model::Accounts, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<model::Accounts>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Accounts", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -177,16 +192,23 @@ impl GetAccountRequest {
     pub async fn send(self) -> Result<model::Account, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<model::Account>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Account", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -296,23 +318,23 @@ impl GetAccountOrdersRequest {
     pub async fn send(self) -> Result<Vec<model::Order>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Orders_real.json", &json).expect("Unable to write file");
-        // let item: Vec<model::Order> = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<Vec<model::Order>>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Orders", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -359,13 +381,16 @@ impl PostAccountOrderRequest {
 
     pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
-
         let rsp = req.send().await?;
-
         let status = rsp.status();
 
         if status != StatusCode::CREATED {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let body_text = rsp.text().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
@@ -432,23 +457,23 @@ impl GetAccountOrderRequest {
     pub async fn send(self) -> Result<model::Order, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Order_real.json", &json).expect("Unable to write file");
-        // let item: Vec<model::Order> = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<model::Order>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Order", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -501,11 +526,15 @@ impl DeleteAccountOrderRequest {
     pub async fn send(self) -> Result<(), Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
 
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let body_text = rsp.text().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
@@ -571,10 +600,15 @@ impl PutAccountOrderRequest {
     pub async fn send(self) -> Result<Option<i64>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
         if status != StatusCode::CREATED {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let body_text = rsp.text().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
@@ -681,16 +715,23 @@ impl GetAccountsOrdersRequest {
     pub async fn send(self) -> Result<Vec<model::Order>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<Vec<model::Order>>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Orders", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -738,22 +779,23 @@ impl PostAccountPreviewOrderRequest {
     pub async fn send(self) -> Result<model::PreviewOrder, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // let v: model::PreviewOrder = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", v);
-        // panic!();
-
-        rsp.json::<model::PreviewOrder>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "PreviewOrder", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -848,20 +890,23 @@ impl GetAccountTransactions {
     pub async fn send(self) -> Result<Vec<model::Transaction>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // let v: Vec<model::Transaction> = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", v);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json().await.map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Transactions", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -917,21 +962,23 @@ impl GetAccountTransaction {
     pub async fn send(self) -> Result<model::Transaction, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Transaction_real.json", &json).expect("Unable to write file");
-        // let item: model::Transaction = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json().await.map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Transaction", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -961,23 +1008,23 @@ impl GetUserPreferenceRequest {
     pub async fn send(self) -> Result<model::UserPreferences, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("UserPreferences_real.json", &json).expect("Unable to write file");
-        // let item: model::UserPreferences = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ServiceError>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ServiceError", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Service(error_response));
         }
 
-        rsp.json::<model::UserPreferences>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "UserPreferences", &body_text);
+            Error::from(e)
+        })
     }
 }
 

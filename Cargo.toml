@@ -51,6 +51,7 @@ pretty_assertions = "1.4"
 assert-json-diff = "2.0"
 float-cmp = "0.10"
 regex = "1.12"
+tempfile = "3"
 
 [features]
 test_online = []

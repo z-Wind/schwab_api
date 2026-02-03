@@ -1,24 +1,17 @@
 //! APIs to access Market Data
 //! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production)
 
-use reqwest::{Client, RequestBuilder, Response, StatusCode};
+use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
 
+use super::endpoints;
 use super::parameter::{
     ContractType, Entitlement, FrequencyType, Market, Month, OptionChainStrategy, PeriodType,
     Projection, QuoteField, SortAttribute,
 };
+use super::save_raw_json;
 use crate::api::Error;
 use crate::model;
-
-use super::endpoints;
-
-async fn process_error(rsp: Response) -> Result<Error, Error> {
-    let json = rsp.text().await?;
-    dbg!(&json);
-    let error_response: model::ErrorResponse = serde_json::from_str(&json)?;
-    Ok(Error::Response(error_response))
-}
 
 /// Get Quotes by list of symbols.
 #[derive(Debug)]
@@ -101,21 +94,23 @@ impl GetQuotesRequest {
     pub async fn send(self) -> Result<HashMap<String, model::QuoteResponse>, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("QuoteResponse_real.json", &json).expect("Unable to write file");
-        // let item: HashMap<String, model::QuoteResponse> = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        let map = rsp.json::<model::QuoteResponseMap>().await?;
+        let map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "QuoteResponseMap", &body_text);
+            Error::from(e)
+        })?;
 
         if let Some(e) = map.errors {
             return Err(Error::Quote(e));
@@ -195,20 +190,23 @@ impl GetQuoteRequest {
         let symbol = self.symbol.clone();
         let req = self.build();
         let rsp = req.send().await?;
-
-        //let json = rsp.text().await.unwrap();
-        //dbg!(&json);
-        //let item: HashMap<String, model::QuoteResponse> = serde_json::from_str(&json).unwrap();
-        //println!("{:#?}", item);
-        //panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        let mut map = rsp.json::<model::QuoteResponseMap>().await?;
+        let mut map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "QuoteResponseMap", &body_text);
+            Error::from(e)
+        })?;
 
         if let Some(e) = map.errors {
             return Err(Error::Quote(e));
@@ -504,22 +502,23 @@ impl GetOptionChainsRequest {
     pub async fn send(self) -> Result<model::OptionChain, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("OptionChain_real.json", &json).expect("Unable to write file");
-        // let item: model::OptionChain = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            return Err(process_error(rsp).await?);
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
+            return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::OptionChain>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "OptionChain", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -552,23 +551,23 @@ impl GetOptionExpirationChainRequest {
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("ExpirationChain_real.json", &json).expect("Unable to write file");
-        // let item: model::ExpirationChain = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::ExpirationChain>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "ExpirationChain", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -784,23 +783,23 @@ impl GetPriceHistoryRequest {
     pub async fn send(self) -> Result<model::CandleList, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("CandleList_real.json", &json).expect("Unable to write file");
-        // let item: model::CandleList = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::CandleList>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "CandleList", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -888,23 +887,23 @@ impl GetMoversRequest {
     pub async fn send(self) -> Result<model::Mover, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Mover_real.json", &json).expect("Unable to write file");
-        // let item: model::Mover = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::Mover>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Mover", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -970,23 +969,23 @@ impl GetMarketsRequest {
     pub async fn send(self) -> Result<model::Markets, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Markets_real.json", &json).expect("Unable to write file");
-        // let item: model::Markets = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::Markets>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Markets", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -1046,23 +1045,23 @@ impl GetMarketRequest {
     pub async fn send(self) -> Result<model::Markets, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Markets_real.json", &json).expect("Unable to write file");
-        // let item: model::Markets = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::Markets>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Markets", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -1111,23 +1110,23 @@ impl GetInstrumentsRequest {
     pub async fn send(self) -> Result<model::Instruments, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Instruments_real.json", &json).expect("Unable to write file");
-        // let item: model::Instruments = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        rsp.json::<model::Instruments>()
-            .await
-            .map_err(std::convert::Into::into)
+        serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Instruments", &body_text);
+            Error::from(e)
+        })
     }
 }
 
@@ -1167,24 +1166,23 @@ impl GetInstrumentRequest {
     pub async fn send(self) -> Result<model::InstrumentResponse, Error> {
         let req = self.build();
         let rsp = req.send().await?;
-
-        // let json = rsp.text().await.unwrap();
-        // dbg!(&json);
-        // std::fs::write("Instrument_real.json", &json).expect("Unable to write file");
-        // let item: model::Instruments = serde_json::from_str(&json).unwrap();
-        // println!("{:#?}", item);
-        // panic!();
-
         let status = rsp.status();
+
+        let body_text = rsp.text().await?;
+
         if status != StatusCode::OK {
-            let error_response = rsp.json::<model::ErrorResponse>().await?;
+            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+                save_raw_json("log", "ErrorResponse", &body_text);
+                Error::from(e)
+            })?;
+
             return Err(Error::Response(error_response));
         }
 
-        let mut data = rsp
-            .json::<model::Instruments>()
-            .await
-            .map_err(std::convert::Into::<Error>::into)?;
+        let mut data: model::Instruments = serde_json::from_str(&body_text).map_err(|e| {
+            save_raw_json("log", "Instruments", &body_text);
+            Error::from(e)
+        })?;
 
         Ok(data.instruments.pop().expect("must exist"))
     }
