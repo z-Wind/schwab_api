@@ -993,20 +993,23 @@ impl GetMarketsRequest {
         self
     }
 
+    #[tracing::instrument(skip(self), fields(market_count = self.markets.len()))]
     fn build(self) -> RequestBuilder {
-        let market_strs = self.markets.iter().map(|m| m.as_str()).collect::<Vec<_>>();
+        tracing::debug!("building market hours request");
 
-        let mut req = self.req.query(&[("markets", market_strs.join(","))]);
+        let market_strs = self.markets.iter().map(|m| m.as_str()).collect::<Vec<_>>();
+        let markets_param = market_strs.join(",");
+
+        tracing::debug!(markets = %markets_param, "markets parameter constructed");
+
+        let mut req = self.req.query(&[("markets", markets_param)]);
 
         if let Some(date) = self.date {
-            tracing::debug!(%date, "Applying date filter to Market Hours request");
+            tracing::debug!(%date, "applying date filter to market hours request");
             req = req.query(&[("date", date)]);
         }
 
-        tracing::debug!(
-            market_count = %market_strs.len(),
-            "Market Hours request builder finalized"
-        );
+        tracing::debug!("market hours request builder finalized");
 
         req
     }

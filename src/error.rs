@@ -22,4 +22,6 @@ pub enum Error {
     ChannelMessenger(String),
     #[error("Order Id parse error: {0}")]
     OrderIdParseError(String),
+    #[error("Config error: {0}")]
+    Config(String),
 }

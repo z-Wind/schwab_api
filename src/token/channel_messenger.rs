@@ -13,9 +13,9 @@ use crate::Error;
 
 #[derive(Debug, Clone)]
 pub struct AuthContext {
-    pub auth_url: Option<Url>,
-    pub csrf: Option<CsrfToken>,
-    pub redirect_url: Option<Url>,
+    pub auth_url: Url,
+    pub csrf: CsrfToken,
+    pub redirect_url: Url,
 }
 
 /// A trait for sending and receiving messages through a channel.

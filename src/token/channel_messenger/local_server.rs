@@ -2,12 +2,14 @@ use async_channel::Receiver;
 use axum::{
     Router,
     extract::{FromRef, Query, State},
-    response::IntoResponse,
+    response::{Html, IntoResponse, Response},
     routing::get,
 };
 use axum_server::tls_rustls::RustlsConfig;
+use http::StatusCode;
 use oauth2::CsrfToken;
 use std::{net::SocketAddr, path::Path, result::Result};
+use tokio::time::{Duration, timeout};
 use tracing::instrument;
 use url::Url;
 
@@ -25,49 +27,74 @@ pub struct LocalServerMessenger {
 }
 
 impl LocalServerMessenger {
-    /// # Panics
+    /// # Errors
     ///
-    /// Will panic without cert.pem and key.pem
-    pub async fn new(certs_dir: &Path) -> Self {
-        Self {
-            config: RustlsConfig::from_pem_file(
-                certs_dir.join("cert.pem"),
-                certs_dir.join("key.pem"),
-            )
-            .await
-            .expect("certs setting ok"),
+    /// Returns an error if:
+    /// - `cert.pem` or `key.pem` files are missing
+    /// - Certificate files are invalid or corrupted
+    /// - Files cannot be read due to permissions
+    #[tracing::instrument(fields(certs_dir = %certs_dir.display()))]
+    pub async fn new(certs_dir: &Path) -> Result<Self, Error> {
+        tracing::info!("initializing HTTPS server configuration");
 
+        let cert_path = certs_dir.join("cert.pem");
+        let key_path = certs_dir.join("key.pem");
+
+        if !cert_path.exists() {
+            tracing::error!(path = %cert_path.display(), "certificate file not found");
+            return Err(Error::Config(format!(
+                "Certificate file not found: {}",
+                cert_path.display()
+            )));
+        }
+
+        if !key_path.exists() {
+            tracing::error!(path = %key_path.display(), "private key file not found");
+            return Err(Error::Config(format!(
+                "Private key file not found: {}",
+                key_path.display()
+            )));
+        }
+
+        tracing::debug!(
+            cert_path = %cert_path.display(),
+            key_path = %key_path.display(),
+            "loading TLS certificates"
+        );
+
+        let config = RustlsConfig::from_pem_file(cert_path, key_path)
+        .await
+        .map_err(|e| {
+            tracing::error!(
+                error = %e,
+                certs_dir = %certs_dir.display(),
+                "failed to load TLS certificates; ensure cert.pem and key.pem exist and are valid"
+            );
+            Error::Config(format!("Failed to load certificates: {}", e))
+        })?;
+
+        tracing::info!("HTTPS server configuration initialized successfully");
+
+        Ok(Self {
+            config,
             addr: None,
             rx: None,
             app_state: None,
             auth_url: None,
-        }
+        })
     }
 }
 
 impl ChannelMessenger for LocalServerMessenger {
     async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
         let (tx, rx) = async_channel::unbounded();
-        let csrf = context
-            .csrf
-            .as_ref()
-            .ok_or(Error::ChannelMessenger("No CSRF".to_string()))?
-            .clone();
-        let redirect_uri = context
-            .redirect_url
-            .as_ref()
-            .ok_or(Error::ChannelMessenger("No redirect_url".to_string()))?;
+        let csrf = context.csrf;
+        let redirect_uri = context.redirect_url;
 
         self.app_state = Some(AppState { csrf, tx });
         self.rx = Some(rx);
-        self.auth_url = Some(
-            context
-                .auth_url
-                .as_ref()
-                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
-                .clone(),
-        );
-        self.addr = Some(parse_socket_addr(redirect_uri).map_err(Error::ChannelMessenger)?);
+        self.auth_url = Some(context.auth_url);
+        self.addr = Some(parse_socket_addr(&redirect_uri).map_err(Error::ChannelMessenger)?);
 
         Ok(())
     }
@@ -125,23 +152,78 @@ struct AppState {
     tx: async_channel::Sender<String>,
 }
 
+#[tracing::instrument(
+    skip(csrf, tx),
+    fields(
+        csrf_valid = tracing::field::Empty,  // 稍後填入
+    ),
+)]
 async fn get_code(
     Query(query): Query<AuthRequest>,
     State(csrf): State<CsrfToken>,
     State(tx): State<async_channel::Sender<String>>,
-) -> impl IntoResponse {
+) -> Response {
+    tracing::debug!("received OAuth callback request");
+
     if &query.state != csrf.secret() {
-        return "CSRF check error".to_string();
+        tracing::warn!(
+            received_state = %query.state,
+            "CSRF token validation failed; potential security attack or stale request"
+        );
+        tracing::Span::current().record("csrf_valid", false);
+        return (
+            StatusCode::FORBIDDEN,
+            Html("<h1>Authentication Failed</h1><p>Security validation failed. Please restart the authentication process.</p>")
+        ).into_response();
     }
 
-    let content = format!(
-        "Schwab returned the following code:\n{}\nYou can now safely close this browser window.",
-        &query.code
+    tracing::Span::current().record("csrf_valid", true);
+    tracing::info!("CSRF token validated successfully");
+
+    tracing::debug!(
+        code_length = query.code.len(),
+        "received authorization code"
     );
 
-    tx.send(query.code).await.expect("send code");
+    match timeout(Duration::from_secs(5), tx.send(query.code.clone())).await {
+        Ok(Ok(())) => {
+            tracing::info!("authorization code sent successfully");
+        }
+        Ok(Err(e)) => {
+            tracing::error!(
+                error = %e,
+                "failed to send authorization code through channel; receiver may have been dropped"
+            );
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Html("<h1>Error</h1><p>Failed to process authorization. Please try again.</p>"),
+            )
+                .into_response();
+        }
+        Err(_) => {
+            tracing::error!("timeout sending authorization code to channel");
+            return (
+                StatusCode::GATEWAY_TIMEOUT,
+                Html("<h1>Error</h1><p>Timeout processing authorization. Please try again.</p>"),
+            )
+                .into_response();
+        }
+    }
 
-    content
+    tracing::info!("authorization code sent successfully");
+
+    Html(
+        r#"
+    <html>
+    <head><title>Authorization Successful</title></head>
+    <body>
+        <h1>✓ Authorization Successful</h1>
+        <p>You can now safely close this window.</p>
+    </body>
+    </html>
+    "#,
+    )
+    .into_response()
 }
 
 fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
@@ -233,7 +315,15 @@ mod tests {
             .unwrap();
         assert_eq!(
             String::from_utf8(bytes.to_vec()).unwrap(),
-            "Schwab returned the following code:\ncode\nYou can now safely close this browser window."
+            r#"
+    <html>
+    <head><title>Authorization Successful</title></head>
+    <body>
+        <h1>✓ Authorization Successful</h1>
+        <p>You can now safely close this window.</p>
+    </body>
+    </html>
+    "#
         );
         assert_eq!(rx.recv().await.unwrap(), "code");
     }
@@ -242,17 +332,15 @@ mod tests {
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_local_server_messenger() {
         let context = AuthContext {
-            auth_url: Some(
-                "https://127.0.0.1:8081/?state=CSRF&code=code"
-                    .parse()
-                    .unwrap(),
-            ),
-            csrf: Some(CsrfToken::new("CSRF".to_string())),
-            redirect_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+            auth_url: "https://127.0.0.1:8081/?state=CSRF&code=code"
+                .parse()
+                .unwrap(),
+            csrf: CsrfToken::new("CSRF".to_string()),
+            redirect_url: "https://127.0.0.1:8081".parse().unwrap(),
         };
 
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
-        let mut messenger = LocalServerMessenger::new(&certs_dir).await;
+        let mut messenger = LocalServerMessenger::new(&certs_dir).await.unwrap();
 
         messenger.with_context(context).await.unwrap();
         messenger.send_auth_message().await.unwrap();

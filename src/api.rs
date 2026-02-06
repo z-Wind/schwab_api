@@ -517,7 +517,7 @@ mod tests {
 
         let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
         let messenger = CompoundMessenger::new(
-            LocalServerMessenger::new(&certs_dir).await,
+            LocalServerMessenger::new(&certs_dir).await.unwrap(),
             StdioMessenger::new(),
         );
 

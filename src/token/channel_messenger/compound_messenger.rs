@@ -105,18 +105,16 @@ mod tests {
     #[ignore = "Testing manually for compound verification. Should be --nocapture"]
     async fn test_compound_messenger() {
         let context = AuthContext {
-            auth_url: Some(
-                "https://127.0.0.1:8081/?state=CSRF&code=code"
-                    .parse()
-                    .unwrap(),
-            ),
-            csrf: Some(CsrfToken::new("CSRF".to_string())),
-            redirect_url: Some("https://127.0.0.1:8081".parse().unwrap()),
+            auth_url: "https://127.0.0.1:8081/?state=CSRF&code=code"
+                .parse()
+                .unwrap(),
+            csrf: CsrfToken::new("CSRF".to_string()),
+            redirect_url: "https://127.0.0.1:8081".parse().unwrap(),
         };
 
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
         let mut messenger = CompoundMessenger::new(
-            LocalServerMessenger::new(&certs_dir).await,
+            LocalServerMessenger::new(&certs_dir).await.unwrap(),
             StdioMessenger::new(),
         );
 

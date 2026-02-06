@@ -13,6 +13,9 @@ use super::channel_messenger::{AuthContext, ChannelMessenger};
 use crate::error::Error;
 use crate::token::Token;
 
+const SCHWAB_AUTH_URL: &str = "https://api.schwabapi.com/v1/oauth/authorize";
+const SCHWAB_TOKEN_URL: &str = "https://api.schwabapi.com/v1/oauth/token";
+
 type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
 
 #[derive(Debug, Deserialize)]
@@ -30,6 +33,7 @@ pub(super) struct Authorizer<CM: ChannelMessenger> {
 }
 
 impl<CM: ChannelMessenger> Authorizer<CM> {
+    #[tracing::instrument(skip_all, fields(redirect_url = %redirect_url))]
     pub(super) async fn new(
         app_key: String,
         secret: String,
@@ -39,11 +43,15 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
     ) -> Result<Self, Error> {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
-        let auth_url = AuthUrl::new("https://api.schwabapi.com/v1/oauth/authorize".to_string())
-            .expect("Invalid authorization endpoint URL");
-        let token_url = TokenUrl::new("https://api.schwabapi.com/v1/oauth/token".to_string())
-            .expect("Invalid token endpoint URL");
-        let redirect_url = RedirectUrl::new(redirect_url).expect("Invalid redirect URL");
+        let auth_url =
+            AuthUrl::new(SCHWAB_AUTH_URL.to_string()).expect("hardcoded auth URL must be valid");
+        let token_url =
+            TokenUrl::new(SCHWAB_TOKEN_URL.to_string()).expect("hardcoded token URL must be valid");
+
+        let redirect_url = RedirectUrl::new(redirect_url).map_err(|e| {
+            tracing::error!(error = %e, "invalid redirect URL provided");
+            Error::Config(format!("Invalid redirect URL: {}", e))
+        })?;
 
         let oauth2_client = BasicClient::new(app_key)
             .set_client_secret(secret)
@@ -56,9 +64,16 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             async_client,
             messenger,
         };
-        let context = auth.create_auth_context();
-        auth.messenger.with_context(context).await?;
 
+        tracing::debug!("creating authorization context");
+        let context = auth.create_auth_context();
+
+        auth.messenger.with_context(context).await.map_err(|e| {
+            tracing::error!(error = %e, "failed to initialize messenger with auth context");
+            e
+        })?;
+
+        tracing::info!("Schwab OAuth2 authorizer initialized successfully");
         Ok(auth)
     }
 
@@ -142,18 +157,22 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .await
     }
 
+    #[tracing::instrument(skip(self))]
     fn create_auth_context(&self) -> AuthContext {
+        tracing::debug!("creating authorization context");
+
         let (auth_url, csrf_token) = self.auth_code_url();
+        let redirect_url = self
+            .oauth2_client
+            .redirect_uri()
+            .expect("redirect_url must be set during client construction")
+            .url()
+            .clone();
+
         AuthContext {
-            auth_url: Some(auth_url),
-            csrf: Some(csrf_token),
-            redirect_url: Some(
-                self.oauth2_client
-                    .redirect_uri()
-                    .expect("redirect_url")
-                    .url()
-                    .clone(),
-            ),
+            auth_url: auth_url,
+            csrf: csrf_token,
+            redirect_url: redirect_url,
         }
     }
 
@@ -201,7 +220,7 @@ mod tests {
     async fn test_auth_compound() {
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
         let messenger = CompoundMessenger::new(
-            LocalServerMessenger::new(&certs_dir).await,
+            LocalServerMessenger::new(&certs_dir).await.unwrap(),
             StdioMessenger::new(),
         );
 
@@ -227,7 +246,7 @@ mod tests {
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_auth_local_server() {
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
-        let messenger = LocalServerMessenger::new(&certs_dir).await;
+        let messenger = LocalServerMessenger::new(&certs_dir).await.unwrap();
 
         let auth = Authorizer::new(
             client_id_static().to_string(),
