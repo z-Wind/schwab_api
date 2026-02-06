@@ -1,6 +1,7 @@
 //! A messenger that uses standard input/output.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
+use tracing::instrument;
 
 use super::{AuthContext, ChannelMessenger};
 use crate::error::Error;
@@ -32,12 +33,26 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn send_auth_message(&self) -> Result<(), Error> {
         loop {
-            let result = match self.select.load(Ordering::Acquire) {
-                0 => self.default.send_auth_message().await,
-                1 => self.other.send_auth_message().await,
+            let current_index = self.select.load(Ordering::Acquire);
+
+            let result = match current_index {
+                0 => {
+                    tracing::debug!("attempting authentication via default messenger");
+                    self.default.send_auth_message().await
+                }
+                1 => {
+                    tracing::debug!("attempting authentication via secondary messenger");
+                    self.other.send_auth_message().await
+                }
                 _ => {
+                    tracing::error!(
+                        index = %current_index,
+                        "no messengers available for authentication"
+                    );
+
                     return Err(Error::ChannelMessenger(
                         "No Messengers available to send".to_string(),
                     ));
@@ -45,9 +60,18 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
             };
 
             match result {
-                Ok(()) => return Ok(()),
+                Ok(()) => {
+                    tracing::info!(index = %current_index, "authentication message sent successfully");
+                    return Ok(());
+                }
                 Err(e) => {
-                    println!("error:{e}, select next messenger");
+                    tracing::warn!(
+                        index = %current_index,
+                        error = %e,
+                        next_index = %(current_index + 1),
+                        "messenger authentication failed; switching to next provider"
+                    );
+
                     self.select.fetch_add(1, Ordering::AcqRel);
                 }
             }
@@ -67,16 +91,17 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use oauth2::CsrfToken;
     use std::path::PathBuf;
+    use test_log::test;
 
     use crate::token::channel_messenger::{
         local_server::LocalServerMessenger, stdio_messenger::StdioMessenger,
     };
 
-    #[tokio::test]
+    use super::*;
+
+    #[test(tokio::test)]
     #[ignore = "Testing manually for compound verification. Should be --nocapture"]
     async fn test_compound_messenger() {
         let context = AuthContext {

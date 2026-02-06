@@ -8,6 +8,7 @@ pub mod trader;
 use reqwest::Client;
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::instrument;
 
 use crate::token::Tokener;
 use crate::{error::Error, model};
@@ -436,9 +437,14 @@ impl<T: Tokener> Api<T> {
     }
 }
 
+#[instrument(skip(json), fields(model = %model))]
 fn save_raw_json(folder: &str, model: &str, json: &str) {
     if let Err(e) = fs::create_dir_all(folder) {
-        eprintln!("Failed to create directory {folder}: {e}");
+        tracing::error!(
+            directory = %folder,
+            error = %e,
+            "Failed to create directory"
+        );
         return;
     }
 
@@ -450,24 +456,32 @@ fn save_raw_json(folder: &str, model: &str, json: &str) {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis())
         .unwrap_or(0);
-    let file_path = format!("{folder}/error_{model}_{timestamp}.json");
+
+    let file_name = format!("error_{}_{}.json", model, timestamp);
+    let file_path = std::path::Path::new(folder).join(file_name);
 
     if let Err(e) = fs::write(&file_path, formatted_json) {
-        eprintln!("Failed to save JSON to {file_path}: {e}");
+        tracing::error!(
+            path = %file_path.display(),
+            error = %e,
+            "Failed to save error JSON file"
+        );
     } else {
-        println!("Error JSON saved to {file_path}");
+        tracing::debug!(
+            path = %file_path.display(),
+            "Error JSON saved successfully"
+        );
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use float_cmp::assert_approx_eq;
     use pretty_assertions::assert_eq;
     use std::path::Path;
     use std::path::PathBuf;
     use tempfile::tempdir;
+    use test_log::test;
 
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
@@ -477,6 +491,8 @@ mod tests {
     use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
     use crate::token::channel_messenger::local_server::LocalServerMessenger;
     use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
+
+    use super::*;
 
     async fn client() -> Api<TokenChecker<impl ChannelMessenger>> {
         #[allow(clippy::option_env_unwrap)]
@@ -524,7 +540,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quotes() {
         let api = client().await;
         let req = api
@@ -554,14 +570,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quote() {
         let symbols = vec![
             // Bond
@@ -588,10 +604,10 @@ mod tests {
 
         let api = client().await;
         for symbol in symbols {
-            dbg!(&symbol);
+            tracing::debug!(%symbol);
             let req = api.get_quote(symbol).await.unwrap();
             let rsp = req.send().await.unwrap();
-            dbg!(rsp);
+            tracing::debug!(?rsp);
         }
     }
 
@@ -599,7 +615,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_chains() {
         let api = client().await;
         let mut req = api.get_option_chains("AAPL".into()).await.unwrap();
@@ -607,7 +623,7 @@ mod tests {
             .exp_month(parameter::Month::All)
             .contract_type(parameter::ContractType::All);
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_option_chain(symbol: String) -> String {
@@ -627,7 +643,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_expiration_chain() {
         let api = client().await;
         let req = api
@@ -635,38 +651,38 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_price_history() {
         let api = client().await;
         let req = api.get_price_history("AAPL".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_movers() {
         let api = client().await;
         let req = api.get_movers("$DJI".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_markets() {
         let api = client().await;
         let req = api
@@ -674,26 +690,26 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_market() {
         let api = client().await;
         let req = api.get_market(Market::Equity).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instruments() {
         let api = client().await;
         let req = api
@@ -701,45 +717,45 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
 
         let req = api
             .get_instruments("AAPL".into(), Projection::Fundamental)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
 
         let req = api
             .get_instruments("SNOW".into(), Projection::Fundamental)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instrument() {
         let api = client().await;
         let req = api.get_instrument("922908769".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_numbers() {
         let api = client().await;
         let req = api.get_account_numbers().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn account_number() -> String {
@@ -753,31 +769,31 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts() {
         let api = client().await;
         let req = api.get_accounts().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account() {
         let api = client().await;
         let req = api.get_account(account_number().await).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_orders() {
         let api = client().await;
         let req = api
@@ -799,7 +815,7 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_account_orders() -> i64 {
@@ -831,7 +847,7 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
     #[allow(clippy::too_many_lines)]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_put_delete_account_order() {
         let api = client().await;
 
@@ -850,7 +866,7 @@ mod tests {
             .await
             .unwrap();
         let preview = req.send().await.unwrap();
-        dbg!(preview);
+        tracing::debug!(?preview);
 
         // post
         let order_post =
@@ -867,7 +883,7 @@ mod tests {
             .await
             .unwrap();
         let order_post_check = req.send().await.unwrap();
-        dbg!(&order_post_check);
+        tracing::debug!(?order_post_check);
         assert_eq!(
             order_post_check.session,
             model::trader::order::Session::Normal
@@ -913,7 +929,7 @@ mod tests {
             .await
             .unwrap();
         let order_put_check = req.send().await.unwrap();
-        dbg!(&order_put_check);
+        tracing::debug!(?order_put_check);
         assert_eq!(
             order_put_check.session,
             model::trader::order::Session::Normal
@@ -956,7 +972,7 @@ mod tests {
             .await
             .unwrap();
         let order = req.send().await.unwrap();
-        dbg!(&order);
+        tracing::debug!(?order);
         assert_eq!(
             order.order_activity_collection.unwrap()[0].execution_type,
             ExecutionType::Canceled
@@ -967,7 +983,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_order() {
         let api = client().await;
         let req = api
@@ -975,14 +991,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts_orders() {
         let api = client().await;
         let req = api
@@ -1003,14 +1019,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(all(feature = "test_online")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_accounts_preview_order() {
         let api = client().await;
         let req = api
@@ -1029,14 +1045,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transactions() {
         // # duplicate field `assetType`
         let api = client().await;
@@ -1060,7 +1076,7 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_account_transactions() -> i64 {
@@ -1094,7 +1110,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transaction() {
         // # duplicate field `assetType`
 
@@ -1104,22 +1120,22 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_user_preference() {
         let api = client().await;
         let req = api.get_user_preference().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_save_raw_json_creates_formatted_file() {
         let dir = tempdir().expect("Failed to create temp dir");
         let temp_path = dir.path();
@@ -1156,7 +1172,7 @@ mod tests {
         assert!(found, "JSON file should exist in the temp directory");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_save_raw_json_handles_invalid_json() {
         let dir = tempdir().expect("Failed to create temp dir");
         let temp_path = dir.path();

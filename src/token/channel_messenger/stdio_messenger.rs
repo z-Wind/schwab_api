@@ -3,6 +3,7 @@
 use axum::extract::Query;
 use http::Uri;
 use oauth2::CsrfToken;
+use tracing::instrument;
 
 use super::{AuthContext, ChannelMessenger};
 use crate::error::Error;
@@ -33,15 +34,20 @@ impl ChannelMessenger for StdioMessenger {
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn send_auth_message(&self) -> Result<(), Error> {
-        let context = self
-            .context
-            .as_ref()
-            .ok_or(Error::ChannelMessenger("No context".to_string()))?;
-        let auth_url = context
-            .auth_url
-            .as_ref()
-            .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?;
+        let context = self.context.as_ref().ok_or_else(|| {
+            let err = "missing context for authentication";
+            tracing::error!(reason = %err);
+            Error::ChannelMessenger(err.to_string())
+        })?;
+
+        let auth_url = context.auth_url.as_ref().ok_or_else(|| {
+            let err = "missing auth_url in context";
+            tracing::error!(reason = %err);
+            Error::ChannelMessenger(err.to_string())
+        })?;
+
         let message = format!(
             r#"
 **************************************************************
@@ -71,6 +77,12 @@ Redirect URL>"#
         );
 
         println!("{message}");
+
+        tracing::info!(
+            url_len = %auth_url.as_str().len(),
+            "authentication instructions displayed to user"
+        );
+
         Ok(())
     }
 
@@ -96,6 +108,8 @@ Redirect URL>"#
 }
 #[cfg(test)]
 mod tests {
+    use test_log::test;
+
     use super::*;
 
     #[test]
@@ -108,7 +122,7 @@ mod tests {
         assert_eq!(auth_code, "code");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
     async fn test_stdio_messenger() {
         let context = AuthContext {

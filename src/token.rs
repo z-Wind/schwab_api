@@ -11,6 +11,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use tokio::sync::Mutex;
+use tracing::instrument;
 
 use crate::error::Error;
 use auth::Authorizer;
@@ -46,9 +47,9 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
         let authorizer =
             Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
-        let token = match Token::load(path.clone()) {
+        let token = match Token::load(&path) {
             Ok(token) => token,
-            Err(_) => authorizer.save(path.clone()).await?,
+            Err(_) => authorizer.save(&path).await?,
         };
 
         let checker = Self {
@@ -62,26 +63,56 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
         Ok(checker)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn check_or_update(&self) -> Result<(), Error> {
         let mut token = self.token.lock().await;
+
         if token.is_access_valid() {
+            tracing::trace!("access token is still valid; skipping update");
             return Ok(());
         }
 
-        if token.is_refresh_valid()
-            && let Ok(rsp) = self.authorizer.access_token(&token.refresh).await
-        {
-            token.access.clone_from(rsp.access_token().secret());
-            token.access_expires_in = chrono::Utc::now()
-                .checked_add_signed(ACCESS_TOKEN_LIFETIME)
-                .expect("access_expires_in");
+        tracing::info!("access token expired; attempting to refresh");
 
-            token.save(self.path.clone())?;
+        if token.is_refresh_valid() {
+            match self.authorizer.access_token(&token.refresh).await {
+                Ok(rsp) => {
+                    token.access.clone_from(rsp.access_token().secret());
+                    token.access_expires_in = chrono::Utc::now()
+                        .checked_add_signed(ACCESS_TOKEN_LIFETIME)
+                        .ok_or_else(|| {
+                            tracing::error!("failed to calculate access token expiration");
+                            Error::Token("Expiration calculation overflow".into())
+                        })?;
 
-            return Ok(());
+                    token.save(&self.path).map_err(|e| {
+                        tracing::error!(error = %e, "failed to save updated token to disk");
+                        e
+                    })?;
+
+                    tracing::info!("access token refreshed successfully via refresh_token");
+                    return Ok(());
+                }
+                Err(e) => {
+                    tracing::warn!(
+                        error = %e,
+                        "failed to refresh access token; falling back to full re-authorization"
+                    );
+                }
+            }
+        } else {
+            tracing::warn!("refresh token is expired or missing; full re-authorization required");
         }
 
-        *token = self.authorizer.save(self.path.clone()).await?;
+        tracing::info!("starting full authorization flow");
+        let new_token = self.authorizer.save(&self.path).await.map_err(|e| {
+            tracing::error!(error = %e, "full authorization flow failed");
+            e
+        })?;
+
+        *token = new_token;
+
+        tracing::info!("token updated and saved via full re-authorization");
         Ok(())
     }
 }
@@ -100,9 +131,9 @@ impl TokenChecker<LocalServerMessenger> {
         let authorizer =
             Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
-        let token = match Token::load(path.clone()) {
+        let token = match Token::load(&path) {
             Ok(token) => token,
-            Err(_) => authorizer.save(path.clone()).await?,
+            Err(_) => authorizer.save(&path).await?,
         };
 
         let checker = Self {
@@ -148,7 +179,7 @@ impl<CM: ChannelMessenger> Tokener for TokenChecker<CM> {
     /// must update token in Tokener
     async fn redo_authorization(&self) -> Result<(), Error> {
         let mut token = self.token.lock().await;
-        *token = self.authorizer.save(self.path.clone()).await?;
+        *token = self.authorizer.save(&self.path).await?;
 
         Ok(())
     }
@@ -166,7 +197,7 @@ struct Token {
 }
 
 impl Token {
-    fn load(path: PathBuf) -> std::io::Result<Token> {
+    fn load(path: &PathBuf) -> std::io::Result<Token> {
         let mut file = File::open(path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
@@ -174,18 +205,36 @@ impl Token {
         Ok(token)
     }
 
-    fn save(&self, path: PathBuf) -> std::io::Result<()> {
-        // println!("...save token: {}", path.display());
+    #[instrument(skip(self), fields(path = %path.display()))]
+    fn save(&self, path: &PathBuf) -> std::io::Result<()> {
         if let Some(dir) = path.parent() {
-            std::fs::create_dir_all(dir)?;
+            std::fs::create_dir_all(dir).map_err(|e| {
+                tracing::error!(directory = %dir.display(), error = %e, "Failed to create token directory");
+                e
+            })?;
         }
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(path)?;
-        let json = serde_json::to_string_pretty(self)?;
-        file.write_all(json.as_bytes())?;
+            .open(path)
+            .map_err(|e| {
+                tracing::error!(error = %e, "Failed to open token file for writing");
+                e
+            })?;
+
+        let json = serde_json::to_string_pretty(self).map_err(|e| {
+            tracing::error!(error = %e, "Failed to serialize token to JSON");
+            e
+        })?;
+
+        file.write_all(json.as_bytes()).map_err(|e| {
+            tracing::error!(error = %e, "Failed to write bytes to token file");
+            e
+        })?;
+
+        tracing::trace!("Token saved successfully");
+
         Ok(())
     }
 
@@ -200,9 +249,11 @@ impl Token {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use test_log::test;
 
     use channel_messenger::compound_messenger::CompoundMessenger;
+
+    use super::*;
 
     fn client_id_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
@@ -221,7 +272,7 @@ mod tests {
             .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for verification. Should be --nocapture"]
     async fn test_token_checker_new_with_custom_auth() {
         let path = dirs::home_dir()
@@ -247,7 +298,7 @@ mod tests {
         .unwrap();
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_token_checker_new_with_local_server() {
         let path = dirs::home_dir()
@@ -267,7 +318,7 @@ mod tests {
         .unwrap();
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
     async fn test_token_checker_new_with_stdio() {
         let path = dirs::home_dir()
@@ -294,7 +345,7 @@ mod tests {
             .join("token")
             .join("normal.json");
 
-        Token::save(&Token::default(), path).unwrap();
+        Token::save(&Token::default(), &path).unwrap();
     }
 
     #[test]
@@ -305,8 +356,9 @@ mod tests {
             .join("token")
             .join("normal.json");
 
-        let token = Token::load(path).unwrap();
-        println!("{token:?}");
+        let token = Token::load(&path).unwrap();
+
+        tracing::debug!(?token, "Token 載入成功");
     }
 
     #[test]

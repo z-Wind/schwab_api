@@ -512,9 +512,10 @@ pub enum FundStrategy {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::collections::HashMap;
+    use test_log::test;
+
+    use super::*;
 
     #[test]
     fn test_de() {
@@ -524,7 +525,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<HashMap<String, EquityResponse>>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 }

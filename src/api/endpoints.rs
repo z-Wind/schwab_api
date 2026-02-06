@@ -316,10 +316,28 @@ impl EndpointMarketHour {
         match self {
             EndpointMarketHour::Markets => "/markets".to_string(),
             EndpointMarketHour::Market { market_id } => {
-                let market_id = serde_json::to_value(market_id).expect("value");
-                let market_id = market_id.as_str().expect("value is a str");
-                let market_id = encode(market_id);
-                format!("/markets/{market_id}")
+                tracing::trace!(market_id = ?market_id, "constructing market endpoint URL");
+
+                let market_id_val = serde_json::to_value(market_id)
+                    .map_err(|e| {
+                        tracing::error!(error = %e, "failed to serialize market_id to JSON value");
+                        e
+                    })
+                    .ok();
+
+                let market_id_str = market_id_val
+                    .as_ref()
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_else(|| {
+                        tracing::error!("market_id is not a valid string; check model definition");
+                        "unknown"
+                    });
+
+                let encoded_id = encode(market_id_str);
+                let path = format!("/markets/{encoded_id}");
+
+                tracing::debug!(path = %path, "constructed market endpoint path");
+                path
             }
         }
     }
@@ -363,9 +381,10 @@ impl EndpointInstrument {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use pretty_assertions::assert_eq;
+    use test_log::test;
+
+    use super::*;
 
     #[test]
     fn test_endpoint_account() {

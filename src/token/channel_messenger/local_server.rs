@@ -8,6 +8,7 @@ use axum::{
 use axum_server::tls_rustls::RustlsConfig;
 use oauth2::CsrfToken;
 use std::{net::SocketAddr, path::Path, result::Result};
+use tracing::instrument;
 use url::Url;
 
 use super::{AuthContext, ChannelMessenger};
@@ -71,6 +72,7 @@ impl ChannelMessenger for LocalServerMessenger {
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn send_auth_message(&self) -> Result<(), Error> {
         open::that(
             self.auth_url
@@ -158,15 +160,16 @@ fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use axum::{
         body::Body,
         http::{Request, StatusCode, Uri},
     };
     use pretty_assertions::assert_eq;
     use std::path::PathBuf;
+    use test_log::test;
     use tower::ServiceExt; // for `oneshot` and `ready`
+
+    use super::*;
 
     fn config(csrf: CsrfToken, tx: async_channel::Sender<String>) -> AppState {
         AppState { csrf, tx }
@@ -209,7 +212,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_router() {
         let (tx, rx) = async_channel::unbounded();
         let csrf = CsrfToken::new_random();
@@ -235,7 +238,7 @@ mod tests {
         assert_eq!(rx.recv().await.unwrap(), "code");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_local_server_messenger() {
         let context = AuthContext {

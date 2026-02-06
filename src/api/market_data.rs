@@ -76,17 +76,31 @@ impl GetQuotesRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[("symbols", self.symbols.join(","))]);
-        if let Some(x) = self.fields {
-            let x: Vec<String> = x
+
+        if let Some(ref fields) = self.fields {
+            let field_strs: Vec<String> = fields
                 .into_iter()
-                .map(|f| serde_json::to_value(f).expect("value"))
-                .map(|v| v.as_str().expect("value is a str").to_string())
+                .filter_map(|f| match f {
+                    QuoteField::Extra(s) => Some(s.clone()),
+                    _ => serde_json::to_value(&f)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                })
                 .collect();
-            req = req.query(&[("fields", x.join(","))]);
+
+            if !field_strs.is_empty() {
+                req = req.query(&[("fields", field_strs.join(","))]);
+            }
         }
-        if let Some(x) = self.indicative {
-            req = req.query(&[("indicative", x.to_string())]);
+
+        if let Some(indicative) = self.indicative {
+            req = req.query(&[("indicative", indicative.to_string())]);
         }
+
+        tracing::debug!(
+            "request built with {} fields",
+            self.fields.as_ref().map_or(0, |v| v.len())
+        );
 
         req
     }
@@ -171,33 +185,52 @@ impl GetQuoteRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req;
-        if let Some(x) = self.fields {
-            let x: Vec<String> = x
+
+        if let Some(ref fields) = self.fields {
+            let field_strs: Vec<String> = fields
                 .into_iter()
-                .map(|f| serde_json::to_value(f).expect("value"))
-                .map(|v| v.as_str().expect("value is a str").to_string())
+                .filter_map(|f| match f {
+                    QuoteField::Extra(s) => Some(s.clone()),
+                    _ => serde_json::to_value(&f)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                })
                 .collect();
-            req = req.query(&[("fields", x.join(","))]);
+
+            if !field_strs.is_empty() {
+                req = req.query(&[("fields", field_strs.join(","))]);
+            }
         }
+
+        tracing::debug!(
+            "request built with {} fields",
+            self.fields.as_ref().map_or(0, |v| v.len())
+        );
 
         req
     }
 
-    /// # Panics
-    ///
-    /// Will panic if no symbol found
     pub async fn send(self) -> Result<model::QuoteResponse, Error> {
         let symbol = self.symbol.clone();
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response from server");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                e
             })?;
 
             return Err(Error::Response(error_response));
@@ -205,14 +238,23 @@ impl GetQuoteRequest {
 
         let mut map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "QuoteResponseMap", &body_text);
-            Error::from(e)
+            tracing::error!(error = %e, "json parse failed");
+            e
         })?;
 
         if let Some(e) = map.errors {
             return Err(Error::Quote(e));
         }
 
-        let val = map.responses.remove(&symbol).expect("must exist");
+        let val = map.responses.remove(&symbol).ok_or_else(|| {
+            tracing::error!("requested symbol missing in response map");
+            Error::Quote(model::QuoteError {
+                invalid_symbols: Some(vec![symbol]),
+                invalid_cusips: None,
+                invalid_ssids: None,
+            })
+        })?;
+
         Ok(val)
     }
 }
@@ -952,16 +994,19 @@ impl GetMarketsRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let markets: Vec<String> = self
-            .markets
-            .into_iter()
-            .map(|m| serde_json::to_value(m).expect("value"))
-            .map(|v| v.as_str().expect("value is a str").to_string())
-            .collect();
-        let mut req = self.req.query(&[("markets", markets.join(","))]);
-        if let Some(x) = self.date {
-            req = req.query(&[("date", x)]);
+        let market_strs = self.markets.iter().map(|m| m.as_str()).collect::<Vec<_>>();
+
+        let mut req = self.req.query(&[("markets", market_strs.join(","))]);
+
+        if let Some(date) = self.date {
+            tracing::debug!(%date, "Applying date filter to Market Hours request");
+            req = req.query(&[("date", date)]);
         }
+
+        tracing::debug!(
+            market_count = %market_strs.len(),
+            "Market Hours request builder finalized"
+        );
 
         req
     }
@@ -1160,20 +1205,27 @@ impl GetInstrumentRequest {
         self.req
     }
 
-    /// # Panics
-    ///
-    /// Will panic if no Instrument
     pub async fn send(self) -> Result<model::InstrumentResponse, Error> {
+        let cusip_id = self.cusip_id.clone();
         let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
 
-        let body_text = rsp.text().await?;
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response from server");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                e
             })?;
 
             return Err(Error::Response(error_response));
@@ -1181,22 +1233,45 @@ impl GetInstrumentRequest {
 
         let mut data: model::Instruments = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
-            Error::from(e)
+            tracing::error!(error = %e, "failed to parse Instruments JSON");
+            e
         })?;
 
-        Ok(data.instruments.pop().expect("must exist"))
+        let count = data.instruments.len();
+        let instrument = if data.instruments.is_empty() {
+            // 記錄警告，並標註具體的 cusip_id
+            tracing::warn!(cusip = %cusip_id, "no instruments found for the given CUSIP");
+
+            return Err(Error::Quote(model::QuoteError {
+                invalid_symbols: None,
+                invalid_cusips: Some(vec![cusip_id]), // 直接將當前的 ID 封裝進錯誤
+                invalid_ssids: None,
+            }));
+        } else {
+            // 取出最匹配的一筆
+            data.instruments.remove(0)
+        };
+
+        tracing::info!(
+            remaining_results = %(count - 1),
+            cusip = %cusip_id,
+            "instrument retrieved successfully"
+        );
+
+        Ok(instrument)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
+    use test_log::test;
 
-    #[tokio::test]
+    use super::*;
+
+    #[test(tokio::test)]
     async fn test_get_quotes_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1251,14 +1326,14 @@ mod tests {
         req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 17);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quotes_request_real() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1313,13 +1388,13 @@ mod tests {
         req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         result.unwrap();
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[allow(clippy::too_many_lines)]
     async fn test_get_quote_request() {
         // Request a new server from the pool
@@ -1435,7 +1510,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
@@ -1445,7 +1520,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quote_request_error() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1494,7 +1569,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap_err();
@@ -1508,7 +1583,7 @@ mod tests {
     }
 
     #[allow(clippy::too_many_lines)]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_options_chains_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1631,14 +1706,14 @@ mod tests {
         req.entitlement(entitlement);
         assert_eq!(req.entitlement, Some(entitlement));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.status, "SUCCESS");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_expiration_chain_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1680,14 +1755,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.expiration_list.len(), 21);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_price_history_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1783,14 +1858,14 @@ mod tests {
         req.need_previous_close(need_previous_close);
         assert_eq!(req.need_previous_close, Some(need_previous_close));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.symbol, "AAPL");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_movers_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1839,14 +1914,14 @@ mod tests {
         req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.screeners.len(), 3);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_markets_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1891,14 +1966,14 @@ mod tests {
         req.date(date);
         assert_eq!(req.date, Some(date));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 2);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_market_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1974,14 +2049,14 @@ mod tests {
         req.date(date);
         assert_eq!(req.date, Some(date));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.keys().next().unwrap(), "equity");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instruments_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -2025,14 +2100,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.instruments.len(), 2);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instrument_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -2079,7 +2154,7 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();

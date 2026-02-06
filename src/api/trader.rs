@@ -1030,16 +1030,17 @@ impl GetUserPreferenceRequest {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    use crate::model::trader::accounts::SecuritiesAccount;
-
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
     use reqwest::header::HeaderValue;
+    use test_log::test;
 
-    #[tokio::test]
+    use crate::model::trader::accounts::SecuritiesAccount;
+
+    use super::*;
+
+    #[test(tokio::test)]
     async fn test_parse_order_id_from_headers() {
         let mut header_map = HeaderMap::new();
         let url = endpoints::EndpointOrder::Order {
@@ -1071,7 +1072,7 @@ mod tests {
         // to be possible to construct a HeaderValue without a String.
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_numbers_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1109,14 +1110,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result[0].account_number, "string");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1159,7 +1160,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
@@ -1169,7 +1170,7 @@ mod tests {
         ));
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1214,7 +1215,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
@@ -1224,7 +1225,7 @@ mod tests {
         ));
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_orders_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1300,14 +1301,14 @@ mod tests {
         req.status(status);
         assert_eq!(req.status, Some(status));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 15);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_account_order_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1354,14 +1355,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Some(123_456));
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_order_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1401,14 +1402,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.session, model::trader::order::Session::Normal);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_delete_account_order_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1444,13 +1445,13 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_put_account_order_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1498,14 +1499,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Some(123_456));
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts_orders_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1574,14 +1575,14 @@ mod tests {
         req.status(status);
         assert_eq!(req.status, Some(status));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 15);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_account_preview_order_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1622,14 +1623,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.order_id, 0);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_account_preview_order_request_real() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1679,14 +1680,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.order_id, 0);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transactions_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1755,14 +1756,14 @@ mod tests {
         req.symbol(symbol.clone());
         assert_eq!(req.symbol, Some(symbol));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 122);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transaction_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1802,14 +1803,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.activity_id, 12_345_678_910);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_user_preference_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1847,7 +1848,7 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
