@@ -1,6 +1,6 @@
 [package]
 name = "schwab_api"
-version = "0.0.4"
+version = "0.0.5"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/z-Wind/schwab_api"
@@ -42,6 +42,7 @@ open = "5"
 async-channel = "2.5"
 urlencoding = "2.1"
 derive_builder = "0.20"
+tracing = { version = "0.1", features = ["log"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
@@ -52,6 +53,8 @@ assert-json-diff = "2.0"
 float-cmp = "0.10"
 regex = "1.12"
 tempfile = "3"
+test-log = { version = "0.2", default-features = false, features = ["trace"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 
 [features]
 test_online = []

@@ -192,9 +192,10 @@ pub enum PutCall {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
+    use test_log::test;
+
+    use super::*;
 
     #[test]
     fn test_de() {
@@ -204,7 +205,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<OptionChain>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -217,7 +218,7 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
         let val = serde_json::from_value::<OptionChain>(json.clone()).unwrap();
-        // dbg!(&val);
+        // tracing::debug!(?val);
 
         let message = assert_json_matches_no_panic(
             &val,
@@ -231,7 +232,7 @@ mod tests {
                 .unwrap();
         let message = re.replace_all(&message, "");
         let message = message.trim();
-        println!("{message}");
+        tracing::debug!(%message);
         assert_eq!(message, "");
     }
 }

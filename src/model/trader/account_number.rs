@@ -12,6 +12,8 @@ pub struct AccountNumberHash {
 
 #[cfg(test)]
 mod tests {
+    use test_log::test;
+
     use super::*;
 
     #[test]
@@ -22,7 +24,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<AccountNumbers>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 }

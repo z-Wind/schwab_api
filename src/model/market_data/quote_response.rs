@@ -316,11 +316,11 @@ impl QuoteResponse {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
     use float_cmp::assert_approx_eq;
+    use test_log::test;
 
+    use super::*;
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -329,7 +329,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<HashMap<String, QuoteResponse>>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -342,7 +342,7 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
         let val = serde_json::from_value::<QuoteResponseMap>(json.clone()).unwrap();
-        dbg!(&val);
+        tracing::debug!(?val);
 
         assert_json_matches!(
             val,

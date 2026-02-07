@@ -60,9 +60,10 @@ pub enum UserPreferenceAccountColor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
+    use test_log::test;
+
+    use super::*;
 
     #[test]
     fn test_de() {
@@ -72,7 +73,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<UserPreferences>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -85,7 +86,7 @@ mod tests {
         let json: serde_json::Value = serde_json::from_str(json).unwrap();
 
         let val = serde_json::from_value::<UserPreferences>(json.clone()).unwrap();
-        dbg!(&val);
+        tracing::debug!(?val);
 
         assert_json_matches!(
             val,

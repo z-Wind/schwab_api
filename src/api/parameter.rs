@@ -120,7 +120,7 @@ pub enum SortAttribute {
 /// Market
 ///
 /// Available values : `equity`, `option`, `bond`, `future`, `forex`
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Market {
     Equity,
@@ -128,6 +128,22 @@ pub enum Market {
     Bond,
     Future,
     Forex,
+}
+
+impl Market {
+    /// Returns the string representation of the market type
+    ///
+    /// This is used for API requests and serialization.
+    #[inline]
+    pub(crate) fn as_str(&self) -> &'static str {
+        match self {
+            Self::Equity => "equity",
+            Self::Option => "option",
+            Self::Bond => "bond",
+            Self::Future => "future",
+            Self::Forex => "forex",
+        }
+    }
 }
 
 /// search by

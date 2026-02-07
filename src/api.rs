@@ -8,6 +8,7 @@ pub mod trader;
 use reqwest::Client;
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::instrument;
 
 use crate::token::Tokener;
 use crate::{error::Error, model};
@@ -22,23 +23,28 @@ pub struct Api<T: Tokener> {
 
 impl<T: Tokener> Api<T> {
     /// Create API Struct
-    /// # Panics
-    ///
-    /// Will panic if no symbol found
+    #[instrument(skip(tokener, client))]
     pub async fn new(tokener: T, client: Client) -> Result<Self, Error> {
+        tracing::info!("initializing Schwab API client");
+
         let api = Api { tokener, client };
 
+        tracing::debug!("verifying API access with test quote request");
         if (api.get_quote("AAPL".to_string()).await?.send().await).is_err() {
+            tracing::warn!("initial API access failed; forcing re-authorization");
             api.tokener.redo_authorization().await?;
         }
 
+        tracing::info!("Schwab API client initialized successfully");
         Ok(api)
     }
 
+    #[instrument(skip(self), fields(symbol_count = symbols.len()))]
     pub async fn get_quotes(
         &self,
         symbols: Vec<String>,
     ) -> Result<market_data::GetQuotesRequest, Error> {
+        tracing::debug!("building multi-quote request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuotesRequest::new(
@@ -48,7 +54,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
+        tracing::debug!("building quote request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuoteRequest::new(
@@ -58,10 +66,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_option_chains(
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionChainsRequest, Error> {
+        tracing::debug!("building option chains request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionChainsRequest::new(
@@ -71,10 +81,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_option_expiration_chain(
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionExpirationChainRequest, Error> {
+        tracing::debug!("building option expiration chain request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionExpirationChainRequest::new(
@@ -84,10 +96,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_price_history(
         &self,
         symbol: String,
     ) -> Result<market_data::GetPriceHistoryRequest, Error> {
+        tracing::debug!("building price history request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetPriceHistoryRequest::new(
@@ -104,7 +118,9 @@ impl<T: Tokener> Api<T> {
     /// Available values : `$DJI`, `$COMPX`, `$SPX`, `NYSE`, `NASDAQ`, `OTCBB`, `INDEX_ALL`, `EQUITY_ALL`, `OPTION_ALL`, `OPTION_PUT`, `OPTION_CALL`
     ///
     /// Example : `$DJI`
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_movers(&self, symbol: String) -> Result<market_data::GetMoversRequest, Error> {
+        tracing::debug!("building movers request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMoversRequest::new(
@@ -119,10 +135,12 @@ impl<T: Tokener> Api<T> {
     /// List of markets
     ///
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
+    #[instrument(skip(self), fields(market_count = markets.len()))]
     pub async fn get_markets(
         &self,
         markets: Vec<Market>,
     ) -> Result<market_data::GetMarketsRequest, Error> {
+        tracing::debug!("building markets request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketsRequest::new(
@@ -135,10 +153,12 @@ impl<T: Tokener> Api<T> {
     /// `market_id`
     ///
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
+    #[instrument(skip(self), fields(market_id = ?market_id))]
     pub async fn get_market(
         &self,
         market_id: Market,
     ) -> Result<market_data::GetMarketRequest, Error> {
+        tracing::debug!("building market request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketRequest::new(
@@ -153,11 +173,13 @@ impl<T: Tokener> Api<T> {
     /// search by
     ///
     /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
+    #[instrument(skip(self), fields(symbol = %symbol, projection = ?projection))]
     pub async fn get_instruments(
         &self,
         symbol: String,
         projection: Projection,
     ) -> Result<market_data::GetInstrumentsRequest, Error> {
+        tracing::debug!("building instruments search request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrumentsRequest::new(
@@ -171,10 +193,12 @@ impl<T: Tokener> Api<T> {
     /// `cusip_id`
     ///
     /// cusip of a security
+    #[instrument(skip(self), fields(cusip_id = %cusip_id))]
     pub async fn get_instrument(
         &self,
         cusip_id: String,
     ) -> Result<market_data::GetInstrumentRequest, Error> {
+        tracing::debug!("building instrument request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrumentRequest::new(
@@ -184,7 +208,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_account_numbers(&self) -> Result<trader::GetAccountNumbersRequest, Error> {
+        tracing::debug!("building account numbers request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountNumbersRequest::new(
@@ -193,16 +219,20 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_accounts(&self) -> Result<trader::GetAccountsRequest, Error> {
+        tracing::debug!("building accounts request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsRequest::new(&self.client, access_token))
     }
 
+    #[instrument(skip(self, account_number))]
     pub async fn get_account(
         &self,
         account_number: String,
     ) -> Result<trader::GetAccountRequest, Error> {
+        tracing::debug!("building account request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountRequest::new(
@@ -221,12 +251,14 @@ impl<T: Tokener> Api<T> {
     /// `to_entered_time`
     ///
     /// Specifies that no orders entered after this time should be returned.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_orders(
         &self,
         account_number: String,
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountOrdersRequest, Error> {
+        tracing::debug!("building account orders request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrdersRequest::new(
@@ -241,11 +273,13 @@ impl<T: Tokener> Api<T> {
     /// `account_number`
     ///
     /// The encrypted ID of the account
+    #[instrument(skip(self, account_number, body))]
     pub async fn post_account_order(
         &self,
         account_number: String,
         body: model::OrderRequest,
     ) -> Result<trader::PostAccountOrderRequest, Error> {
+        tracing::debug!("building post order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountOrderRequest::new(
@@ -263,11 +297,13 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_order(
         &self,
         account_number: String,
         order_id: i64,
     ) -> Result<trader::GetAccountOrderRequest, Error> {
+        tracing::debug!("building get account order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrderRequest::new(
@@ -285,11 +321,13 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn delete_account_order(
         &self,
         account_number: String,
         order_id: i64,
     ) -> Result<trader::DeleteAccountOrderRequest, Error> {
+        tracing::debug!("building delete order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::DeleteAccountOrderRequest::new(
@@ -307,12 +345,14 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number, body))]
     pub async fn put_account_order(
         &self,
         account_number: String,
         order_id: i64,
         body: model::OrderRequest,
     ) -> Result<trader::PutAccountOrderRequest, Error> {
+        tracing::debug!("building update order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PutAccountOrderRequest::new(
@@ -333,11 +373,13 @@ impl<T: Tokener> Api<T> {
     /// `to_entered_time`
     ///
     /// Specifies that no orders entered after this time should be returned.
+    #[instrument(skip(self))]
     pub async fn get_accounts_orders(
         &self,
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountsOrdersRequest, Error> {
+        tracing::debug!("building accounts orders request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsOrdersRequest::new(
@@ -351,11 +393,13 @@ impl<T: Tokener> Api<T> {
     /// `account_number`
     ///
     /// The encrypted ID of the account
+    #[instrument(skip(self, account_number, body))]
     pub async fn post_accounts_preview_order(
         &self,
         account_number: String,
         body: model::OrderRequest,
     ) -> Result<trader::PostAccountPreviewOrderRequest, Error> {
+        tracing::debug!("building preview order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountPreviewOrderRequest::new(
@@ -385,6 +429,7 @@ impl<T: Tokener> Api<T> {
     /// Specifies that only transactions of this status should be returned.
     ///
     /// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
+    #[instrument(skip(self, account_number), fields(transaction_type = ?types))]
     pub async fn get_account_transactions(
         &self,
         account_number: String,
@@ -392,6 +437,7 @@ impl<T: Tokener> Api<T> {
         end_date: chrono::DateTime<chrono::Utc>,
         types: TransactionType,
     ) -> Result<trader::GetAccountTransactions, Error> {
+        tracing::debug!("building account transactions request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransactions::new(
@@ -411,11 +457,13 @@ impl<T: Tokener> Api<T> {
     /// `transaction_id`
     ///
     /// The ID of the transaction being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_transaction(
         &self,
         account_number: String,
         transaction_id: i64,
     ) -> Result<trader::GetAccountTransaction, Error> {
+        tracing::debug!("building account transaction request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransaction::new(
@@ -426,7 +474,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_user_preference(&self) -> Result<trader::GetUserPreferenceRequest, Error> {
+        tracing::debug!("building user preference request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetUserPreferenceRequest::new(
@@ -436,9 +486,19 @@ impl<T: Tokener> Api<T> {
     }
 }
 
+#[instrument(skip(json), fields(model = %model))]
 fn save_raw_json(folder: &str, model: &str, json: &str) {
+    if json.trim().is_empty() {
+        tracing::warn!("JSON content is empty; skipping file save.");
+        return;
+    }
+
     if let Err(e) = fs::create_dir_all(folder) {
-        eprintln!("Failed to create directory {folder}: {e}");
+        tracing::error!(
+            directory = %folder,
+            error = %e,
+            "Failed to create directory"
+        );
         return;
     }
 
@@ -450,24 +510,32 @@ fn save_raw_json(folder: &str, model: &str, json: &str) {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_millis())
         .unwrap_or(0);
-    let file_path = format!("{folder}/error_{model}_{timestamp}.json");
+
+    let file_name = format!("error_{}_{}.json", model, timestamp);
+    let file_path = std::path::Path::new(folder).join(file_name);
 
     if let Err(e) = fs::write(&file_path, formatted_json) {
-        eprintln!("Failed to save JSON to {file_path}: {e}");
+        tracing::error!(
+            path = %file_path.display(),
+            error = %e,
+            "Failed to save error JSON file"
+        );
     } else {
-        println!("Error JSON saved to {file_path}");
+        tracing::debug!(
+            path = %file_path.display(),
+            "Error JSON saved successfully"
+        );
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use float_cmp::assert_approx_eq;
     use pretty_assertions::assert_eq;
     use std::path::Path;
     use std::path::PathBuf;
     use tempfile::tempdir;
+    use test_log::test;
 
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
@@ -477,6 +545,8 @@ mod tests {
     use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
     use crate::token::channel_messenger::local_server::LocalServerMessenger;
     use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
+
+    use super::*;
 
     async fn client() -> Api<TokenChecker<impl ChannelMessenger>> {
         #[allow(clippy::option_env_unwrap)]
@@ -501,7 +571,7 @@ mod tests {
 
         let certs_dir = PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/certs"));
         let messenger = CompoundMessenger::new(
-            LocalServerMessenger::new(&certs_dir).await,
+            LocalServerMessenger::new(&certs_dir).await.unwrap(),
             StdioMessenger::new(),
         );
 
@@ -524,7 +594,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quotes() {
         let api = client().await;
         let req = api
@@ -554,14 +624,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quote() {
         let symbols = vec![
             // Bond
@@ -588,10 +658,10 @@ mod tests {
 
         let api = client().await;
         for symbol in symbols {
-            dbg!(&symbol);
+            tracing::debug!(%symbol);
             let req = api.get_quote(symbol).await.unwrap();
             let rsp = req.send().await.unwrap();
-            dbg!(rsp);
+            tracing::debug!(?rsp);
         }
     }
 
@@ -599,7 +669,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_chains() {
         let api = client().await;
         let mut req = api.get_option_chains("AAPL".into()).await.unwrap();
@@ -607,7 +677,7 @@ mod tests {
             .exp_month(parameter::Month::All)
             .contract_type(parameter::ContractType::All);
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_option_chain(symbol: String) -> String {
@@ -627,7 +697,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_expiration_chain() {
         let api = client().await;
         let req = api
@@ -635,38 +705,38 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_price_history() {
         let api = client().await;
         let req = api.get_price_history("AAPL".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_movers() {
         let api = client().await;
         let req = api.get_movers("$DJI".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_markets() {
         let api = client().await;
         let req = api
@@ -674,26 +744,26 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_market() {
         let api = client().await;
         let req = api.get_market(Market::Equity).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instruments() {
         let api = client().await;
         let req = api
@@ -701,45 +771,45 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
 
         let req = api
             .get_instruments("AAPL".into(), Projection::Fundamental)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
 
         let req = api
             .get_instruments("SNOW".into(), Projection::Fundamental)
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instrument() {
         let api = client().await;
         let req = api.get_instrument("922908769".into()).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_numbers() {
         let api = client().await;
         let req = api.get_account_numbers().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn account_number() -> String {
@@ -753,31 +823,31 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts() {
         let api = client().await;
         let req = api.get_accounts().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account() {
         let api = client().await;
         let req = api.get_account(account_number().await).await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_orders() {
         let api = client().await;
         let req = api
@@ -799,7 +869,7 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_account_orders() -> i64 {
@@ -831,7 +901,7 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
     #[allow(clippy::too_many_lines)]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_put_delete_account_order() {
         let api = client().await;
 
@@ -850,7 +920,7 @@ mod tests {
             .await
             .unwrap();
         let preview = req.send().await.unwrap();
-        dbg!(preview);
+        tracing::debug!(?preview);
 
         // post
         let order_post =
@@ -867,7 +937,7 @@ mod tests {
             .await
             .unwrap();
         let order_post_check = req.send().await.unwrap();
-        dbg!(&order_post_check);
+        tracing::debug!(?order_post_check);
         assert_eq!(
             order_post_check.session,
             model::trader::order::Session::Normal
@@ -913,7 +983,7 @@ mod tests {
             .await
             .unwrap();
         let order_put_check = req.send().await.unwrap();
-        dbg!(&order_put_check);
+        tracing::debug!(?order_put_check);
         assert_eq!(
             order_put_check.session,
             model::trader::order::Session::Normal
@@ -956,7 +1026,7 @@ mod tests {
             .await
             .unwrap();
         let order = req.send().await.unwrap();
-        dbg!(&order);
+        tracing::debug!(?order);
         assert_eq!(
             order.order_activity_collection.unwrap()[0].execution_type,
             ExecutionType::Canceled
@@ -967,7 +1037,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_order() {
         let api = client().await;
         let req = api
@@ -975,14 +1045,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_accounts_orders() {
         let api = client().await;
         let req = api
@@ -1003,14 +1073,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(all(feature = "test_online")),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_post_accounts_preview_order() {
         let api = client().await;
         let req = api
@@ -1029,14 +1099,14 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transactions() {
         // # duplicate field `assetType`
         let api = client().await;
@@ -1060,7 +1130,7 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     async fn get_account_transactions() -> i64 {
@@ -1094,7 +1164,7 @@ mod tests {
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_account_transaction() {
         // # duplicate field `assetType`
 
@@ -1104,22 +1174,22 @@ mod tests {
             .await
             .unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
     #[cfg_attr(
         not(feature = "test_online"),
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_user_preference() {
         let api = client().await;
         let req = api.get_user_preference().await.unwrap();
         let rsp = req.send().await.unwrap();
-        dbg!(rsp);
+        tracing::debug!(?rsp);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_save_raw_json_creates_formatted_file() {
         let dir = tempdir().expect("Failed to create temp dir");
         let temp_path = dir.path();
@@ -1156,7 +1226,7 @@ mod tests {
         assert!(found, "JSON file should exist in the temp directory");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_save_raw_json_handles_invalid_json() {
         let dir = tempdir().expect("Failed to create temp dir");
         let temp_path = dir.path();

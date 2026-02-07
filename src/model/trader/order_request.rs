@@ -325,10 +325,11 @@ impl From<InstrumentResponse> for InstrumentRequest {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
     use serde_json::json;
+    use test_log::test;
+
+    use super::*;
 
     #[test]
     fn test_de() {
@@ -338,7 +339,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<OrderRequest>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 

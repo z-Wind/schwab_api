@@ -6,11 +6,15 @@ use oauth2::{
 use reqwest::Client;
 use serde::Deserialize;
 use std::path::PathBuf;
+use tracing::instrument;
 use url::Url;
 
 use super::channel_messenger::{AuthContext, ChannelMessenger};
 use crate::error::Error;
 use crate::token::Token;
+
+const SCHWAB_AUTH_URL: &str = "https://api.schwabapi.com/v1/oauth/authorize";
+const SCHWAB_TOKEN_URL: &str = "https://api.schwabapi.com/v1/oauth/token";
 
 type RequestTokenError = BasicRequestTokenError<HttpClientError<reqwest::Error>>;
 
@@ -29,6 +33,7 @@ pub(super) struct Authorizer<CM: ChannelMessenger> {
 }
 
 impl<CM: ChannelMessenger> Authorizer<CM> {
+    #[instrument(skip_all, fields(redirect_url = %redirect_url))]
     pub(super) async fn new(
         app_key: String,
         secret: String,
@@ -38,11 +43,15 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
     ) -> Result<Self, Error> {
         let app_key = ClientId::new(app_key);
         let secret = ClientSecret::new(secret);
-        let auth_url = AuthUrl::new("https://api.schwabapi.com/v1/oauth/authorize".to_string())
-            .expect("Invalid authorization endpoint URL");
-        let token_url = TokenUrl::new("https://api.schwabapi.com/v1/oauth/token".to_string())
-            .expect("Invalid token endpoint URL");
-        let redirect_url = RedirectUrl::new(redirect_url).expect("Invalid redirect URL");
+        let auth_url =
+            AuthUrl::new(SCHWAB_AUTH_URL.to_string()).expect("hardcoded auth URL must be valid");
+        let token_url =
+            TokenUrl::new(SCHWAB_TOKEN_URL.to_string()).expect("hardcoded token URL must be valid");
+
+        let redirect_url = RedirectUrl::new(redirect_url).map_err(|e| {
+            tracing::error!(error = %e, "invalid redirect URL provided");
+            Error::Config(format!("Invalid redirect URL: {}", e))
+        })?;
 
         let oauth2_client = BasicClient::new(app_key)
             .set_client_secret(secret)
@@ -55,44 +64,64 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             async_client,
             messenger,
         };
-        let context = auth.create_auth_context();
-        auth.messenger.with_context(context).await?;
 
+        tracing::debug!("creating authorization context");
+        let context = auth.create_auth_context();
+
+        auth.messenger.with_context(context).await.map_err(|e| {
+            tracing::error!(error = %e, "failed to initialize messenger with auth context");
+            e
+        })?;
+
+        tracing::info!("Schwab OAuth2 authorizer initialized successfully");
         Ok(auth)
     }
 
+    #[instrument(skip(self))]
     async fn authorize(&self) -> Result<Token, Error> {
         let auth_code = {
             self.messenger.send_auth_message().await?;
-            AuthorizationCode::new(
-                self.messenger
-                    .receive_auth_message()
-                    .await
-                    .expect("Failed to get auth message."),
-            )
+
+            tracing::debug!("waiting for user to provide authorization code/URL");
+            let raw_message = self.messenger.receive_auth_message().await.map_err(|e| {
+                tracing::error!(error = %e, "failed to receive authorization message");
+                e
+            })?;
+
+            AuthorizationCode::new(raw_message)
         };
 
-        let token_result = self
-            .refresh_token(auth_code)
-            .await
-            .map_err(|e| Error::Token(e.to_string()))?;
+        tracing::info!("exchanging authorization code for tokens");
+        let token_result = self.refresh_token(auth_code).await.map_err(|e| {
+            tracing::error!(error = %e, "token exchange failed");
+            Error::Token(e.to_string())
+        })?;
 
-        // dbg!(&token_result);
         let token = Token {
             refresh: token_result
                 .refresh_token()
-                .expect("should have refresh_token")
+                .ok_or_else(|| {
+                    tracing::error!("missing refresh_token in API response");
+                    Error::Token("No refresh token received".into())
+                })?
                 .secret()
                 .clone(),
             refresh_expires_in: chrono::Utc::now()
                 .checked_add_signed(super::REFRESH_TOKEN_LIFETIME)
-                .expect("refresh_expires_in"),
+                .ok_or_else(|| Error::Token("Invalid refresh expiration calculation".into()))?,
+
             access: token_result.access_token().secret().clone(),
             access_expires_in: chrono::Utc::now()
                 .checked_add_signed(super::ACCESS_TOKEN_LIFETIME)
-                .expect("access_expires_in"),
+                .ok_or_else(|| Error::Token("Invalid access expiration calculation".into()))?,
+
             type_: token_result.token_type().as_ref().to_string(),
         };
+
+        tracing::info!(
+            token_type = %token.type_,
+            "token authorization completed successfully"
+        );
 
         Ok(token)
     }
@@ -106,6 +135,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
         (auth_url, csrf_token)
     }
 
+    #[instrument(skip(self, auth_code))]
     async fn refresh_token(
         &self,
         auth_code: AuthorizationCode,
@@ -116,52 +146,67 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .await
     }
 
+    #[instrument(skip(self, refresh_token))]
     pub(super) async fn access_token(
         &self,
         refresh_token: &str,
     ) -> Result<BasicTokenResponse, RequestTokenError> {
+        tracing::debug!("exchanging refresh token for new access token");
+
         let refresh_token = RefreshToken::new(refresh_token.to_string());
-        self.oauth2_client
+        let result = self
+            .oauth2_client
             .exchange_refresh_token(&refresh_token)
             .request_async(&self.async_client)
-            .await
+            .await?;
+
+        tracing::info!("access token refreshed successfully via refresh token");
+        Ok(result)
     }
 
     fn create_auth_context(&self) -> AuthContext {
         let (auth_url, csrf_token) = self.auth_code_url();
+        let redirect_url = self
+            .oauth2_client
+            .redirect_uri()
+            .expect("redirect_url must be set during client construction")
+            .url()
+            .clone();
+
         AuthContext {
-            auth_url: Some(auth_url),
-            csrf: Some(csrf_token),
-            redirect_url: Some(
-                self.oauth2_client
-                    .redirect_uri()
-                    .expect("redirect_url")
-                    .url()
-                    .clone(),
-            ),
+            auth_url,
+            csrf: csrf_token,
+            redirect_url,
         }
     }
 
-    pub(super) async fn save(&self, path: PathBuf) -> Result<Token, Error> {
+    #[instrument(skip(self), fields(path = %path.display()))]
+    pub(super) async fn save(&self, path: &PathBuf) -> Result<Token, Error> {
+        tracing::info!("starting full authorization and token save flow");
+
         let token = self
             .authorize()
             .await
             .map_err(|e| Error::Token(e.to_string()))?;
+
         token.save(path)?;
+
+        tracing::info!("token authorized and saved successfully");
         Ok(token)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use pretty_assertions::assert_eq;
     use std::{borrow::Cow, collections::HashMap};
+    use test_log::test;
 
     use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
     use crate::token::channel_messenger::local_server::LocalServerMessenger;
     use crate::token::channel_messenger::stdio_messenger::StdioMessenger;
+
+    use super::*;
 
     fn client_id_static() -> &'static str {
         #[allow(clippy::option_env_unwrap)]
@@ -180,12 +225,12 @@ mod tests {
             .expect("The environment variable SCHWAB_CALLBACK_URL sholud be set")
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for compound verification. Should be --nocapture"]
     async fn test_auth_compound() {
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
         let messenger = CompoundMessenger::new(
-            LocalServerMessenger::new(&certs_dir).await,
+            LocalServerMessenger::new(&certs_dir).await.unwrap(),
             StdioMessenger::new(),
         );
 
@@ -200,18 +245,18 @@ mod tests {
         .unwrap();
 
         let token = auth.authorize().await.unwrap();
-        dbg!(&token);
+        tracing::debug!(?token);
 
         // test refresh access token
         let access_token = auth.access_token(&token.refresh).await.unwrap();
-        dbg!(&access_token);
+        tracing::debug!(?access_token);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for browser verification. Should be --nocapture"]
     async fn test_auth_local_server() {
         let certs_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/certs");
-        let messenger = LocalServerMessenger::new(&certs_dir).await;
+        let messenger = LocalServerMessenger::new(&certs_dir).await.unwrap();
 
         let auth = Authorizer::new(
             client_id_static().to_string(),
@@ -224,14 +269,14 @@ mod tests {
         .unwrap();
 
         let token = auth.authorize().await.unwrap();
-        dbg!(&token);
+        tracing::debug!(?token);
 
         // test refresh access token
         let access_token = auth.access_token(&token.refresh).await.unwrap();
-        dbg!(&access_token);
+        tracing::debug!(?access_token);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[ignore = "Testing manually for stdio verification. Should be --nocapture"]
     async fn test_auth_stdio() {
         let messenger = StdioMessenger::new();
@@ -247,14 +292,14 @@ mod tests {
         .unwrap();
 
         let token = auth.authorize().await.unwrap();
-        dbg!(&token);
+        tracing::debug!(?token);
 
         // test refresh access token
         let access_token = auth.access_token(&token.refresh).await.unwrap();
-        dbg!(&access_token);
+        tracing::debug!(?access_token);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_auth_code_url() {
         const CLIENTID: &str = "CLIENTID";
         const SECRET: &str = "SECRET";
@@ -273,7 +318,7 @@ mod tests {
 
         let (auth_url, csrf_token) = auth.auth_code_url();
 
-        println!("{auth_url:?}");
+        tracing::debug!(?auth_url);
         assert_eq!(auth_url.scheme(), "https");
         assert_eq!(auth_url.host_str().unwrap(), "api.schwabapi.com");
         assert_eq!(auth_url.path(), "/v1/oauth/authorize");

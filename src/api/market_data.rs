@@ -3,6 +3,7 @@
 
 use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
+use tracing::instrument;
 
 use super::endpoints;
 use super::parameter::{
@@ -76,29 +77,56 @@ impl GetQuotesRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req.query(&[("symbols", self.symbols.join(","))]);
-        if let Some(x) = self.fields {
-            let x: Vec<String> = x
+
+        if let Some(ref fields) = self.fields {
+            let field_strs: Vec<String> = fields
                 .into_iter()
-                .map(|f| serde_json::to_value(f).expect("value"))
-                .map(|v| v.as_str().expect("value is a str").to_string())
+                .filter_map(|f| match f {
+                    QuoteField::Extra(s) => Some(s.clone()),
+                    _ => serde_json::to_value(&f)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                })
                 .collect();
-            req = req.query(&[("fields", x.join(","))]);
+
+            if !field_strs.is_empty() {
+                req = req.query(&[("fields", field_strs.join(","))]);
+            }
         }
-        if let Some(x) = self.indicative {
-            req = req.query(&[("indicative", x.to_string())]);
+
+        if let Some(indicative) = self.indicative {
+            req = req.query(&[("indicative", indicative.to_string())]);
         }
+
+        tracing::debug!(
+            "request built with {} fields",
+            self.fields.as_ref().map_or(0, |v| v.len())
+        );
 
         req
     }
 
+    #[instrument(skip(self), fields(symbol_count = self.symbols.len()))]
     pub async fn send(self) -> Result<HashMap<String, model::QuoteResponse>, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending multi-quote request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -109,13 +137,19 @@ impl GetQuotesRequest {
 
         let map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "QuoteResponseMap", &body_text);
+            tracing::error!(error = %e, "failed to parse quote response");
             Error::from(e)
         })?;
 
         if let Some(e) = map.errors {
+            tracing::warn!("quote response contains errors");
             return Err(Error::Quote(e));
         }
 
+        tracing::info!(
+            quote_count = map.responses.len(),
+            "quotes retrieved successfully"
+        );
         Ok(map.responses)
     }
 }
@@ -171,33 +205,56 @@ impl GetQuoteRequest {
 
     fn build(self) -> RequestBuilder {
         let mut req = self.req;
-        if let Some(x) = self.fields {
-            let x: Vec<String> = x
+
+        if let Some(ref fields) = self.fields {
+            let field_strs: Vec<String> = fields
                 .into_iter()
-                .map(|f| serde_json::to_value(f).expect("value"))
-                .map(|v| v.as_str().expect("value is a str").to_string())
+                .filter_map(|f| match f {
+                    QuoteField::Extra(s) => Some(s.clone()),
+                    _ => serde_json::to_value(&f)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                })
                 .collect();
-            req = req.query(&[("fields", x.join(","))]);
+
+            if !field_strs.is_empty() {
+                req = req.query(&[("fields", field_strs.join(","))]);
+            }
         }
+
+        tracing::debug!(
+            "request built with {} fields",
+            self.fields.as_ref().map_or(0, |v| v.len())
+        );
 
         req
     }
 
-    /// # Panics
-    ///
-    /// Will panic if no symbol found
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::QuoteResponse, Error> {
+        tracing::debug!("sending quote request");
         let symbol = self.symbol.clone();
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response from server");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                e
             })?;
 
             return Err(Error::Response(error_response));
@@ -205,14 +262,24 @@ impl GetQuoteRequest {
 
         let mut map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "QuoteResponseMap", &body_text);
-            Error::from(e)
+            tracing::error!(error = %e, "json parse failed");
+            e
         })?;
 
         if let Some(e) = map.errors {
             return Err(Error::Quote(e));
         }
 
-        let val = map.responses.remove(&symbol).expect("must exist");
+        let val = map.responses.remove(&symbol).ok_or_else(|| {
+            tracing::error!("requested symbol missing in response map");
+            Error::Quote(model::QuoteError {
+                invalid_symbols: Some(vec![symbol]),
+                invalid_cusips: None,
+                invalid_ssids: None,
+            })
+        })?;
+
+        tracing::info!("quote retrieved successfully");
         Ok(val)
     }
 }
@@ -499,14 +566,27 @@ impl GetOptionChainsRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::OptionChain, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending option chains request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -515,10 +595,14 @@ impl GetOptionChainsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let option_chain = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "OptionChain", &body_text);
+            tracing::error!(error = %e, "failed to parse option chain");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("option chain retrieved successfully");
+        Ok(option_chain)
     }
 }
 
@@ -548,14 +632,27 @@ impl GetOptionExpirationChainRequest {
         self.req.query(&[("symbol", self.symbol)])
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending option expiration chain request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -564,10 +661,14 @@ impl GetOptionExpirationChainRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let expiration_chain = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "ExpirationChain", &body_text);
+            tracing::error!(error = %e, "failed to parse expiration chain");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("expiration chain retrieved successfully");
+        Ok(expiration_chain)
     }
 }
 
@@ -780,14 +881,27 @@ impl GetPriceHistoryRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::CandleList, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending price history request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -796,10 +910,14 @@ impl GetPriceHistoryRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let candle_list = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "CandleList", &body_text);
+            tracing::error!(error = %e, "failed to parse candle list");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("price history retrieved successfully");
+        Ok(candle_list)
     }
 }
 
@@ -884,14 +1002,27 @@ impl GetMoversRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::Mover, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending movers request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -900,10 +1031,14 @@ impl GetMoversRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let mover = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Mover", &body_text);
+            tracing::error!(error = %e, "failed to parse mover data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("movers retrieved successfully");
+        Ok(mover)
     }
 }
 
@@ -951,29 +1086,48 @@ impl GetMarketsRequest {
         self
     }
 
+    #[instrument(skip(self), fields(market_count = self.markets.len()))]
     fn build(self) -> RequestBuilder {
-        let markets: Vec<String> = self
-            .markets
-            .into_iter()
-            .map(|m| serde_json::to_value(m).expect("value"))
-            .map(|v| v.as_str().expect("value is a str").to_string())
-            .collect();
-        let mut req = self.req.query(&[("markets", markets.join(","))]);
-        if let Some(x) = self.date {
-            req = req.query(&[("date", x)]);
+        tracing::debug!("building market hours request");
+
+        let market_strs = self.markets.iter().map(|m| m.as_str()).collect::<Vec<_>>();
+        let markets_param = market_strs.join(",");
+
+        tracing::debug!(markets = %markets_param, "markets parameter constructed");
+
+        let mut req = self.req.query(&[("markets", markets_param)]);
+
+        if let Some(date) = self.date {
+            tracing::debug!(%date, "applying date filter to market hours request");
+            req = req.query(&[("date", date)]);
         }
+
+        tracing::debug!("market hours request builder finalized");
 
         req
     }
 
+    #[instrument(skip(self), fields(market_count = self.markets.len()))]
     pub async fn send(self) -> Result<model::Markets, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending markets request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -982,10 +1136,14 @@ impl GetMarketsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Markets", &body_text);
+            tracing::error!(error = %e, "failed to parse markets data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("markets data retrieved successfully");
+        Ok(markets)
     }
 }
 
@@ -1042,14 +1200,27 @@ impl GetMarketRequest {
         req
     }
 
+    #[instrument(skip(self), fields(market_id = ?self.market_id))]
     pub async fn send(self) -> Result<model::Markets, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending market request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -1058,10 +1229,14 @@ impl GetMarketRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Markets", &body_text);
+            tracing::error!(error = %e, "failed to parse market data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("market data retrieved successfully");
+        Ok(markets)
     }
 }
 
@@ -1107,14 +1282,27 @@ impl GetInstrumentsRequest {
             .query(&[("projection", self.projection)])
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol, projection = ?self.projection))]
     pub async fn send(self) -> Result<model::Instruments, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending instruments search request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -1123,10 +1311,14 @@ impl GetInstrumentsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let instruments = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
+            tracing::error!(error = %e, "failed to parse instruments");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("instruments retrieved successfully");
+        Ok(instruments)
     }
 }
 
@@ -1160,20 +1352,32 @@ impl GetInstrumentRequest {
         self.req
     }
 
-    /// # Panics
-    ///
-    /// Will panic if no Instrument
+    #[instrument(skip(self), fields(cusip_id = %self.cusip_id))]
     pub async fn send(self) -> Result<model::InstrumentResponse, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending instrument request");
 
-        let body_text = rsp.text().await?;
+        let cusip_id = self.cusip_id.clone();
+        let req = self.build();
+
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response from server");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                e
             })?;
 
             return Err(Error::Response(error_response));
@@ -1181,22 +1385,45 @@ impl GetInstrumentRequest {
 
         let mut data: model::Instruments = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
-            Error::from(e)
+            tracing::error!(error = %e, "failed to parse Instruments JSON");
+            e
         })?;
 
-        Ok(data.instruments.pop().expect("must exist"))
+        let count = data.instruments.len();
+        let instrument = if data.instruments.is_empty() {
+            // 記錄警告，並標註具體的 cusip_id
+            tracing::warn!(cusip = %cusip_id, "no instruments found for the given CUSIP");
+
+            return Err(Error::Quote(model::QuoteError {
+                invalid_symbols: None,
+                invalid_cusips: Some(vec![cusip_id]), // 直接將當前的 ID 封裝進錯誤
+                invalid_ssids: None,
+            }));
+        } else {
+            // 取出最匹配的一筆
+            data.instruments.remove(0)
+        };
+
+        tracing::info!(
+            remaining_results = %(count - 1),
+            cusip = %cusip_id,
+            "instrument retrieved successfully"
+        );
+
+        Ok(instrument)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use mockito::Matcher;
     use pretty_assertions::assert_eq;
     use reqwest::Client;
+    use test_log::test;
 
-    #[tokio::test]
+    use super::*;
+
+    #[test(tokio::test)]
     async fn test_get_quotes_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1251,14 +1478,14 @@ mod tests {
         req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 17);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quotes_request_real() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1313,13 +1540,13 @@ mod tests {
         req.indicative(indicative);
         assert_eq!(req.indicative, Some(indicative));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         result.unwrap();
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     #[allow(clippy::too_many_lines)]
     async fn test_get_quote_request() {
         // Request a new server from the pool
@@ -1435,7 +1662,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
@@ -1445,7 +1672,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_quote_request_error() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1494,7 +1721,7 @@ mod tests {
         req.fields(fields.clone());
         assert_eq!(req.fields, Some(fields));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap_err();
@@ -1508,7 +1735,7 @@ mod tests {
     }
 
     #[allow(clippy::too_many_lines)]
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_options_chains_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1631,14 +1858,14 @@ mod tests {
         req.entitlement(entitlement);
         assert_eq!(req.entitlement, Some(entitlement));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.status, "SUCCESS");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_option_expiration_chain_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1680,14 +1907,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.expiration_list.len(), 21);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_price_history_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1783,14 +2010,14 @@ mod tests {
         req.need_previous_close(need_previous_close);
         assert_eq!(req.need_previous_close, Some(need_previous_close));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.symbol, "AAPL");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_movers_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1839,14 +2066,14 @@ mod tests {
         req.frequency(frequency);
         assert_eq!(req.frequency, Some(frequency));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.screeners.len(), 3);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_markets_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1891,14 +2118,14 @@ mod tests {
         req.date(date);
         assert_eq!(req.date, Some(date));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.len(), 2);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_market_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -1974,14 +2201,14 @@ mod tests {
         req.date(date);
         assert_eq!(req.date, Some(date));
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.keys().next().unwrap(), "equity");
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instruments_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -2025,14 +2252,14 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
         assert_eq!(result.instruments.len(), 2);
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn test_get_instrument_request() {
         // Request a new server from the pool
         let mut server = mockito::Server::new_async().await;
@@ -2079,7 +2306,7 @@ mod tests {
         // check setter
         // none
 
-        dbg!(&req);
+        tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();

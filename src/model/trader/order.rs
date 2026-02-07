@@ -445,6 +445,8 @@ pub enum DivCapGains {
 
 #[cfg(test)]
 mod tests {
+    use test_log::test;
+
     use super::*;
 
     #[test]
@@ -455,7 +457,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Order>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -467,7 +469,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Order>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -479,7 +481,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Order>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -491,7 +493,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Vec<Order>>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 
@@ -503,7 +505,7 @@ mod tests {
         ));
 
         let val = serde_json::from_str::<Vec<Order>>(json);
-        println!("{val:?}");
+        tracing::debug!(?val);
         assert!(val.is_ok());
     }
 }
