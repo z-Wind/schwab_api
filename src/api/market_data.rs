@@ -106,14 +106,27 @@ impl GetQuotesRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol_count = self.symbols.len()))]
     pub async fn send(self) -> Result<HashMap<String, model::QuoteResponse>, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending multi-quote request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -124,13 +137,19 @@ impl GetQuotesRequest {
 
         let map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "QuoteResponseMap", &body_text);
+            tracing::error!(error = %e, "failed to parse quote response");
             Error::from(e)
         })?;
 
         if let Some(e) = map.errors {
+            tracing::warn!("quote response contains errors");
             return Err(Error::Quote(e));
         }
 
+        tracing::info!(
+            quote_count = map.responses.len(),
+            "quotes retrieved successfully"
+        );
         Ok(map.responses)
     }
 }
@@ -547,14 +566,27 @@ impl GetOptionChainsRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::OptionChain, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending option chains request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -563,10 +595,14 @@ impl GetOptionChainsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let option_chain = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "OptionChain", &body_text);
+            tracing::error!(error = %e, "failed to parse option chain");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("option chain retrieved successfully");
+        Ok(option_chain)
     }
 }
 
@@ -596,14 +632,27 @@ impl GetOptionExpirationChainRequest {
         self.req.query(&[("symbol", self.symbol)])
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::ExpirationChain, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending option expiration chain request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -612,10 +661,14 @@ impl GetOptionExpirationChainRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let expiration_chain = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "ExpirationChain", &body_text);
+            tracing::error!(error = %e, "failed to parse expiration chain");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("expiration chain retrieved successfully");
+        Ok(expiration_chain)
     }
 }
 
@@ -828,14 +881,27 @@ impl GetPriceHistoryRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::CandleList, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending price history request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -844,10 +910,14 @@ impl GetPriceHistoryRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let candle_list = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "CandleList", &body_text);
+            tracing::error!(error = %e, "failed to parse candle list");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("price history retrieved successfully");
+        Ok(candle_list)
     }
 }
 
@@ -932,14 +1002,27 @@ impl GetMoversRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::Mover, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending movers request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -948,10 +1031,14 @@ impl GetMoversRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let mover = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Mover", &body_text);
+            tracing::error!(error = %e, "failed to parse mover data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("movers retrieved successfully");
+        Ok(mover)
     }
 }
 
@@ -1020,14 +1107,27 @@ impl GetMarketsRequest {
         req
     }
 
+    #[instrument(skip(self), fields(market_count = self.markets.len()))]
     pub async fn send(self) -> Result<model::Markets, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending markets request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -1036,10 +1136,14 @@ impl GetMarketsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Markets", &body_text);
+            tracing::error!(error = %e, "failed to parse markets data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("markets data retrieved successfully");
+        Ok(markets)
     }
 }
 
@@ -1096,14 +1200,27 @@ impl GetMarketRequest {
         req
     }
 
+    #[instrument(skip(self), fields(market_id = ?self.market_id))]
     pub async fn send(self) -> Result<model::Markets, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending market request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -1112,10 +1229,14 @@ impl GetMarketRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Markets", &body_text);
+            tracing::error!(error = %e, "failed to parse market data");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("market data retrieved successfully");
+        Ok(markets)
     }
 }
 
@@ -1161,14 +1282,27 @@ impl GetInstrumentsRequest {
             .query(&[("projection", self.projection)])
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol, projection = ?self.projection))]
     pub async fn send(self) -> Result<model::Instruments, Error> {
-        let req = self.build();
-        let rsp = req.send().await?;
-        let status = rsp.status();
+        tracing::debug!("sending instruments search request");
 
-        let body_text = rsp.text().await?;
+        let req = self.build();
+        let rsp = req.send().await.map_err(|e| {
+            tracing::error!(error = %e, "network request failed");
+            e
+        })?;
+
+        let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
+        let body_text = rsp.text().await.map_err(|e| {
+            tracing::error!(error = %e, "failed to read response body");
+            e
+        })?;
 
         if status != StatusCode::OK {
+            tracing::warn!(%status, "received non-OK response");
+
             let error_response = serde_json::from_str(&body_text).map_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
                 Error::from(e)
@@ -1177,10 +1311,14 @@ impl GetInstrumentsRequest {
             return Err(Error::Response(error_response));
         }
 
-        serde_json::from_str(&body_text).map_err(|e| {
+        let instruments = serde_json::from_str(&body_text).map_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
+            tracing::error!(error = %e, "failed to parse instruments");
             Error::from(e)
-        })
+        })?;
+
+        tracing::info!("instruments retrieved successfully");
+        Ok(instruments)
     }
 }
 
@@ -1214,7 +1352,10 @@ impl GetInstrumentRequest {
         self.req
     }
 
+    #[instrument(skip(self), fields(cusip_id = %self.cusip_id))]
     pub async fn send(self) -> Result<model::InstrumentResponse, Error> {
+        tracing::debug!("sending instrument request");
+
         let cusip_id = self.cusip_id.clone();
         let req = self.build();
 
@@ -1224,6 +1365,8 @@ impl GetInstrumentRequest {
         })?;
 
         let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
         let body_text = rsp.text().await.map_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
             e

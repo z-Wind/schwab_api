@@ -26,7 +26,7 @@ impl<T: Tokener> Api<T> {
     #[instrument(skip(tokener, client))]
     pub async fn new(tokener: T, client: Client) -> Result<Self, Error> {
         tracing::info!("initializing Schwab API client");
-        
+
         let api = Api { tokener, client };
 
         tracing::debug!("verifying API access with test quote request");
@@ -488,6 +488,11 @@ impl<T: Tokener> Api<T> {
 
 #[instrument(skip(json), fields(model = %model))]
 fn save_raw_json(folder: &str, model: &str, json: &str) {
+    if json.trim().is_empty() {
+        tracing::warn!("JSON content is empty; skipping file save.");
+        return;
+    }
+
     if let Err(e) = fs::create_dir_all(folder) {
         tracing::error!(
             directory = %folder,
