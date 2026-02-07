@@ -211,7 +211,9 @@ impl GetQuoteRequest {
         req
     }
 
+    #[instrument(skip(self), fields(symbol = %self.symbol))]
     pub async fn send(self) -> Result<model::QuoteResponse, Error> {
+        tracing::debug!("sending quote request");
         let symbol = self.symbol.clone();
 
         let req = self.build();
@@ -221,6 +223,8 @@ impl GetQuoteRequest {
         })?;
 
         let status = rsp.status();
+        tracing::debug!(%status, "received response");
+
         let body_text = rsp.text().await.map_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
             e
@@ -256,6 +260,7 @@ impl GetQuoteRequest {
             })
         })?;
 
+        tracing::info!("quote retrieved successfully");
         Ok(val)
     }
 }

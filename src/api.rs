@@ -23,23 +23,28 @@ pub struct Api<T: Tokener> {
 
 impl<T: Tokener> Api<T> {
     /// Create API Struct
-    /// # Panics
-    ///
-    /// Will panic if no symbol found
+    #[instrument(skip(tokener, client))]
     pub async fn new(tokener: T, client: Client) -> Result<Self, Error> {
+        tracing::info!("initializing Schwab API client");
+        
         let api = Api { tokener, client };
 
+        tracing::debug!("verifying API access with test quote request");
         if (api.get_quote("AAPL".to_string()).await?.send().await).is_err() {
+            tracing::warn!("initial API access failed; forcing re-authorization");
             api.tokener.redo_authorization().await?;
         }
 
+        tracing::info!("Schwab API client initialized successfully");
         Ok(api)
     }
 
+    #[instrument(skip(self), fields(symbol_count = symbols.len()))]
     pub async fn get_quotes(
         &self,
         symbols: Vec<String>,
     ) -> Result<market_data::GetQuotesRequest, Error> {
+        tracing::debug!("building multi-quote request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuotesRequest::new(
@@ -49,7 +54,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_quote(&self, symbol: String) -> Result<market_data::GetQuoteRequest, Error> {
+        tracing::debug!("building quote request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetQuoteRequest::new(
@@ -59,10 +66,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_option_chains(
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionChainsRequest, Error> {
+        tracing::debug!("building option chains request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionChainsRequest::new(
@@ -72,10 +81,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_option_expiration_chain(
         &self,
         symbol: String,
     ) -> Result<market_data::GetOptionExpirationChainRequest, Error> {
+        tracing::debug!("building option expiration chain request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetOptionExpirationChainRequest::new(
@@ -85,10 +96,12 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_price_history(
         &self,
         symbol: String,
     ) -> Result<market_data::GetPriceHistoryRequest, Error> {
+        tracing::debug!("building price history request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetPriceHistoryRequest::new(
@@ -105,7 +118,9 @@ impl<T: Tokener> Api<T> {
     /// Available values : `$DJI`, `$COMPX`, `$SPX`, `NYSE`, `NASDAQ`, `OTCBB`, `INDEX_ALL`, `EQUITY_ALL`, `OPTION_ALL`, `OPTION_PUT`, `OPTION_CALL`
     ///
     /// Example : `$DJI`
+    #[instrument(skip(self), fields(symbol = %symbol))]
     pub async fn get_movers(&self, symbol: String) -> Result<market_data::GetMoversRequest, Error> {
+        tracing::debug!("building movers request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMoversRequest::new(
@@ -120,10 +135,12 @@ impl<T: Tokener> Api<T> {
     /// List of markets
     ///
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
+    #[instrument(skip(self), fields(market_count = markets.len()))]
     pub async fn get_markets(
         &self,
         markets: Vec<Market>,
     ) -> Result<market_data::GetMarketsRequest, Error> {
+        tracing::debug!("building markets request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketsRequest::new(
@@ -136,10 +153,12 @@ impl<T: Tokener> Api<T> {
     /// `market_id`
     ///
     /// Available values : `equity`, `option`, `bond`, `future`, `forex`
+    #[instrument(skip(self), fields(market_id = ?market_id))]
     pub async fn get_market(
         &self,
         market_id: Market,
     ) -> Result<market_data::GetMarketRequest, Error> {
+        tracing::debug!("building market request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetMarketRequest::new(
@@ -154,11 +173,13 @@ impl<T: Tokener> Api<T> {
     /// search by
     ///
     /// Available values : `symbol-search`, `symbol-regex`, `desc-search`, `desc-regex`, `search`, `fundamental`
+    #[instrument(skip(self), fields(symbol = %symbol, projection = ?projection))]
     pub async fn get_instruments(
         &self,
         symbol: String,
         projection: Projection,
     ) -> Result<market_data::GetInstrumentsRequest, Error> {
+        tracing::debug!("building instruments search request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrumentsRequest::new(
@@ -172,10 +193,12 @@ impl<T: Tokener> Api<T> {
     /// `cusip_id`
     ///
     /// cusip of a security
+    #[instrument(skip(self), fields(cusip_id = %cusip_id))]
     pub async fn get_instrument(
         &self,
         cusip_id: String,
     ) -> Result<market_data::GetInstrumentRequest, Error> {
+        tracing::debug!("building instrument request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(market_data::GetInstrumentRequest::new(
@@ -185,7 +208,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_account_numbers(&self) -> Result<trader::GetAccountNumbersRequest, Error> {
+        tracing::debug!("building account numbers request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountNumbersRequest::new(
@@ -194,16 +219,20 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_accounts(&self) -> Result<trader::GetAccountsRequest, Error> {
+        tracing::debug!("building accounts request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsRequest::new(&self.client, access_token))
     }
 
+    #[instrument(skip(self, account_number))]
     pub async fn get_account(
         &self,
         account_number: String,
     ) -> Result<trader::GetAccountRequest, Error> {
+        tracing::debug!("building account request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountRequest::new(
@@ -222,12 +251,14 @@ impl<T: Tokener> Api<T> {
     /// `to_entered_time`
     ///
     /// Specifies that no orders entered after this time should be returned.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_orders(
         &self,
         account_number: String,
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountOrdersRequest, Error> {
+        tracing::debug!("building account orders request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrdersRequest::new(
@@ -242,11 +273,13 @@ impl<T: Tokener> Api<T> {
     /// `account_number`
     ///
     /// The encrypted ID of the account
+    #[instrument(skip(self, account_number, body))]
     pub async fn post_account_order(
         &self,
         account_number: String,
         body: model::OrderRequest,
     ) -> Result<trader::PostAccountOrderRequest, Error> {
+        tracing::debug!("building post order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountOrderRequest::new(
@@ -264,11 +297,13 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_order(
         &self,
         account_number: String,
         order_id: i64,
     ) -> Result<trader::GetAccountOrderRequest, Error> {
+        tracing::debug!("building get account order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountOrderRequest::new(
@@ -286,11 +321,13 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn delete_account_order(
         &self,
         account_number: String,
         order_id: i64,
     ) -> Result<trader::DeleteAccountOrderRequest, Error> {
+        tracing::debug!("building delete order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::DeleteAccountOrderRequest::new(
@@ -308,12 +345,14 @@ impl<T: Tokener> Api<T> {
     /// `order_id`
     ///
     /// The ID of the order being retrieved.
+    #[instrument(skip(self, account_number, body))]
     pub async fn put_account_order(
         &self,
         account_number: String,
         order_id: i64,
         body: model::OrderRequest,
     ) -> Result<trader::PutAccountOrderRequest, Error> {
+        tracing::debug!("building update order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PutAccountOrderRequest::new(
@@ -334,11 +373,13 @@ impl<T: Tokener> Api<T> {
     /// `to_entered_time`
     ///
     /// Specifies that no orders entered after this time should be returned.
+    #[instrument(skip(self))]
     pub async fn get_accounts_orders(
         &self,
         from_entered_time: chrono::DateTime<chrono::Utc>,
         to_entered_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<trader::GetAccountsOrdersRequest, Error> {
+        tracing::debug!("building accounts orders request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountsOrdersRequest::new(
@@ -352,11 +393,13 @@ impl<T: Tokener> Api<T> {
     /// `account_number`
     ///
     /// The encrypted ID of the account
+    #[instrument(skip(self, account_number, body))]
     pub async fn post_accounts_preview_order(
         &self,
         account_number: String,
         body: model::OrderRequest,
     ) -> Result<trader::PostAccountPreviewOrderRequest, Error> {
+        tracing::debug!("building preview order request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::PostAccountPreviewOrderRequest::new(
@@ -386,6 +429,7 @@ impl<T: Tokener> Api<T> {
     /// Specifies that only transactions of this status should be returned.
     ///
     /// Available values : `TRADE`, `RECEIVE_AND_DELIVER`, `DIVIDEND_OR_INTEREST`, `ACH_RECEIPT`, `ACH_DISBURSEMENT`, `CASH_RECEIPT`, `CASH_DISBURSEMENT`, `ELECTRONIC_FUND`, `WIRE_OUT`, `WIRE_IN`, `JOURNAL`, `MEMORANDUM`, `MARGIN_CALL`, `MONEY_MARKET`, `SMA_ADJUSTMENT`
+    #[instrument(skip(self, account_number), fields(transaction_type = ?types))]
     pub async fn get_account_transactions(
         &self,
         account_number: String,
@@ -393,6 +437,7 @@ impl<T: Tokener> Api<T> {
         end_date: chrono::DateTime<chrono::Utc>,
         types: TransactionType,
     ) -> Result<trader::GetAccountTransactions, Error> {
+        tracing::debug!("building account transactions request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransactions::new(
@@ -412,11 +457,13 @@ impl<T: Tokener> Api<T> {
     /// `transaction_id`
     ///
     /// The ID of the transaction being retrieved.
+    #[instrument(skip(self, account_number))]
     pub async fn get_account_transaction(
         &self,
         account_number: String,
         transaction_id: i64,
     ) -> Result<trader::GetAccountTransaction, Error> {
+        tracing::debug!("building account transaction request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetAccountTransaction::new(
@@ -427,7 +474,9 @@ impl<T: Tokener> Api<T> {
         ))
     }
 
+    #[instrument(skip(self))]
     pub async fn get_user_preference(&self) -> Result<trader::GetUserPreferenceRequest, Error> {
+        tracing::debug!("building user preference request");
         let access_token = self.tokener.get_access_token().await?;
 
         Ok(trader::GetUserPreferenceRequest::new(
