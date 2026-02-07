@@ -1,6 +1,6 @@
-use serde::Deserialize;
 use serde::Serialize;
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Deserializer};
+use serde_repr::Serialize_repr;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -68,7 +68,7 @@ pub struct ErrorSource {
 }
 
 /// The HTTP status code .
-#[derive(Debug, Clone, Copy, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize_repr)]
 #[repr(i32)]
 pub enum StatusCode {
     /// 400 Bad Request
@@ -86,6 +86,40 @@ pub enum StatusCode {
     /// 500 Internal Server Error
     /// [[RFC7231, Section 6.6.1](https://tools.ietf.org/html/rfc7231#section-6.6.1)]
     InternalServerError = 500,
+}
+
+impl<'de> Deserialize<'de> for StatusCode {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // 1. 先解析成通用 JSON 數值 (serde_json::Value) 或自定義 Enum
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum TempStatus {
+            Int(i32),
+            Str(String),
+        }
+
+        let temp = TempStatus::deserialize(deserializer)?;
+
+        // 2. 將字串或數字統一轉為 i32
+        let code = match temp {
+            TempStatus::Int(i) => i,
+            TempStatus::Str(s) => s.parse::<i32>().map_err(serde::de::Error::custom)?,
+        };
+
+        // 3. 對應回 StatusCode
+        match code {
+            400 => Ok(StatusCode::BadRequest),
+            401 => Ok(StatusCode::Unauthorized),
+            404 => Ok(StatusCode::NotFound),
+            500 => Ok(StatusCode::InternalServerError),
+            _ => Err(serde::de::Error::custom(format!(
+                "Unknown status code: {code}",
+            ))),
+        }
+    }
 }
 
 #[cfg(test)]

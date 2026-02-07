@@ -45,6 +45,11 @@
             "id": "0be22ae7-efdf-44d9-99f4-f138049d76ca",
             "status": 500,
             "title": "Internal Server Error"
+        },
+        {
+            "id": "40987c22-c1f0-4ca9-81a2-37ef465eac4d",
+            "status": "404",
+            "title": "Not Found"
         }
     ]
 }
