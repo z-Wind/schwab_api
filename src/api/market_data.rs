@@ -3,6 +3,7 @@
 
 use reqwest::{Client, RequestBuilder, StatusCode};
 use std::collections::HashMap;
+use tracing::instrument;
 
 use super::endpoints;
 use super::parameter::{
@@ -993,7 +994,7 @@ impl GetMarketsRequest {
         self
     }
 
-    #[tracing::instrument(skip(self), fields(market_count = self.markets.len()))]
+    #[instrument(skip(self), fields(market_count = self.markets.len()))]
     fn build(self) -> RequestBuilder {
         tracing::debug!("building market hours request");
 

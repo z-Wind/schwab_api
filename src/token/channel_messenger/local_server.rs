@@ -33,7 +33,7 @@ impl LocalServerMessenger {
     /// - `cert.pem` or `key.pem` files are missing
     /// - Certificate files are invalid or corrupted
     /// - Files cannot be read due to permissions
-    #[tracing::instrument(fields(certs_dir = %certs_dir.display()))]
+    #[instrument(fields(certs_dir = %certs_dir.display()))]
     pub async fn new(certs_dir: &Path) -> Result<Self, Error> {
         tracing::info!("initializing HTTPS server configuration");
 
@@ -86,56 +86,89 @@ impl LocalServerMessenger {
 }
 
 impl ChannelMessenger for LocalServerMessenger {
+    #[instrument(skip(self, context), fields(redirect_url = %context.redirect_url))]
     async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
+        tracing::debug!("configuring local server messenger with auth context");
+
         let (tx, rx) = async_channel::unbounded();
         let csrf = context.csrf;
         let redirect_uri = context.redirect_url;
 
+        self.addr = Some(parse_socket_addr(&redirect_uri).map_err(|e| {
+            tracing::error!(error = %e, redirect_url = %redirect_uri, "failed to parse redirect URL as socket address");
+            Error::ChannelMessenger(e)
+        })?);
+
+        tracing::debug!(addr = ?self.addr, "socket address configured");
+
         self.app_state = Some(AppState { csrf, tx });
         self.rx = Some(rx);
         self.auth_url = Some(context.auth_url);
-        self.addr = Some(parse_socket_addr(&redirect_uri).map_err(Error::ChannelMessenger)?);
 
+        tracing::info!("local server messenger configured successfully");
         Ok(())
     }
 
     #[instrument(skip(self))]
     async fn send_auth_message(&self) -> Result<(), Error> {
-        open::that(
-            self.auth_url
-                .as_ref()
-                .ok_or(Error::ChannelMessenger("No auth_url".to_string()))?
-                .as_ref(),
-        )?;
+        let auth_url = self.auth_url.as_ref().ok_or_else(|| {
+            tracing::error!("auth URL not configured; with_context must be called first");
+            Error::ChannelMessenger("No auth_url configured".to_string())
+        })?;
 
+        tracing::info!("opening browser for user authorization");
+
+        open::that(auth_url.as_ref()).map_err(|e| {
+            tracing::error!(error = %e, "failed to open browser");
+            Error::Stdio(e)
+        })?;
+
+        tracing::debug!("browser opened successfully");
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn receive_auth_message(&self) -> Result<String, Error> {
-        let service = app(self
+        tracing::info!("starting local HTTPS server to receive authorization callback");
+
+        let app_state = self
             .app_state
             .as_ref()
-            .ok_or(Error::ChannelMessenger("No app_state".to_string()))?
-            .clone())
-        .into_make_service();
-        tokio::spawn(
-            axum_server::bind_rustls(
-                *self
-                    .addr
-                    .as_ref()
-                    .ok_or(Error::ChannelMessenger("No SocketAddr".to_string()))?,
-                self.config.clone(),
-            )
-            .serve(service),
-        );
+            .ok_or_else(|| {
+                tracing::error!("app state not configured; with_context must be called first");
+                Error::ChannelMessenger("No app_state configured".to_string())
+            })?
+            .clone();
+
+        let addr = *self.addr.as_ref().ok_or_else(|| {
+            tracing::error!("socket address not configured; with_context must be called first");
+            Error::ChannelMessenger("No SocketAddr configured".to_string())
+        })?;
+
+        tracing::debug!(addr = %addr, "binding HTTPS server");
+
+        let service = app(app_state).into_make_service();
+        tokio::spawn(axum_server::bind_rustls(addr, self.config.clone()).serve(service));
+
+        tracing::info!(addr = %addr, "HTTPS server started, waiting for callback");
 
         let code = self
             .rx
             .as_ref()
-            .ok_or(Error::ChannelMessenger("No rx".to_string()))?
+            .ok_or_else(|| {
+                tracing::error!(
+                    "receiver channel not configured; with_context must be called first"
+                );
+                Error::ChannelMessenger("No rx channel configured".to_string())
+            })?
             .recv()
             .await
-            .map_err(|e| Error::ChannelMessenger(format!("{e:?}")))?;
+            .map_err(|e| {
+                tracing::error!(error = ?e, "failed to receive authorization code from channel");
+                Error::ChannelMessenger(format!("Channel receive error: {e:?}"))
+            })?;
+
+        tracing::info!("authorization code received from callback");
         Ok(code)
     }
 }
@@ -152,12 +185,7 @@ struct AppState {
     tx: async_channel::Sender<String>,
 }
 
-#[tracing::instrument(
-    skip(csrf, tx),
-    fields(
-        csrf_valid = tracing::field::Empty,  // 稍後填入
-    ),
-)]
+#[instrument(skip(csrf, tx), fields(csrf_valid = tracing::field::Empty))]
 async fn get_code(
     Query(query): Query<AuthRequest>,
     State(csrf): State<CsrfToken>,
@@ -166,10 +194,7 @@ async fn get_code(
     tracing::debug!("received OAuth callback request");
 
     if &query.state != csrf.secret() {
-        tracing::warn!(
-            received_state = %query.state,
-            "CSRF token validation failed; potential security attack or stale request"
-        );
+        tracing::warn!("CSRF token validation failed; potential security attack or stale request");
         tracing::Span::current().record("csrf_valid", false);
         return (
             StatusCode::FORBIDDEN,
@@ -210,8 +235,6 @@ async fn get_code(
         }
     }
 
-    tracing::info!("authorization code sent successfully");
-
     Html(
         r#"
     <html>
@@ -228,15 +251,24 @@ async fn get_code(
 
 fn parse_socket_addr(url: &Url) -> Result<SocketAddr, String> {
     let Some(hostname) = url.host_str() else {
+        tracing::error!(url = %url, "URL does not contain a hostname");
         return Err("No hostname found in URL".to_string());
     };
 
     let port = url.port().unwrap_or(443); // default to HTTPS port if not specified
 
     let addr = format!("{hostname}:{port}");
+    tracing::debug!(addr = %addr, "parsing socket address");
+
     match addr.parse::<SocketAddr>() {
-        Ok(addr) => Ok(addr),
-        Err(err) => Err(format!("Failed to parse socket address: {err}")),
+        Ok(parsed_addr) => {
+            tracing::debug!(socket_addr = ?parsed_addr, "socket address parsed successfully");
+            Ok(parsed_addr)
+        }
+        Err(err) => {
+            tracing::error!(addr = %addr, error = %err, "failed to parse socket address");
+            Err(format!("Failed to parse socket address: {err}"))
+        }
     }
 }
 

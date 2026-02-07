@@ -20,7 +20,7 @@ impl StdioMessenger {
         Self::default()
     }
 
-    #[tracing::instrument(skip(uri, csrf), fields(csrf_valid = tracing::field::Empty))]
+    #[instrument(skip(uri, csrf), fields(csrf_valid = tracing::field::Empty))]
     fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> Result<String, Error> {
         tracing::debug!(path = %uri.path(), "parsing authorization callback");
 
@@ -55,8 +55,11 @@ impl StdioMessenger {
 }
 
 impl ChannelMessenger for StdioMessenger {
+    #[instrument(skip(self, context), fields(redirect_url = %context.redirect_url))]
     async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
+        tracing::debug!("configuring stdio messenger with auth context");
         self.context = Some(context);
+        tracing::debug!("stdio messenger configured successfully");
         Ok(())
     }
 
@@ -108,18 +111,31 @@ Redirect URL>"#
         Ok(())
     }
 
+    #[instrument(skip(self))]
     async fn receive_auth_message(&self) -> Result<String, Error> {
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
-        let uri: Uri = input
-            .trim()
-            .parse()
-            .map_err(|e| Error::ChannelMessenger(format!("{e:?}")))?;
+        tracing::info!("waiting for user to paste callback URL");
 
-        let context = self
-            .context
-            .as_ref()
-            .ok_or(Error::ChannelMessenger("No context".to_string()))?;
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).map_err(|e| {
+            tracing::error!(error = %e, "failed to read from stdin");
+            Error::Stdio(e)
+        })?;
+
+        tracing::debug!(
+            input_length = input.trim().len(),
+            "received input from user"
+        );
+
+        let uri: Uri = input.trim().parse().map_err(|e| {
+            tracing::error!(error = ?e, input = %input.trim(), "failed to parse input as URI");
+            Error::ChannelMessenger(format!("Invalid URI format: {e:?}"))
+        })?;
+
+        let context = self.context.as_ref().ok_or_else(|| {
+            tracing::error!("context not configured; with_context must be called first");
+            Error::ChannelMessenger("No context configured".to_string())
+        })?;
+
         let csrf = &context.csrf;
 
         Self::uri_to_auth_code(&uri, csrf)

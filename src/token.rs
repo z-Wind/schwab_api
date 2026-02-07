@@ -36,6 +36,10 @@ pub struct TokenChecker<CM: ChannelMessenger> {
 }
 
 impl<CM: ChannelMessenger> TokenChecker<CM> {
+    #[instrument(
+        skip(client_id, secret, async_client, messenger),
+        fields(path = %path.display(), redirect_url = %redirect_url)
+    )]
     pub async fn new_with_custom_auth(
         path: PathBuf,
         client_id: String,
@@ -44,12 +48,21 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
         async_client: Client,
         messenger: CM,
     ) -> Result<Self, Error> {
+        tracing::info!("initializing token checker with custom auth messenger");
+
         let authorizer =
             Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
+        tracing::debug!("attempting to load existing token");
         let token = match Token::load(&path) {
-            Ok(token) => token,
-            Err(_) => authorizer.save(&path).await?,
+            Ok(token) => {
+                tracing::info!("existing token loaded successfully");
+                token
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, "no existing token found; starting full authorization");
+                authorizer.save(&path).await?
+            }
         };
 
         let checker = Self {
@@ -58,12 +71,14 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
             token: Mutex::new(token),
         };
 
+        tracing::debug!("performing initial token check/update");
         checker.check_or_update().await?;
 
+        tracing::info!("token checker initialized successfully");
         Ok(checker)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[instrument(skip(self))]
     async fn check_or_update(&self) -> Result<(), Error> {
         let mut token = self.token.lock().await;
 
@@ -118,6 +133,14 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
 }
 
 impl TokenChecker<LocalServerMessenger> {
+    #[instrument(
+        skip(client_id, secret, async_client),
+        fields(
+            path = %path.display(),
+            redirect_url = %redirect_url,
+            certs_dir = %certs_dir.display()
+        ),
+    )]
     pub async fn new_with_local_server(
         path: PathBuf,
         client_id: String,
@@ -126,14 +149,23 @@ impl TokenChecker<LocalServerMessenger> {
         certs_dir: PathBuf,
         async_client: Client,
     ) -> Result<Self, Error> {
+        tracing::info!("initializing token checker with local server messenger");
+
         let messenger = LocalServerMessenger::new(&certs_dir).await?;
 
         let authorizer =
             Authorizer::new(client_id, secret, redirect_url, async_client, messenger).await?;
 
+        tracing::debug!("attempting to load existing token");
         let token = match Token::load(&path) {
-            Ok(token) => token,
-            Err(_) => authorizer.save(&path).await?,
+            Ok(token) => {
+                tracing::info!("existing token loaded successfully");
+                token
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, "no existing token found; starting full authorization");
+                authorizer.save(&path).await?
+            }
         };
 
         let checker = Self {
@@ -142,13 +174,19 @@ impl TokenChecker<LocalServerMessenger> {
             token: Mutex::new(token),
         };
 
+        tracing::debug!("performing initial token check/update");
         checker.check_or_update().await?;
 
+        tracing::info!("token checker with local server initialized successfully");
         Ok(checker)
     }
 }
 
 impl TokenChecker<StdioMessenger> {
+    #[instrument(
+        skip(client_id, secret, async_client),
+        fields(path = %path.display(), redirect_url = %redirect_url)
+    )]
     pub async fn new_with_stdio(
         path: PathBuf,
         client_id: String,
@@ -156,6 +194,8 @@ impl TokenChecker<StdioMessenger> {
         redirect_url: String,
         async_client: Client,
     ) -> Result<Self, Error> {
+        tracing::info!("initializing token checker with stdio messenger");
+
         let messenger = StdioMessenger::new();
         Self::new_with_custom_auth(
             path,
@@ -170,17 +210,22 @@ impl TokenChecker<StdioMessenger> {
 }
 
 impl<CM: ChannelMessenger> Tokener for TokenChecker<CM> {
+    #[instrument(skip(self))]
     async fn get_access_token(&self) -> Result<String, Error> {
+        tracing::trace!("retrieving access token");
         self.check_or_update().await?;
         let access_token = self.token.lock().await.access.clone();
+        tracing::trace!(token_length = access_token.len(), "access token retrieved");
         Ok(access_token)
     }
 
     /// must update token in Tokener
+    #[instrument(skip(self))]
     async fn redo_authorization(&self) -> Result<(), Error> {
+        tracing::warn!("forcing full re-authorization (manual override)");
         let mut token = self.token.lock().await;
         *token = self.authorizer.save(&self.path).await?;
-
+        tracing::info!("full re-authorization completed successfully");
         Ok(())
     }
 }
@@ -197,11 +242,27 @@ struct Token {
 }
 
 impl Token {
+    #[instrument(fields(path = %path.display()))]
     fn load(path: &PathBuf) -> std::io::Result<Token> {
-        let mut file = File::open(path)?;
+        tracing::debug!("loading token from file");
+
+        let mut file = File::open(path).map_err(|e| {
+            tracing::error!(error = %e, "failed to open token file");
+            e
+        })?;
+
         let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let token: Token = serde_json::from_str(&contents)?;
+        file.read_to_string(&mut contents).map_err(|e| {
+            tracing::error!(error = %e, "failed to read token file contents");
+            e
+        })?;
+
+        let token: Token = serde_json::from_str(&contents).map_err(|e| {
+            tracing::error!(error = %e, "failed to deserialize token JSON");
+            std::io::Error::new(std::io::ErrorKind::InvalidData, e)
+        })?;
+
+        tracing::info!("token loaded successfully from file");
         Ok(token)
     }
 

@@ -33,7 +33,7 @@ pub(super) struct Authorizer<CM: ChannelMessenger> {
 }
 
 impl<CM: ChannelMessenger> Authorizer<CM> {
-    #[tracing::instrument(skip_all, fields(redirect_url = %redirect_url))]
+    #[instrument(skip_all, fields(redirect_url = %redirect_url))]
     pub(super) async fn new(
         app_key: String,
         secret: String,
@@ -77,7 +77,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
         Ok(auth)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[instrument(skip(self))]
     async fn authorize(&self) -> Result<Token, Error> {
         let auth_code = {
             self.messenger.send_auth_message().await?;
@@ -146,21 +146,25 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .await
     }
 
+    #[instrument(skip(self, refresh_token))]
     pub(super) async fn access_token(
         &self,
         refresh_token: &str,
     ) -> Result<BasicTokenResponse, RequestTokenError> {
+        tracing::debug!("exchanging refresh token for new access token");
+
         let refresh_token = RefreshToken::new(refresh_token.to_string());
-        self.oauth2_client
+        let result = self
+            .oauth2_client
             .exchange_refresh_token(&refresh_token)
             .request_async(&self.async_client)
-            .await
+            .await?;
+
+        tracing::info!("access token refreshed successfully via refresh token");
+        Ok(result)
     }
 
-    #[tracing::instrument(skip(self))]
     fn create_auth_context(&self) -> AuthContext {
-        tracing::debug!("creating authorization context");
-
         let (auth_url, csrf_token) = self.auth_code_url();
         let redirect_url = self
             .oauth2_client
@@ -170,18 +174,24 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .clone();
 
         AuthContext {
-            auth_url: auth_url,
+            auth_url,
             csrf: csrf_token,
-            redirect_url: redirect_url,
+            redirect_url,
         }
     }
 
+    #[instrument(skip(self), fields(path = %path.display()))]
     pub(super) async fn save(&self, path: &PathBuf) -> Result<Token, Error> {
+        tracing::info!("starting full authorization and token save flow");
+
         let token = self
             .authorize()
             .await
             .map_err(|e| Error::Token(e.to_string()))?;
+
         token.save(path)?;
+
+        tracing::info!("token authorized and saved successfully");
         Ok(token)
     }
 }

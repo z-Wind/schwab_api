@@ -26,10 +26,24 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> CompoundMessenger<CM0, CM1> {
 impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
     for CompoundMessenger<CM0, CM1>
 {
+    #[instrument(skip(self, context), fields(redirect_url = %context.redirect_url))]
     async fn with_context(&mut self, context: AuthContext) -> Result<(), Error> {
-        self.default.with_context(context.clone()).await?;
-        self.other.with_context(context).await?;
+        tracing::debug!("configuring compound messenger with auth context");
 
+        self.default
+            .with_context(context.clone())
+            .await
+            .map_err(|e| {
+                tracing::error!(error = %e, "failed to configure default messenger");
+                e
+            })?;
+
+        self.other.with_context(context).await.map_err(|e| {
+            tracing::error!(error = %e, "failed to configure secondary messenger");
+            e
+        })?;
+
+        tracing::info!("compound messenger configured successfully");
         Ok(())
     }
 
@@ -78,13 +92,26 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
         }
     }
 
+    #[instrument(skip(self))]
     async fn receive_auth_message(&self) -> Result<String, Error> {
-        match self.select.load(Ordering::Acquire) {
-            0 => self.default.receive_auth_message().await,
-            1 => self.other.receive_auth_message().await,
-            _ => Err(Error::ChannelMessenger(
-                "No Messengers receive successfully".to_string(),
-            )),
+        let current_index = self.select.load(Ordering::Acquire);
+        tracing::debug!(index = %current_index, "receiving auth message from selected messenger");
+
+        match current_index {
+            0 => {
+                tracing::debug!("receiving from default messenger");
+                self.default.receive_auth_message().await
+            }
+            1 => {
+                tracing::debug!("receiving from secondary messenger");
+                self.other.receive_auth_message().await
+            }
+            _ => {
+                tracing::error!(index = %current_index, "invalid messenger index");
+                Err(Error::ChannelMessenger(
+                    "No active messenger to receive from".to_string(),
+                ))
+            }
         }
     }
 }
