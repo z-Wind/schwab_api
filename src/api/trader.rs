@@ -39,34 +39,31 @@ impl GetAccountNumbersRequest {
         tracing::debug!("sending account numbers request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let account_numbers = serde_json::from_str(&body_text).map_err(|e| {
+        let account_numbers = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "AccountNumbers", &body_text);
             tracing::error!(error = %e, "failed to parse account numbers");
-            Error::from(e)
         })?;
 
         tracing::info!("account numbers retrieved successfully");
@@ -129,34 +126,31 @@ impl GetAccountsRequest {
         tracing::debug!("sending accounts request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let accounts = serde_json::from_str(&body_text).map_err(|e| {
+        let accounts = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Accounts", &body_text);
             tracing::error!(error = %e, "failed to parse accounts");
-            Error::from(e)
         })?;
 
         tracing::info!("accounts retrieved successfully");
@@ -229,34 +223,31 @@ impl GetAccountRequest {
         tracing::debug!("sending account request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let account = serde_json::from_str(&body_text).map_err(|e| {
+        let account = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Account", &body_text);
             tracing::error!(error = %e, "failed to parse account");
-            Error::from(e)
         })?;
 
         tracing::info!("account retrieved successfully");
@@ -372,34 +363,31 @@ impl GetAccountOrdersRequest {
         tracing::debug!("sending account orders request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let orders: Vec<_> = serde_json::from_str(&body_text).map_err(|e| {
+        let orders: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Orders", &body_text);
             tracing::error!(error = %e, "failed to parse orders");
-            Error::from(e)
         })?;
 
         tracing::info!(
@@ -456,9 +444,8 @@ impl PostAccountOrderRequest {
         tracing::debug!("sending post order request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
@@ -467,14 +454,13 @@ impl PostAccountOrderRequest {
         if status != StatusCode::CREATED {
             tracing::warn!(%status, "order creation failed");
 
-            let body_text = rsp.text().await.map_err(|e| {
+            let body_text = rsp.text().await.inspect_err(|e| {
                 tracing::error!(error = %e, "failed to read response body");
-                e
             })?;
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
@@ -553,34 +539,31 @@ impl GetAccountOrderRequest {
         tracing::debug!("sending get account order request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let order = serde_json::from_str(&body_text).map_err(|e| {
+        let order = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Order", &body_text);
             tracing::error!(error = %e, "failed to parse order");
-            Error::from(e)
         })?;
 
         tracing::info!("order retrieved successfully");
@@ -639,9 +622,8 @@ impl DeleteAccountOrderRequest {
         tracing::debug!("sending delete order request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
@@ -650,14 +632,13 @@ impl DeleteAccountOrderRequest {
         if status != StatusCode::OK {
             tracing::warn!(%status, "order deletion failed");
 
-            let body_text = rsp.text().await.map_err(|e| {
+            let body_text = rsp.text().await.inspect_err(|e| {
                 tracing::error!(error = %e, "failed to read response body");
-                e
             })?;
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
@@ -728,9 +709,8 @@ impl PutAccountOrderRequest {
         tracing::debug!("sending put order request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
@@ -739,14 +719,13 @@ impl PutAccountOrderRequest {
         if status != StatusCode::CREATED {
             tracing::warn!(%status, "order update failed");
 
-            let body_text = rsp.text().await.map_err(|e| {
+            let body_text = rsp.text().await.inspect_err(|e| {
                 tracing::error!(error = %e, "failed to read response body");
-                e
             })?;
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
@@ -865,34 +844,31 @@ impl GetAccountsOrdersRequest {
         tracing::debug!("sending accounts orders request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let orders: Vec<_> = serde_json::from_str(&body_text).map_err(|e| {
+        let orders: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Orders", &body_text);
             tracing::error!(error = %e, "failed to parse orders");
-            Error::from(e)
         })?;
 
         tracing::info!(
@@ -949,34 +925,31 @@ impl PostAccountPreviewOrderRequest {
         tracing::debug!("sending preview order request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let preview_order = serde_json::from_str(&body_text).map_err(|e| {
+        let preview_order = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "PreviewOrder", &body_text);
             tracing::error!(error = %e, "failed to parse preview order");
-            Error::from(e)
         })?;
 
         tracing::info!("preview order retrieved successfully");
@@ -1077,34 +1050,31 @@ impl GetAccountTransactions {
         tracing::debug!("sending account transactions request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let transactions: Vec<_> = serde_json::from_str(&body_text).map_err(|e| {
+        let transactions: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Transactions", &body_text);
             tracing::error!(error = %e, "failed to parse transactions");
-            Error::from(e)
         })?;
 
         tracing::info!(
@@ -1166,34 +1136,31 @@ impl GetAccountTransaction {
         tracing::debug!("sending get account transaction request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let transaction = serde_json::from_str(&body_text).map_err(|e| {
+        let transaction = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Transaction", &body_text);
             tracing::error!(error = %e, "failed to parse transaction");
-            Error::from(e)
         })?;
 
         tracing::info!("transaction retrieved successfully");
@@ -1229,34 +1196,31 @@ impl GetUserPreferenceRequest {
         tracing::debug!("sending user preference request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ServiceError", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse service error");
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let user_preferences = serde_json::from_str(&body_text).map_err(|e| {
+        let user_preferences = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "UserPreferences", &body_text);
             tracing::error!(error = %e, "failed to parse user preferences");
-            Error::from(e)
         })?;
 
         tracing::info!("user preferences retrieved successfully");

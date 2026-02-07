@@ -50,7 +50,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
 
         let redirect_url = RedirectUrl::new(redirect_url).map_err(|e| {
             tracing::error!(error = %e, "invalid redirect URL provided");
-            Error::Config(format!("Invalid redirect URL: {}", e))
+            Error::Config(format!("Invalid redirect URL: {e}"))
         })?;
 
         let oauth2_client = BasicClient::new(app_key)
@@ -68,10 +68,12 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
         tracing::debug!("creating authorization context");
         let context = auth.create_auth_context();
 
-        auth.messenger.with_context(context).await.map_err(|e| {
-            tracing::error!(error = %e, "failed to initialize messenger with auth context");
-            e
-        })?;
+        auth.messenger
+            .with_context(context)
+            .await
+            .inspect_err(|e| {
+                tracing::error!(error = %e, "failed to initialize messenger with auth context");
+            })?;
 
         tracing::info!("Schwab OAuth2 authorizer initialized successfully");
         Ok(auth)
@@ -83,10 +85,13 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             self.messenger.send_auth_message().await?;
 
             tracing::debug!("waiting for user to provide authorization code/URL");
-            let raw_message = self.messenger.receive_auth_message().await.map_err(|e| {
-                tracing::error!(error = %e, "failed to receive authorization message");
-                e
-            })?;
+            let raw_message = self
+                .messenger
+                .receive_auth_message()
+                .await
+                .inspect_err(|e| {
+                    tracing::error!(error = %e, "failed to receive authorization message");
+                })?;
 
             AuthorizationCode::new(raw_message)
         };

@@ -70,7 +70,7 @@ impl LocalServerMessenger {
                 certs_dir = %certs_dir.display(),
                 "failed to load TLS certificates; ensure cert.pem and key.pem exist and are valid"
             );
-            Error::Config(format!("Failed to load certificates: {}", e))
+            Error::Config(format!("Failed to load certificates: {e}"))
         })?;
 
         tracing::info!("HTTPS server configuration initialized successfully");
@@ -118,9 +118,8 @@ impl ChannelMessenger for LocalServerMessenger {
 
         tracing::info!("opening browser for user authorization");
 
-        open::that(auth_url.as_ref()).map_err(|e| {
+        open::that(auth_url.as_ref()).inspect_err(|e| {
             tracing::error!(error = %e, "failed to open browser");
-            Error::Stdio(e)
         })?;
 
         tracing::debug!("browser opened successfully");
@@ -236,15 +235,15 @@ async fn get_code(
     }
 
     Html(
-        r#"
-    <html>
-    <head><title>Authorization Successful</title></head>
-    <body>
-        <h1>✓ Authorization Successful</h1>
-        <p>You can now safely close this window.</p>
-    </body>
-    </html>
-    "#,
+        r"
+        <html>
+        <head><title>Authorization Successful</title></head>
+        <body>
+            <h1>✓ Authorization Successful</h1>
+            <p>You can now safely close this window.</p>
+        </body>
+        </html>
+        ",
     )
     .into_response()
 }
@@ -347,15 +346,15 @@ mod tests {
             .unwrap();
         assert_eq!(
             String::from_utf8(bytes.to_vec()).unwrap(),
-            r#"
-    <html>
-    <head><title>Authorization Successful</title></head>
-    <body>
-        <h1>✓ Authorization Successful</h1>
-        <p>You can now safely close this window.</p>
-    </body>
-    </html>
-    "#
+            r"
+        <html>
+        <head><title>Authorization Successful</title></head>
+        <body>
+            <h1>✓ Authorization Successful</h1>
+            <p>You can now safely close this window.</p>
+        </body>
+        </html>
+        "
         );
         assert_eq!(rx.recv().await.unwrap(), "code");
     }

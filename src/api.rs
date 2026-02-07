@@ -511,7 +511,7 @@ fn save_raw_json(folder: &str, model: &str, json: &str) {
         .map(|d| d.as_millis())
         .unwrap_or(0);
 
-    let file_name = format!("error_{}_{}.json", model, timestamp);
+    let file_name = format!("error_{model}_{timestamp}.json");
     let file_path = std::path::Path::new(folder).join(file_name);
 
     if let Err(e) = fs::write(&file_path, formatted_json) {

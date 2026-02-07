@@ -33,14 +33,12 @@ impl<CM0: ChannelMessenger, CM1: ChannelMessenger> ChannelMessenger
         self.default
             .with_context(context.clone())
             .await
-            .map_err(|e| {
+            .inspect_err(|e| {
                 tracing::error!(error = %e, "failed to configure default messenger");
-                e
             })?;
 
-        self.other.with_context(context).await.map_err(|e| {
+        self.other.with_context(context).await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to configure secondary messenger");
-            e
         })?;
 
         tracing::info!("compound messenger configured successfully");

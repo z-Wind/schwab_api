@@ -319,9 +319,8 @@ impl EndpointMarketHour {
                 tracing::trace!(market_id = ?market_id, "constructing market endpoint URL");
 
                 let market_id_val = serde_json::to_value(market_id)
-                    .map_err(|e| {
+                    .inspect_err(|e| {
                         tracing::error!(error = %e, "failed to serialize market_id to JSON value");
-                        e
                     })
                     .ok();
 

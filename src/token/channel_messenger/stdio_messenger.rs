@@ -30,7 +30,7 @@ impl StdioMessenger {
                 error = %e,
                 "failed to parse URI query parameters; invalid callback format"
             );
-            Error::Token(format!("Invalid callback URI format: {}", e))
+            Error::Token(format!("Invalid callback URI format: {e}"))
         })?;
 
         tracing::debug!("successfully parsed callback query parameters");
@@ -116,9 +116,8 @@ Redirect URL>"#
         tracing::info!("waiting for user to paste callback URL");
 
         let mut input = String::new();
-        std::io::stdin().read_line(&mut input).map_err(|e| {
+        std::io::stdin().read_line(&mut input).inspect_err(|e| {
             tracing::error!(error = %e, "failed to read from stdin");
-            Error::Stdio(e)
         })?;
 
         tracing::debug!(

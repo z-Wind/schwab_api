@@ -80,12 +80,12 @@ impl GetQuotesRequest {
 
         if let Some(ref fields) = self.fields {
             let field_strs: Vec<String> = fields
-                .into_iter()
+                .iter()
                 .filter_map(|f| match f {
                     QuoteField::Extra(s) => Some(s.clone()),
-                    _ => serde_json::to_value(&f)
+                    _ => serde_json::to_value(f)
                         .ok()
-                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                        .and_then(|v| v.as_str().map(std::string::ToString::to_string)),
                 })
                 .collect();
 
@@ -100,7 +100,7 @@ impl GetQuotesRequest {
 
         tracing::debug!(
             "request built with {} fields",
-            self.fields.as_ref().map_or(0, |v| v.len())
+            self.fields.as_ref().map_or(0, std::vec::Vec::len)
         );
 
         req
@@ -111,34 +111,31 @@ impl GetQuotesRequest {
         tracing::debug!("sending multi-quote request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
+        let map: model::QuoteResponseMap = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "QuoteResponseMap", &body_text);
             tracing::error!(error = %e, "failed to parse quote response");
-            Error::from(e)
         })?;
 
         if let Some(e) = map.errors {
@@ -208,12 +205,12 @@ impl GetQuoteRequest {
 
         if let Some(ref fields) = self.fields {
             let field_strs: Vec<String> = fields
-                .into_iter()
+                .iter()
                 .filter_map(|f| match f {
                     QuoteField::Extra(s) => Some(s.clone()),
-                    _ => serde_json::to_value(&f)
+                    _ => serde_json::to_value(f)
                         .ok()
-                        .and_then(|v| v.as_str().map(|s| s.to_string())),
+                        .and_then(|v| v.as_str().map(std::string::ToString::to_string)),
                 })
                 .collect();
 
@@ -224,7 +221,7 @@ impl GetQuoteRequest {
 
         tracing::debug!(
             "request built with {} fields",
-            self.fields.as_ref().map_or(0, |v| v.len())
+            self.fields.as_ref().map_or(0, std::vec::Vec::len)
         );
 
         req
@@ -236,35 +233,33 @@ impl GetQuoteRequest {
         let symbol = self.symbol.clone();
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response from server");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                e
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let mut map: model::QuoteResponseMap = serde_json::from_str(&body_text).map_err(|e| {
-            save_raw_json("log", "QuoteResponseMap", &body_text);
-            tracing::error!(error = %e, "json parse failed");
-            e
-        })?;
+        let mut map: model::QuoteResponseMap =
+            serde_json::from_str(&body_text).inspect_err(|e| {
+                save_raw_json("log", "QuoteResponseMap", &body_text);
+                tracing::error!(error = %e, "json parse failed");
+            })?;
 
         if let Some(e) = map.errors {
             return Err(Error::Quote(e));
@@ -571,34 +566,31 @@ impl GetOptionChainsRequest {
         tracing::debug!("sending option chains request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let option_chain = serde_json::from_str(&body_text).map_err(|e| {
+        let option_chain = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "OptionChain", &body_text);
             tracing::error!(error = %e, "failed to parse option chain");
-            Error::from(e)
         })?;
 
         tracing::info!("option chain retrieved successfully");
@@ -637,34 +629,31 @@ impl GetOptionExpirationChainRequest {
         tracing::debug!("sending option expiration chain request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let expiration_chain = serde_json::from_str(&body_text).map_err(|e| {
+        let expiration_chain = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "ExpirationChain", &body_text);
             tracing::error!(error = %e, "failed to parse expiration chain");
-            Error::from(e)
         })?;
 
         tracing::info!("expiration chain retrieved successfully");
@@ -886,34 +875,31 @@ impl GetPriceHistoryRequest {
         tracing::debug!("sending price history request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let candle_list = serde_json::from_str(&body_text).map_err(|e| {
+        let candle_list = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "CandleList", &body_text);
             tracing::error!(error = %e, "failed to parse candle list");
-            Error::from(e)
         })?;
 
         tracing::info!("price history retrieved successfully");
@@ -1007,34 +993,31 @@ impl GetMoversRequest {
         tracing::debug!("sending movers request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let mover = serde_json::from_str(&body_text).map_err(|e| {
+        let mover = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Mover", &body_text);
             tracing::error!(error = %e, "failed to parse mover data");
-            Error::from(e)
         })?;
 
         tracing::info!("movers retrieved successfully");
@@ -1090,7 +1073,15 @@ impl GetMarketsRequest {
     fn build(self) -> RequestBuilder {
         tracing::debug!("building market hours request");
 
-        let market_strs = self.markets.iter().map(|m| m.as_str()).collect::<Vec<_>>();
+        let market_strs = self
+            .markets
+            .iter()
+            .filter_map(|m| {
+                serde_json::to_value(m)
+                    .ok()
+                    .and_then(|v| v.as_str().map(std::string::ToString::to_string))
+            })
+            .collect::<Vec<_>>();
         let markets_param = market_strs.join(",");
 
         tracing::debug!(markets = %markets_param, "markets parameter constructed");
@@ -1112,34 +1103,31 @@ impl GetMarketsRequest {
         tracing::debug!("sending markets request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let markets = serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Markets", &body_text);
             tracing::error!(error = %e, "failed to parse markets data");
-            Error::from(e)
         })?;
 
         tracing::info!("markets data retrieved successfully");
@@ -1205,34 +1193,31 @@ impl GetMarketRequest {
         tracing::debug!("sending market request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let markets = serde_json::from_str(&body_text).map_err(|e| {
+        let markets = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Markets", &body_text);
             tracing::error!(error = %e, "failed to parse market data");
-            Error::from(e)
         })?;
 
         tracing::info!("market data retrieved successfully");
@@ -1287,34 +1272,31 @@ impl GetInstrumentsRequest {
         tracing::debug!("sending instruments search request");
 
         let req = self.build();
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                Error::from(e)
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let instruments = serde_json::from_str(&body_text).map_err(|e| {
+        let instruments = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
             tracing::error!(error = %e, "failed to parse instruments");
-            Error::from(e)
         })?;
 
         tracing::info!("instruments retrieved successfully");
@@ -1359,34 +1341,31 @@ impl GetInstrumentRequest {
         let cusip_id = self.cusip_id.clone();
         let req = self.build();
 
-        let rsp = req.send().await.map_err(|e| {
+        let rsp = req.send().await.inspect_err(|e| {
             tracing::error!(error = %e, "network request failed");
-            e
         })?;
 
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.map_err(|e| {
+        let body_text = rsp.text().await.inspect_err(|e| {
             tracing::error!(error = %e, "failed to read response body");
-            e
         })?;
 
         if status != StatusCode::OK {
             tracing::warn!(%status, "received non-OK response from server");
 
-            let error_response = serde_json::from_str(&body_text).map_err(|e| {
+            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                e
+                tracing::error!(error = %e, "failed to parse error response");
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let mut data: model::Instruments = serde_json::from_str(&body_text).map_err(|e| {
+        let mut data: model::Instruments = serde_json::from_str(&body_text).inspect_err(|e| {
             save_raw_json("log", "Instruments", &body_text);
-            tracing::error!(error = %e, "failed to parse Instruments JSON");
-            e
+            tracing::error!(error = %e, "failed to parse Instruments");
         })?;
 
         let count = data.instruments.len();

@@ -100,9 +100,8 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
                             Error::Token("Expiration calculation overflow".into())
                         })?;
 
-                    token.save(&self.path).map_err(|e| {
+                    token.save(&self.path).inspect_err(|e| {
                         tracing::error!(error = %e, "failed to save updated token to disk");
-                        e
                     })?;
 
                     tracing::info!("access token refreshed successfully via refresh_token");
@@ -120,9 +119,8 @@ impl<CM: ChannelMessenger> TokenChecker<CM> {
         }
 
         tracing::info!("starting full authorization flow");
-        let new_token = self.authorizer.save(&self.path).await.map_err(|e| {
+        let new_token = self.authorizer.save(&self.path).await.inspect_err(|e| {
             tracing::error!(error = %e, "full authorization flow failed");
-            e
         })?;
 
         *token = new_token;
@@ -246,20 +244,17 @@ impl Token {
     fn load(path: &PathBuf) -> std::io::Result<Token> {
         tracing::debug!("loading token from file");
 
-        let mut file = File::open(path).map_err(|e| {
+        let mut file = File::open(path).inspect_err(|e| {
             tracing::error!(error = %e, "failed to open token file");
-            e
         })?;
 
         let mut contents = String::new();
-        file.read_to_string(&mut contents).map_err(|e| {
+        file.read_to_string(&mut contents).inspect_err(|e| {
             tracing::error!(error = %e, "failed to read token file contents");
-            e
         })?;
 
-        let token: Token = serde_json::from_str(&contents).map_err(|e| {
+        let token: Token = serde_json::from_str(&contents).inspect_err(|e| {
             tracing::error!(error = %e, "failed to deserialize token JSON");
-            std::io::Error::new(std::io::ErrorKind::InvalidData, e)
         })?;
 
         tracing::info!("token loaded successfully from file");
@@ -269,9 +264,8 @@ impl Token {
     #[instrument(skip(self), fields(path = %path.display()))]
     fn save(&self, path: &PathBuf) -> std::io::Result<()> {
         if let Some(dir) = path.parent() {
-            std::fs::create_dir_all(dir).map_err(|e| {
+            std::fs::create_dir_all(dir).inspect_err(|e| {
                 tracing::error!(directory = %dir.display(), error = %e, "Failed to create token directory");
-                e
             })?;
         }
         let mut file = OpenOptions::new()
@@ -279,19 +273,16 @@ impl Token {
             .create(true)
             .truncate(true)
             .open(path)
-            .map_err(|e| {
+            .inspect_err(|e| {
                 tracing::error!(error = %e, "Failed to open token file for writing");
-                e
             })?;
 
-        let json = serde_json::to_string_pretty(self).map_err(|e| {
+        let json = serde_json::to_string_pretty(self).inspect_err(|e| {
             tracing::error!(error = %e, "Failed to serialize token to JSON");
-            e
         })?;
 
-        file.write_all(json.as_bytes()).map_err(|e| {
+        file.write_all(json.as_bytes()).inspect_err(|e| {
             tracing::error!(error = %e, "Failed to write bytes to token file");
-            e
         })?;
 
         tracing::trace!("Token saved successfully");
