@@ -5,7 +5,7 @@ use oauth2::{
 };
 use reqwest::Client;
 use serde::Deserialize;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::LazyLock};
 use tracing::instrument;
 use url::Url;
 
@@ -30,6 +30,7 @@ pub(super) struct Authorizer<CM: ChannelMessenger> {
         BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
     async_client: Client,
     messenger: CM,
+    redirect_url: Url,
 }
 
 impl<CM: ChannelMessenger> Authorizer<CM> {
@@ -41,28 +42,31 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
         async_client: Client,
         messenger: CM,
     ) -> Result<Self, Error> {
-        let app_key = ClientId::new(app_key);
-        let secret = ClientSecret::new(secret);
-        let auth_url =
-            AuthUrl::new(SCHWAB_AUTH_URL.to_string()).expect("hardcoded auth URL must be valid");
-        let token_url =
-            TokenUrl::new(SCHWAB_TOKEN_URL.to_string()).expect("hardcoded token URL must be valid");
+        static AUTH_URL: LazyLock<AuthUrl> = LazyLock::new(|| {
+            AuthUrl::new(SCHWAB_AUTH_URL.to_string()).expect("Invalid SCHWAB_AUTH_URL")
+        });
+        static TOKEN_URL: LazyLock<TokenUrl> = LazyLock::new(|| {
+            TokenUrl::new(SCHWAB_TOKEN_URL.to_string()).expect("Invalid SCHWAB_TOKEN_URL")
+        });
 
         let redirect_url = RedirectUrl::new(redirect_url).map_err(|e| {
             tracing::error!(error = %e, "invalid redirect URL provided");
             Error::Config(format!("Invalid redirect URL: {e}"))
         })?;
 
-        let oauth2_client = BasicClient::new(app_key)
-            .set_client_secret(secret)
-            .set_auth_uri(auth_url)
-            .set_token_uri(token_url)
+        let redirect_url_raw = redirect_url.url().clone();
+
+        let oauth2_client = BasicClient::new(ClientId::new(app_key))
+            .set_client_secret(ClientSecret::new(secret))
+            .set_auth_uri(AUTH_URL.clone())
+            .set_token_uri(TOKEN_URL.clone())
             .set_redirect_uri(redirect_url);
 
         let mut auth = Authorizer {
             oauth2_client,
             async_client,
             messenger,
+            redirect_url: redirect_url_raw,
         };
 
         tracing::debug!("creating authorization context");
@@ -171,17 +175,11 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
 
     fn create_auth_context(&self) -> AuthContext {
         let (auth_url, csrf_token) = self.auth_code_url();
-        let redirect_url = self
-            .oauth2_client
-            .redirect_uri()
-            .expect("redirect_url must be set during client construction")
-            .url()
-            .clone();
 
         AuthContext {
             auth_url,
             csrf: csrf_token,
-            redirect_url,
+            redirect_url: self.redirect_url.clone(),
         }
     }
 
