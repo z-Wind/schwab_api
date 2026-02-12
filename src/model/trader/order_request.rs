@@ -73,12 +73,14 @@ pub struct OrderRequest {
     pub status_description: Option<String>,
 }
 
-impl From<Order> for OrderRequest {
-    fn from(value: Order) -> Self {
-        Self {
+impl TryFrom<Order> for OrderRequest {
+    type Error = crate::error::Error;
+
+    fn try_from(value: Order) -> Result<Self, Self::Error> {
+        Ok(Self {
             session: Some(value.session),
             duration: Some(value.duration),
-            order_type: Some(value.order_type.into()),
+            order_type: Some(value.order_type.try_into()?),
             cancel_time: value.cancel_time,
             complex_order_strategy_type: Some(value.complex_order_strategy_type),
             quantity: Some(value.quantity),
@@ -116,9 +118,10 @@ impl From<Order> for OrderRequest {
             replacing_order_collection: value.replacing_order_collection,
             child_order_strategies: value
                 .child_order_strategies
-                .map(|orders| orders.into_iter().map(Into::into).collect()),
+                .map(|orders| orders.into_iter().map(TryInto::try_into).collect())
+                .transpose()?,
             status_description: value.status_description,
-        }
+        })
     }
 }
 
@@ -219,24 +222,28 @@ pub enum OrderTypeRequest {
     LimitOnClose,
 }
 
-impl From<OrderType> for OrderTypeRequest {
-    fn from(value: OrderType) -> Self {
+impl TryFrom<OrderType> for OrderTypeRequest {
+    type Error = crate::error::Error;
+
+    fn try_from(value: OrderType) -> Result<Self, Self::Error> {
         match value {
-            OrderType::Market => OrderTypeRequest::Market,
-            OrderType::Limit => OrderTypeRequest::Limit,
-            OrderType::Stop => OrderTypeRequest::Stop,
-            OrderType::StopLimit => OrderTypeRequest::StopLimit,
-            OrderType::TrailingStop => OrderTypeRequest::TrailingStop,
-            OrderType::Cabinet => OrderTypeRequest::Cabinet,
-            OrderType::NonMarketable => OrderTypeRequest::NonMarketable,
-            OrderType::MarketOnClose => OrderTypeRequest::MarketOnClose,
-            OrderType::Exercise => OrderTypeRequest::Exercise,
-            OrderType::TrailingStopLimit => OrderTypeRequest::TrailingStopLimit,
-            OrderType::NetDebit => OrderTypeRequest::NetDebit,
-            OrderType::NetCredit => OrderTypeRequest::NetCredit,
-            OrderType::NetZero => OrderTypeRequest::NetZero,
-            OrderType::LimitOnClose => OrderTypeRequest::LimitOnClose,
-            OrderType::Unknown => panic!("Unknown"),
+            OrderType::Market => Ok(Self::Market),
+            OrderType::Limit => Ok(Self::Limit),
+            OrderType::Stop => Ok(Self::Stop),
+            OrderType::StopLimit => Ok(Self::StopLimit),
+            OrderType::TrailingStop => Ok(Self::TrailingStop),
+            OrderType::Cabinet => Ok(Self::Cabinet),
+            OrderType::NonMarketable => Ok(Self::NonMarketable),
+            OrderType::MarketOnClose => Ok(Self::MarketOnClose),
+            OrderType::Exercise => Ok(Self::Exercise),
+            OrderType::TrailingStopLimit => Ok(Self::TrailingStopLimit),
+            OrderType::NetDebit => Ok(Self::NetDebit),
+            OrderType::NetCredit => Ok(Self::NetCredit),
+            OrderType::NetZero => Ok(Self::NetZero),
+            OrderType::LimitOnClose => Ok(Self::LimitOnClose),
+            OrderType::Unknown => Err(Error::Conversion(
+                "Cannot convert OrderType::Unknown to OrderTypeRequest".to_string(),
+            )),
         }
     }
 }

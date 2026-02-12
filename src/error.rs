@@ -24,4 +24,6 @@ pub enum Error {
     OrderIdParseError(String),
     #[error("Config error: {0}")]
     Config(String),
+    #[error("Conversion error: {0}")]
+    Conversion(String),
 }

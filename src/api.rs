@@ -969,7 +969,7 @@ mod tests {
 
         // put
         let order_id = order_post_check.order_id;
-        let mut order_put: model::OrderRequest = order_post_check.into();
+        let mut order_put: model::OrderRequest = order_post_check.try_into().unwrap();
         order_put.price = Some(modified_price);
         let req = api
             .put_account_order(account_number().await, order_id, order_put.clone())
