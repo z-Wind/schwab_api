@@ -42,6 +42,8 @@ async-channel = "2.5"
 urlencoding = "2.1"
 derive_builder = "0.20"
 tracing = { version = "0.1", features = ["log"] }
+strum = "0.27"
+strum_macros = "0.27"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

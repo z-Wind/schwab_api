@@ -1,12 +1,14 @@
 /// specifies Parameter for Schwab API
 use serde::Deserialize;
 use serde::Serialize;
+use strum_macros::AsRefStr;
 
 /// Field
 ///
 /// possible root nodes are `quote`, `fundamental`, `extended`, `reference`, `regular`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, AsRefStr)]
 #[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum QuoteField {
     Quote,
     Fundamental,
@@ -15,7 +17,18 @@ pub enum QuoteField {
     Regular,
     All,
     #[serde(untagged)]
+    #[strum(disabled)]
     Extra(String),
+}
+
+impl QuoteField {
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Extra(s) => s.as_str(),
+            _ => self.as_ref(), // 這裡獲取的是 &'static str
+        }
+    }
 }
 
 /// Contract Type
@@ -120,8 +133,9 @@ pub enum SortAttribute {
 /// Market
 ///
 /// Available values : `equity`, `option`, `bond`, `future`, `forex`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, AsRefStr)]
 #[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
 pub enum Market {
     Equity,
     Option,

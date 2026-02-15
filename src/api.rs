@@ -26,17 +26,8 @@ impl<T: Tokener> Api<T> {
     #[instrument(skip(tokener, client))]
     pub async fn new(tokener: T, client: Client) -> Result<Self, Error> {
         tracing::info!("initializing Schwab API client");
-
-        let api = Api { tokener, client };
-
-        tracing::debug!("verifying API access with test quote request");
-        if (api.get_quote("AAPL".to_string()).await?.send().await).is_err() {
-            tracing::warn!("initial API access failed; forcing re-authorization");
-            api.tokener.redo_authorization().await?;
-        }
-
-        tracing::info!("Schwab API client initialized successfully");
-        Ok(api)
+        tokener.get_access_token().await?;
+        Ok(Api { tokener, client })
     }
 
     #[instrument(skip(self), fields(symbol_count = symbols.len()))]

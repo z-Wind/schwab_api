@@ -318,20 +318,7 @@ impl EndpointMarketHour {
             EndpointMarketHour::Market { market_id } => {
                 tracing::trace!(market_id = ?market_id, "constructing market endpoint URL");
 
-                let market_id_val = serde_json::to_value(market_id)
-                    .inspect_err(|e| {
-                        tracing::error!(error = %e, "failed to serialize market_id to JSON value");
-                    })
-                    .ok();
-
-                let market_id_str = market_id_val
-                    .as_ref()
-                    .and_then(|v| v.as_str())
-                    .unwrap_or_else(|| {
-                        tracing::error!("market_id is not a valid string; check model definition");
-                        "unknown"
-                    });
-
+                let market_id_str = market_id.as_ref();
                 let encoded_id = encode(market_id_str);
                 let path = format!("/markets/{encoded_id}");
 
@@ -357,7 +344,7 @@ pub(crate) enum EndpointInstrument {
     // GET
     // /instruments/{cusip_id}
     // Get Instrument by specific cusip
-    Instrutment { cusip_id: String },
+    Instrument { cusip_id: String },
 }
 
 impl EndpointInstrument {
@@ -365,7 +352,7 @@ impl EndpointInstrument {
     pub(crate) fn url_endpoint(&self) -> String {
         match self {
             EndpointInstrument::Instruments => "/instruments".to_string(),
-            EndpointInstrument::Instrutment { cusip_id } => {
+            EndpointInstrument::Instrument { cusip_id } => {
                 let cusip_id = encode(cusip_id);
                 format!("/instruments/{cusip_id}")
             }
@@ -543,7 +530,7 @@ mod tests {
 
         assert_eq!(
             "https://api.schwabapi.com/marketdata/v1/instruments/123456",
-            EndpointInstrument::Instrutment {
+            EndpointInstrument::Instrument {
                 cusip_id: "123456".to_string()
             }
             .url()

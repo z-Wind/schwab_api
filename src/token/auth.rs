@@ -5,7 +5,7 @@ use oauth2::{
 };
 use reqwest::Client;
 use serde::Deserialize;
-use std::{path::PathBuf, sync::LazyLock};
+use std::{path::Path, sync::LazyLock};
 use tracing::instrument;
 use url::Url;
 
@@ -184,7 +184,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
     }
 
     #[instrument(skip(self), fields(path = %path.display()))]
-    pub(super) async fn save(&self, path: &PathBuf) -> Result<Token, Error> {
+    pub(super) async fn save(&self, path: &Path) -> Result<Token, Error> {
         tracing::info!("starting full authorization and token save flow");
 
         let token = self
@@ -202,6 +202,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
+    use std::path::PathBuf;
     use std::{borrow::Cow, collections::HashMap};
     use test_log::test;
 

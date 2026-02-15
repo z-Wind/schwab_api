@@ -118,7 +118,12 @@ impl TryFrom<Order> for OrderRequest {
             replacing_order_collection: value.replacing_order_collection,
             child_order_strategies: value
                 .child_order_strategies
-                .map(|orders| orders.into_iter().map(TryInto::try_into).collect())
+                .map(|orders| {
+                    orders
+                        .into_iter()
+                        .map(TryInto::try_into)
+                        .collect::<Result<Vec<_>, _>>()
+                })
                 .transpose()?,
             status_description: value.status_description,
         })

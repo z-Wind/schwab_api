@@ -9,7 +9,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tokio::sync::Mutex;
 use tracing::instrument;
 
@@ -241,7 +241,7 @@ struct Token {
 
 impl Token {
     #[instrument(fields(path = %path.display()))]
-    fn load(path: &PathBuf) -> std::io::Result<Token> {
+    fn load(path: &Path) -> std::io::Result<Token> {
         tracing::debug!("loading token from file");
 
         let mut file = File::open(path).inspect_err(|e| {
@@ -262,7 +262,7 @@ impl Token {
     }
 
     #[instrument(skip(self), fields(path = %path.display()))]
-    fn save(&self, path: &PathBuf) -> std::io::Result<()> {
+    fn save(&self, path: &Path) -> std::io::Result<()> {
         if let Some(dir) = path.parent() {
             std::fs::create_dir_all(dir).inspect_err(|e| {
                 tracing::error!(directory = %dir.display(), error = %e, "Failed to create token directory");

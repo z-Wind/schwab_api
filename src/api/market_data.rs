@@ -79,18 +79,14 @@ impl GetQuotesRequest {
         let mut req = self.req.query(&[("symbols", self.symbols.join(","))]);
 
         if let Some(ref fields) = self.fields {
-            let field_strs: Vec<String> = fields
+            let field_strs = fields
                 .iter()
-                .filter_map(|f| match f {
-                    QuoteField::Extra(s) => Some(s.clone()),
-                    _ => serde_json::to_value(f)
-                        .ok()
-                        .and_then(|v| v.as_str().map(std::string::ToString::to_string)),
-                })
-                .collect();
+                .map(super::parameter::QuoteField::as_str)
+                .collect::<Vec<_>>()
+                .join(",");
 
             if !field_strs.is_empty() {
-                req = req.query(&[("fields", field_strs.join(","))]);
+                req = req.query(&[("fields", field_strs)]);
             }
         }
 
@@ -98,10 +94,7 @@ impl GetQuotesRequest {
             req = req.query(&[("indicative", indicative.to_string())]);
         }
 
-        tracing::debug!(
-            "request built with {} fields",
-            self.fields.as_ref().map_or(0, std::vec::Vec::len)
-        );
+        tracing::debug!(field_count = %self.fields.as_ref().map_or(0, std::vec::Vec::len), "request built");
 
         req
     }
@@ -204,25 +197,18 @@ impl GetQuoteRequest {
         let mut req = self.req;
 
         if let Some(ref fields) = self.fields {
-            let field_strs: Vec<String> = fields
+            let field_strs = fields
                 .iter()
-                .filter_map(|f| match f {
-                    QuoteField::Extra(s) => Some(s.clone()),
-                    _ => serde_json::to_value(f)
-                        .ok()
-                        .and_then(|v| v.as_str().map(std::string::ToString::to_string)),
-                })
-                .collect();
+                .map(super::parameter::QuoteField::as_str)
+                .collect::<Vec<_>>()
+                .join(",");
 
             if !field_strs.is_empty() {
-                req = req.query(&[("fields", field_strs.join(","))]);
+                req = req.query(&[("fields", field_strs)]);
             }
         }
 
-        tracing::debug!(
-            "request built with {} fields",
-            self.fields.as_ref().map_or(0, std::vec::Vec::len)
-        );
+        tracing::debug!(field_count = %self.fields.as_ref().map_or(0, std::vec::Vec::len), "request built");
 
         req
     }
@@ -977,7 +963,8 @@ impl GetMoversRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("symbol", self.symbol)]);
+        let mut req = self.req;
+
         if let Some(x) = self.sort {
             req = req.query(&[("sort", x)]);
         }
@@ -1073,16 +1060,12 @@ impl GetMarketsRequest {
     fn build(self) -> RequestBuilder {
         tracing::debug!("building market hours request");
 
-        let market_strs = self
+        let markets_param = self
             .markets
             .iter()
-            .filter_map(|m| {
-                serde_json::to_value(m)
-                    .ok()
-                    .and_then(|v| v.as_str().map(std::string::ToString::to_string))
-            })
-            .collect::<Vec<_>>();
-        let markets_param = market_strs.join(",");
+            .map(std::convert::AsRef::as_ref)
+            .collect::<Vec<_>>()
+            .join(",");
 
         tracing::debug!(markets = %markets_param, "markets parameter constructed");
 
@@ -1180,7 +1163,8 @@ impl GetMarketRequest {
     }
 
     fn build(self) -> RequestBuilder {
-        let mut req = self.req.query(&[("market_id", self.market_id)]);
+        let mut req = self.req;
+
         if let Some(x) = self.date {
             req = req.query(&[("date", x)]);
         }
@@ -1316,7 +1300,7 @@ pub struct GetInstrumentRequest {
 
 impl GetInstrumentRequest {
     fn endpoint(cusip_id: String) -> endpoints::EndpointInstrument {
-        endpoints::EndpointInstrument::Instrutment { cusip_id }
+        endpoints::EndpointInstrument::Instrument { cusip_id }
     }
 
     pub(crate) fn new(client: &Client, access_token: String, cusip_id: String) -> Self {
