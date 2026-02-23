@@ -78,15 +78,15 @@ impl TryFrom<Order> for OrderRequest {
 
     fn try_from(value: Order) -> Result<Self, Self::Error> {
         Ok(Self {
-            session: Some(value.session),
-            duration: Some(value.duration),
-            order_type: Some(value.order_type.try_into()?),
+            session: value.session,
+            duration: value.duration,
+            order_type: Some(value.order_type.unwrap().try_into().unwrap()),
             cancel_time: value.cancel_time,
-            complex_order_strategy_type: Some(value.complex_order_strategy_type),
-            quantity: Some(value.quantity),
-            filled_quantity: Some(value.filled_quantity),
-            remaining_quantity: Some(value.remaining_quantity),
-            destination_link_name: Some(value.destination_link_name),
+            complex_order_strategy_type: Some(value.complex_order_strategy_type.unwrap()),
+            quantity: Some(value.quantity.unwrap()),
+            filled_quantity: Some(value.filled_quantity.unwrap()),
+            remaining_quantity: value.remaining_quantity,
+            destination_link_name: value.destination_link_name,
             release_time: value.release_time,
             stop_price: value.stop_price,
             stop_price_link_basis: value.stop_price_link_basis,
@@ -95,14 +95,15 @@ impl TryFrom<Order> for OrderRequest {
             stop_type: value.stop_type,
             price_link_basis: value.price_link_basis,
             price_link_type: value.price_link_type,
-            price: Some(value.price),
-            tax_lot_method: value.tax_lot_method,
+            price: Some(value.price.unwrap()),
+            tax_lot_method: Some(value.tax_lot_method.unwrap()),
             order_leg_collection: Some(
                 value
                     .order_leg_collection
+                    .unwrap()
                     .into_iter()
                     .map(Into::into)
-                    .collect(),
+                    .collect::<Vec<_>>(),
             ),
             activation_price: value.activation_price,
             special_instruction: value.special_instruction,

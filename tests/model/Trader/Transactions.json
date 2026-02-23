@@ -27,7 +27,6 @@
             {
                 "instrument": {
                     "assetType": "TRANSACTION_CASH_EQUIVALENT",
-                    "assetType": "TRANSACTION_CASH_EQUIVALENT",
                     "cusip": "string",
                     "symbol": "string",
                     "description": "string",
@@ -70,7 +69,6 @@
         "transferItems": [
             {
                 "instrument": {
-                    "assetType": "TRANSACTION_CASH_EQUIVALENT",
                     "assetType": "TRANSACTION_CASH_EQUIVALENT",
                     "cusip": "string",
                     "symbol": "string",

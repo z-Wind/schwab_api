@@ -1601,12 +1601,14 @@ mod tests {
 
         // check setter
         // none
-
         tracing::debug!(?req);
         let result = req.send().await;
         mock.assert_async().await;
         let result = result.unwrap();
-        assert_eq!(result.session, model::trader::order::Session::Normal);
+        assert_eq!(
+            result.session.unwrap(),
+            model::trader::order::Session::Normal
+        );
     }
 
     #[test(tokio::test)]

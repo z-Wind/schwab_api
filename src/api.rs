@@ -892,7 +892,7 @@ mod tests {
         ignore = r#"Without the "test_online" feature enabled, to activate it, corresponding SCHWAB_API_KEY, SCHWAB_SECRET and SCHWAB_CALLBACK_URL need to be provided in the environment."#
     )]
     #[allow(clippy::too_many_lines)]
-    #[test(tokio::test)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_post_put_delete_account_order() {
         let api = client().await;
 
@@ -930,33 +930,30 @@ mod tests {
         let order_post_check = req.send().await.unwrap();
         tracing::debug!(?order_post_check);
         assert_eq!(
-            order_post_check.session,
+            order_post_check.session.unwrap(),
             model::trader::order::Session::Normal
         );
-        assert_approx_eq!(f64, order_post_check.price, price);
+        assert_approx_eq!(f64, order_post_check.price.unwrap(), price);
         assert_eq!(
-            order_post_check.duration,
+            order_post_check.duration.unwrap(),
             model::trader::order::Duration::Day
         );
         assert_eq!(
-            order_post_check.order_type,
+            order_post_check.order_type.unwrap(),
             model::trader::order::OrderType::Limit
         );
+        let order_legs = order_post_check.order_leg_collection.as_ref().unwrap();
+        let first_leg = order_legs.first().unwrap();
+
         assert_eq!(
-            Into::<InstrumentRequest>::into(
-                order_post_check.order_leg_collection[0].instrument.clone()
-            ),
+            Into::<InstrumentRequest>::into(first_leg.instrument.clone()),
             symbol
         );
         assert_eq!(
-            Into::<Instruction>::into(order_post_check.order_leg_collection[0].instruction),
+            Into::<Instruction>::into(first_leg.instruction),
             Instruction::Buy
         );
-        assert_approx_eq!(
-            f64,
-            order_post_check.order_leg_collection[0].quantity,
-            quantity
-        );
+        assert_approx_eq!(f64, first_leg.quantity, quantity);
 
         // put
         let order_id = order_post_check.order_id;
@@ -976,31 +973,52 @@ mod tests {
         let order_put_check = req.send().await.unwrap();
         tracing::debug!(?order_put_check);
         assert_eq!(
-            order_put_check.session,
+            order_put_check.session.unwrap(),
             model::trader::order::Session::Normal
         );
-        assert_approx_eq!(f64, order_put_check.price, modified_price);
+        assert_approx_eq!(f64, order_put_check.price.unwrap(), modified_price);
         assert_eq!(
-            order_put_check.duration,
+            order_put_check.duration.unwrap(),
             model::trader::order::Duration::Day
         );
         assert_eq!(
-            order_put_check.order_type,
+            order_put_check.order_type.unwrap(),
             model::trader::order::OrderType::Limit
         );
         assert_eq!(
             Into::<InstrumentRequest>::into(
-                order_put_check.order_leg_collection[0].instrument.clone()
+                order_put_check
+                    .order_leg_collection
+                    .clone()
+                    .unwrap()
+                    .first()
+                    .unwrap()
+                    .instrument
+                    .clone()
             ),
             symbol
         );
         assert_eq!(
-            Into::<Instruction>::into(order_put_check.order_leg_collection[0].instruction),
+            Into::<Instruction>::into(
+                order_put_check
+                    .order_leg_collection
+                    .clone()
+                    .unwrap()
+                    .first()
+                    .unwrap()
+                    .instruction
+            ),
             Instruction::Buy
         );
         assert_approx_eq!(
             f64,
-            order_put_check.order_leg_collection[0].quantity,
+            order_put_check
+                .order_leg_collection
+                .clone()
+                .unwrap()
+                .first()
+                .unwrap()
+                .quantity,
             quantity
         );
 
