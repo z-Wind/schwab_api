@@ -75,7 +75,7 @@ pub struct OrderActivity {
     pub quantity: f64,
     pub order_remaining_quantity: f64,
     /// xml: `OrderedMap` { "name": "executionLegs", "wrapped": true }
-    pub execution_legs: Vec<ExecutionLeg>,
+    pub execution_legs: Option<Vec<ExecutionLeg>>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
