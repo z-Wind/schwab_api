@@ -26,4 +26,6 @@ pub enum Error {
     Config(String),
     #[error("Conversion error: {0}")]
     Conversion(String),
+    #[error("Streaming error: {0}")]
+    Streaming(String),
 }

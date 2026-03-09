@@ -53,7 +53,7 @@ pub struct Order {
     pub status_description: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderLegCollection {
     pub order_leg_type: OrderLegType,
@@ -67,7 +67,7 @@ pub struct OrderLegCollection {
     pub to_symbol: Option<String>,
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderActivity {
     pub activity_type: ActivityType,
@@ -78,7 +78,7 @@ pub struct OrderActivity {
     pub execution_legs: Option<Vec<ExecutionLeg>>,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutionLeg {
     pub leg_id: i64,
@@ -90,11 +90,10 @@ pub struct ExecutionLeg {
 }
 
 /// The market session during which the order trade should be executed.
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Session {
     /// Normal market hours, from 9:30am to 4:00pm Eastern.
-    #[default]
     Normal,
     /// Premarket session, from 8:00am to 9:30am Eastern.
     Am,
@@ -106,12 +105,11 @@ pub enum Session {
 }
 
 /// Length of time over which the trade will be active.
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Duration {
     /// Cancel the trade at the end of the trading day. Note if the order cannot
     /// be filled all at once, you may see partial executions throughout the day.
-    #[default]
     Day,
     /// Keep the trade open for six months, or until the end of the cancel date,
     /// whichever is shorter. Note if the order cannot be filled all at once, you
@@ -374,19 +372,21 @@ pub enum Status {
     Unknown,
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ActivityType {
-    #[default]
     Execution,
     OrderAction,
+    OrderAccepted,
+    CancelAccepted,
+    ExecutionCreated,
+    OrderUROutCompleted,
 }
 
 /// Order Status
-#[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExecutionType {
-    #[default]
     /// Your order is waiting to be completed.
     Open,
     /// Your order cannot be completed until a certain condition is met.

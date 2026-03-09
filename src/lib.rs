@@ -64,6 +64,7 @@ unused_allocation
 pub mod api;
 pub mod error;
 pub mod model;
+pub mod streaming;
 pub mod token;
 
 pub use api::Api;

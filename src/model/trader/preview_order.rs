@@ -10,7 +10,7 @@ use super::order::PositionEffect;
 use super::order::Session;
 use super::transactions::TransactionInstrument;
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreviewOrder {
     pub order_id: i64,
@@ -20,7 +20,7 @@ pub struct PreviewOrder {
 }
 
 #[allow(clippy::struct_field_names)]
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderStrategy {
     pub account_number: String,

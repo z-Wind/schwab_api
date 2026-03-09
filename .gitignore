@@ -15,3 +15,5 @@ Cargo.lock
 
 # Vim swap files
 *.swp
+/.certs
+/.creds

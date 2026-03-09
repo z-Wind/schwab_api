@@ -44,6 +44,15 @@ derive_builder = "0.20"
 tracing = { version = "0.1", features = ["log"] }
 strum = "0.27"
 strum_macros = "0.27"
+tokio-tungstenite = { version = "0.23", features = ["native-tls"] }
+futures-util = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+envy = "0.4.2"
+dotenv = "0.15.0"
+
+[[bin]]
+name = "stream_account"
+path = "src/bin/stream_account.rs"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
