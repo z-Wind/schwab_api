@@ -143,6 +143,7 @@ impl StreamingClient {
                 }
             };
 
+            // One frame can have many activities
             let mut activities = Vec::new();
             for msg in raw_frame.messages() {
                 match msg.account_activities() {
@@ -150,7 +151,6 @@ impl StreamingClient {
                     Err(e) => return Some(Err(e)),
                 }
             }
-            // dbg!(&activities);
 
             if !activities.is_empty() {
                 return Some(Ok(activities));

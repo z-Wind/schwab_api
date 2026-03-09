@@ -3,8 +3,10 @@ use std::path::PathBuf;
 use dotenv;
 use reqwest::Client;
 use schwab_api::Api;
+use schwab_api::model::trader::order;
 use schwab_api::model::trader::user_preference::UserPreferences;
 use schwab_api::streaming::StreamingClient;
+use schwab_api::streaming::model::AccountActivityEvent;
 use schwab_api::token::{TokenChecker, Tokener};
 
 #[tokio::main]
@@ -55,6 +57,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match result {
             Ok(activities) => {
                 for a in activities {
+                    // match a.event {
+                    //     AccountActivityEvent::Subscribed => todo!(),
+                    //     AccountActivityEvent::OrderCreated(order_created) =>  order_created.base_event.order_created.order.order.asset_type,
+                    //     AccountActivityEvent::OrderAccepted(order_accepted) => order_accepted.base_event.order_accepted.status,
+                    //     AccountActivityEvent::CancelAccepted(cancel_accepted) => todo!(),
+                    //     AccountActivityEvent::ChangeCreated(change_created) => todo!(),
+                    //     AccountActivityEvent::ChangeAccepted(change_accepted) => todo!(),
+                    //     AccountActivityEvent::OrderMonitorCompleted(order_monitor_completed) => todo!(),
+                    //     AccountActivityEvent::OrderMonitorCreated(order_monitor_created) => todo!(),
+                    //     AccountActivityEvent::ExecutionCreated(execution_created) => todo!(),
+                    //     AccountActivityEvent::OrderUROutCompleted(order_urout_completed) => todo!(),
+                    // }
+
                     serde_json::to_string_pretty(&a)
                         .map(|s| println!("Received account activity:\n{s}"))
                         .unwrap_or_else(|e| eprintln!("Failed to serialize activity: {e}"));

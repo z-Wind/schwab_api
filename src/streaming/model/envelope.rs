@@ -3,20 +3,11 @@ use std::collections::HashMap;
 use serde::Deserialize;
 
 use super::{account_activity::AccountActivity, command::Command, service::Service};
-use crate::Error;
+use crate::{Error, streaming::model::AccountActivityEvent};
 
 // ─────────────────────────────────────────────────────────────
 // Public message types
 // ─────────────────────────────────────────────────────────────
-
-/// The type of streaming message received from Schwab.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum StreamerMessageType {
-    Response,
-    Notify,
-    Snapshot,
-    Data,
-}
 
 /// Individual parsed messages extracted from a [`RawStreamerFrame`].
 #[derive(Debug, Clone)]
@@ -79,15 +70,6 @@ pub enum RawStreamerMessage {
 }
 
 impl RawStreamerMessage {
-    pub fn message_type(&self) -> StreamerMessageType {
-        match self {
-            Self::Notify(_) => StreamerMessageType::Notify,
-            Self::Response(_) => StreamerMessageType::Response,
-            Self::Data(_) => StreamerMessageType::Data,
-            Self::Snapshot(_) => StreamerMessageType::Snapshot,
-        }
-    }
-
     pub fn account_activities(&self) -> Result<Vec<AccountActivity>, Error> {
         match self {
             Self::Data(msg) | Self::Snapshot(msg) => msg.account_activities(),
@@ -146,11 +128,10 @@ impl DataMessage {
     /// Parse content items as [`AccountActivity`] records.
     /// Returns an empty `Vec` if the service is not `ACCT_ACTIVITY`.
     pub(super) fn account_activities(&self) -> Result<Vec<AccountActivity>, Error> {
-        use super::account_activity::AccountActivityEvent;
-
         if !matches!(self.service, Service::AccountActivity) {
             return Ok(vec![]);
         }
+        // dbg!(&self);
 
         self.content
             .iter()

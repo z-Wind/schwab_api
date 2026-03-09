@@ -15,7 +15,7 @@ pub use account_activity::{
     OrderUROutCompletedBaseEvent, OrderUROutCompletedEvent, QuoteEntry, SchwabDecimal, Security,
 };
 pub use command::Command;
-pub use envelope::{StreamerMessage, StreamerMessageType};
+pub use envelope::StreamerMessage;
 pub use request::{Request, StreamerRequest};
 pub use service::Service;
 

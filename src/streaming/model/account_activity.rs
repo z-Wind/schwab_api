@@ -6,6 +6,14 @@ use crate::Error;
 // Shared primitives
 // ─────────────────────────────────────────────────────────────
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum AccountActivityStatus {
+    Open,
+    LegOpen,
+    LegClosed,
+    LegSubStatusCancelled,
+}
+
 /// Schwab's proprietary fixed-point number.
 /// `lo` is the raw integer; `sign_scale` encodes sign and decimal position.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -141,7 +149,7 @@ pub struct OrderAcceptedEvent {
     #[serde(rename = "ExpiryTimeStamp", default)]
     pub expiry_timestamp: Option<DateTimeValue>,
     #[serde(rename = "Status")]
-    pub status: String,
+    pub status: AccountActivityStatus,
     #[serde(rename = "TradingSessionCodeOnOrderEntry", default)]
     pub trading_session_code: Option<String>,
     #[serde(rename = "QuoteOnOrderEntry", default)]
@@ -177,9 +185,9 @@ pub struct LegCancelInfo {
     #[serde(rename = "RequestedAmount", default)]
     pub requested_amount: Option<SchwabDecimal>,
     #[serde(rename = "LegStatus", default)]
-    pub leg_status: Option<String>,
+    pub leg_status: Option<AccountActivityStatus>,
     #[serde(rename = "LegSubStatus", default)]
-    pub leg_sub_status: Option<String>,
+    pub leg_sub_status: Option<AccountActivityStatus>,
     #[serde(rename = "CancelAcceptedTime", default)]
     pub cancel_accepted_time: Option<DateTimeValue>,
 }
@@ -369,9 +377,9 @@ pub struct ChangeAcceptedEvent {
     #[serde(rename = "ExpiryTimeStamp", default)]
     pub expiry_timestamp: Option<DateTimeValue>,
     #[serde(rename = "Status", default)]
-    pub status: Option<String>,
+    pub status: Option<AccountActivityStatus>,
     #[serde(rename = "LegStatus", default)]
-    pub leg_status: Option<String>,
+    pub leg_status: Option<AccountActivityStatus>,
     #[serde(rename = "TradingSessionCodeOnOrderEntry", default)]
     pub trading_session_code: Option<String>,
     #[serde(rename = "QuoteOnOrderEntry", default)]
@@ -411,9 +419,9 @@ pub struct OrderUROutCompletedEvent {
     #[serde(rename = "CancelQuantity", default)]
     pub cancel_quantity: Option<SchwabDecimal>,
     #[serde(rename = "LegStatus", default)]
-    pub leg_status: Option<String>,
+    pub leg_status: Option<AccountActivityStatus>,
     #[serde(rename = "LegSubStatus", default)]
-    pub leg_sub_status: Option<String>,
+    pub leg_sub_status: Option<AccountActivityStatus>,
     #[serde(rename = "OutCancelType", default)]
     pub out_cancel_type: Option<String>,
     #[serde(rename = "ExecutionTimeStamp")]
