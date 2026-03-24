@@ -1,7 +1,7 @@
 //! APIs to access Market Data
 //! [API Documentation](https://developer.schwab.com/products/trader-api--individual/details/specifications/Market%20Data%20Production)
 
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder};
 use std::collections::HashMap;
 use tracing::instrument;
 
@@ -111,25 +111,35 @@ impl GetQuotesRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let map: model::QuoteResponseMap = serde_json::from_str(&body_text).inspect_err(|e| {
-            save_raw_json("log", "QuoteResponseMap", &body_text);
-            tracing::error!(error = %e, "failed to parse quote response");
-        })?;
+        let map: model::QuoteResponseMap =
+            serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
+                save_raw_json("log", "QuoteResponseMap", &body_text);
+
+                tracing::error!(
+                    error = %e,
+                    line = %e.line(),
+                    col = %e.column(),
+                    "schema mismatch in QuoteResponseMap; raw payload saved for debugging"
+                );
+            })?;
 
         if let Some(e) = map.errors {
             tracing::warn!("quote response contains errors");
@@ -226,25 +236,34 @@ impl GetQuoteRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response from server");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
         let mut map: model::QuoteResponseMap =
-            serde_json::from_str(&body_text).inspect_err(|e| {
+            serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "QuoteResponseMap", &body_text);
-                tracing::error!(error = %e, "json parse failed");
+
+                tracing::error!(
+                    error = %e,
+                    line = %e.line(),
+                    col = %e.column(),
+                    "schema mismatch in QuoteResponseMap; raw payload saved for debugging"
+                );
             })?;
 
         if let Some(e) = map.errors {
@@ -559,24 +578,33 @@ impl GetOptionChainsRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let option_chain = serde_json::from_str(&body_text).inspect_err(|e| {
+        let option_chain = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "OptionChain", &body_text);
-            tracing::error!(error = %e, "failed to parse option chain");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in OptionChain; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("option chain retrieved successfully");
@@ -622,24 +650,33 @@ impl GetOptionExpirationChainRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let expiration_chain = serde_json::from_str(&body_text).inspect_err(|e| {
+        let expiration_chain = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "ExpirationChain", &body_text);
-            tracing::error!(error = %e, "failed to parse expiration chain");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in ExpirationChain; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("expiration chain retrieved successfully");
@@ -868,24 +905,33 @@ impl GetPriceHistoryRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let candle_list = serde_json::from_str(&body_text).inspect_err(|e| {
+        let candle_list = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "CandleList", &body_text);
-            tracing::error!(error = %e, "failed to parse candle list");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in CandleList; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("price history retrieved successfully");
@@ -987,24 +1033,33 @@ impl GetMoversRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let mover = serde_json::from_str(&body_text).inspect_err(|e| {
+        let mover = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Mover", &body_text);
-            tracing::error!(error = %e, "failed to parse mover data");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Mover; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("movers retrieved successfully");
@@ -1093,24 +1148,33 @@ impl GetMarketsRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let markets = serde_json::from_str(&body_text).inspect_err(|e| {
+        let markets = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Markets", &body_text);
-            tracing::error!(error = %e, "failed to parse markets data");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Markets; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("markets data retrieved successfully");
@@ -1184,24 +1248,33 @@ impl GetMarketRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let markets = serde_json::from_str(&body_text).inspect_err(|e| {
+        let markets = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Markets", &body_text);
-            tracing::error!(error = %e, "failed to parse market data");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Markets; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("market data retrieved successfully");
@@ -1263,24 +1336,33 @@ impl GetInstrumentsRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let instruments = serde_json::from_str(&body_text).inspect_err(|e| {
+        let instruments = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Instruments", &body_text);
-            tracing::error!(error = %e, "failed to parse instruments");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Instruments; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("instruments retrieved successfully");
@@ -1332,25 +1414,35 @@ impl GetInstrumentRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response from server");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
+
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
                 save_raw_json("log", "ErrorResponse", &body_text);
-                tracing::error!(error = %e, "failed to parse error response");
+                tracing::error!(error = %e, "failed to decode error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Response(error_response));
         }
 
-        let mut data: model::Instruments = serde_json::from_str(&body_text).inspect_err(|e| {
-            save_raw_json("log", "Instruments", &body_text);
-            tracing::error!(error = %e, "failed to parse Instruments");
-        })?;
+        let mut data: model::Instruments =
+            serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
+                save_raw_json("log", "Instruments", &body_text);
+
+                tracing::error!(
+                    error = %e,
+                    line = %e.line(),
+                    col = %e.column(),
+                    "schema mismatch in Instruments; raw payload saved for debugging"
+                );
+            })?;
 
         let count = data.instruments.len();
         let instrument = if data.instruments.is_empty() {

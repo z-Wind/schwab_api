@@ -46,24 +46,32 @@ impl GetAccountNumbersRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let account_numbers = serde_json::from_str(&body_text).inspect_err(|e| {
+        let account_numbers = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "AccountNumbers", &body_text);
-            tracing::error!(error = %e, "failed to parse account numbers");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in AccountNumbers; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("account numbers retrieved successfully");
@@ -133,24 +141,32 @@ impl GetAccountsRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let accounts = serde_json::from_str(&body_text).inspect_err(|e| {
+        let accounts = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Accounts", &body_text);
-            tracing::error!(error = %e, "failed to parse accounts");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Accounts; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("accounts retrieved successfully");
@@ -230,24 +246,32 @@ impl GetAccountRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let account = serde_json::from_str(&body_text).inspect_err(|e| {
+        let account = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Account", &body_text);
-            tracing::error!(error = %e, "failed to parse account");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Account; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("account retrieved successfully");
@@ -370,24 +394,32 @@ impl GetAccountOrdersRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let orders: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
+        let orders: Vec<_> = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Orders", &body_text);
-            tracing::error!(error = %e, "failed to parse orders");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Orders; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!(
@@ -451,30 +483,31 @@ impl PostAccountOrderRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        if status != StatusCode::CREATED {
-            tracing::warn!(%status, "order creation failed");
+        if status == StatusCode::CREATED {
+            let order_id = parse_order_id_from_headers(rsp.headers());
 
-            let body_text = rsp.text().await.inspect_err(|e| {
-                tracing::error!(error = %e, "failed to read response body");
-            })?;
+            if let Some(id) = order_id {
+                tracing::info!(order_id = id, "order created successfully");
+            } else {
+                tracing::warn!("order created but no order ID in response");
+            }
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            return Ok(order_id);
+        }
+
+        tracing::warn!(%status, "order creation failed");
+
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
+        })?;
+
+        let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
-            return Err(Error::Service(error_response));
-        }
-
-        let order_id = parse_order_id_from_headers(rsp.headers());
-
-        if let Some(id) = order_id {
-            tracing::info!(order_id = id, "order created successfully");
-        } else {
-            tracing::warn!("order created but no order ID in response");
-        }
-
-        Ok(order_id)
+        return Err(Error::Service(error_response));
     }
 }
 
@@ -546,24 +579,32 @@ impl GetAccountOrderRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let order = serde_json::from_str(&body_text).inspect_err(|e| {
+        let order = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Order", &body_text);
-            tracing::error!(error = %e, "failed to parse order");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Order; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("order retrieved successfully");
@@ -629,23 +670,24 @@ impl DeleteAccountOrderRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "order deletion failed");
-
-            let body_text = rsp.text().await.inspect_err(|e| {
-                tracing::error!(error = %e, "failed to read response body");
-            })?;
-
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
-                save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
-            })?;
-
-            return Err(Error::Service(error_response));
+        if status == StatusCode::OK {
+            tracing::info!("order deleted successfully");
+            return Ok(());
         }
 
-        tracing::info!("order deleted successfully");
-        Ok(())
+        tracing::warn!(%status, "order deletion failed");
+
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
+        })?;
+
+        let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
+                save_raw_json("log", "ServiceError", &body_text);
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
+            })?;
+
+        Err(Error::Service(error_response))
     }
 }
 
@@ -716,30 +758,31 @@ impl PutAccountOrderRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        if status != StatusCode::CREATED {
-            tracing::warn!(%status, "order update failed");
+        if status == StatusCode::CREATED {
+            let order_id = parse_order_id_from_headers(rsp.headers());
 
-            let body_text = rsp.text().await.inspect_err(|e| {
-                tracing::error!(error = %e, "failed to read response body");
-            })?;
+            if let Some(id) = order_id {
+                tracing::info!(order_id = id, "order updated successfully");
+            } else {
+                tracing::warn!("order updated but no order ID in response");
+            }
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            return Ok(order_id);
+        }
+
+        tracing::warn!(%status, "order update failed");
+
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
+        })?;
+
+        let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
-            return Err(Error::Service(error_response));
-        }
-
-        let order_id = parse_order_id_from_headers(rsp.headers());
-
-        if let Some(id) = order_id {
-            tracing::info!(order_id = id, "order updated successfully");
-        } else {
-            tracing::warn!("order updated but no order ID in response");
-        }
-
-        Ok(order_id)
+        Err(Error::Service(error_response))
     }
 }
 
@@ -851,24 +894,32 @@ impl GetAccountsOrdersRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let orders: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
+        let orders: Vec<_> = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Orders", &body_text);
-            tracing::error!(error = %e, "failed to parse orders");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Orders; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!(
@@ -932,24 +983,32 @@ impl PostAccountPreviewOrderRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let preview_order = serde_json::from_str(&body_text).inspect_err(|e| {
+        let preview_order = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "PreviewOrder", &body_text);
-            tracing::error!(error = %e, "failed to parse preview order");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in PreviewOrder; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("preview order retrieved successfully");
@@ -1057,24 +1116,32 @@ impl GetAccountTransactions {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let transactions: Vec<_> = serde_json::from_str(&body_text).inspect_err(|e| {
+        let transactions: Vec<_> = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Transactions", &body_text);
-            tracing::error!(error = %e, "failed to parse transactions");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Transactions; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!(
@@ -1143,24 +1210,32 @@ impl GetAccountTransaction {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let transaction = serde_json::from_str(&body_text).inspect_err(|e| {
+        let transaction = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "Transaction", &body_text);
-            tracing::error!(error = %e, "failed to parse transaction");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in Transaction; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("transaction retrieved successfully");
@@ -1203,24 +1278,32 @@ impl GetUserPreferenceRequest {
         let status = rsp.status();
         tracing::debug!(%status, "received response");
 
-        let body_text = rsp.text().await.inspect_err(|e| {
-            tracing::error!(error = %e, "failed to read response body");
+        let body_bytes = rsp.bytes().await.inspect_err(|e| {
+            tracing::error!(error = %e, "failed to buffer response payload");
         })?;
 
-        if status != StatusCode::OK {
-            tracing::warn!(%status, "received non-OK response");
+        if !status.is_success() {
+            tracing::warn!(%status, "upstream returned error status");
 
-            let error_response = serde_json::from_str(&body_text).inspect_err(|e| {
+            let error_response = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+                let body_text = String::from_utf8_lossy(&body_bytes);
                 save_raw_json("log", "ServiceError", &body_text);
-                tracing::error!(error = %e, "failed to parse service error");
+                tracing::error!(error = %e, "failed to decode service error response body; raw payload saved"); 
             })?;
 
             return Err(Error::Service(error_response));
         }
 
-        let user_preferences = serde_json::from_str(&body_text).inspect_err(|e| {
+        let user_preferences = serde_json::from_slice(&body_bytes).inspect_err(|e| {
+            let body_text = String::from_utf8_lossy(&body_bytes);
             save_raw_json("log", "UserPreferences", &body_text);
-            tracing::error!(error = %e, "failed to parse user preferences");
+
+            tracing::error!(
+                error = %e,
+                line = %e.line(),
+                col = %e.column(),
+                "schema mismatch in UserPreferences; raw payload saved for debugging"
+            );
         })?;
 
         tracing::info!("user preferences retrieved successfully");
