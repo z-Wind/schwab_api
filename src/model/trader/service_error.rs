@@ -11,6 +11,20 @@ pub struct ServiceError {
     pub errors: Option<Vec<ErrorDetail>>,
 }
 
+impl std::fmt::Display for ServiceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(ref msg) = self.message {
+            write!(f, "Message: {msg} ")?;
+        }
+        if let Some(ref details) = self.errors {
+            for err in details {
+                write!(f, "[{}: {}] ", err.title, err.detail)?;
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorDetail {

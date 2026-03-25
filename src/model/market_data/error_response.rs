@@ -87,13 +87,12 @@ pub enum StatusCode {
     /// [[RFC7231, Section 6.6.1](https://tools.ietf.org/html/rfc7231#section-6.6.1)]
     InternalServerError = 500,
 }
-
 impl<'de> Deserialize<'de> for StatusCode {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        // 1. 先解析成通用 JSON 數值 (serde_json::Value) 或自定義 Enum
+        // 1. Parse into a temporary untagged enum to handle both numeric and string formats
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum TempStatus {
@@ -103,13 +102,17 @@ impl<'de> Deserialize<'de> for StatusCode {
 
         let temp = TempStatus::deserialize(deserializer)?;
 
-        // 2. 將字串或數字統一轉為 i32
+        // 2. Normalize both string and integer inputs into an i32 value
         let code = match temp {
             TempStatus::Int(i) => i,
-            TempStatus::Str(s) => s.parse::<i32>().map_err(serde::de::Error::custom)?,
+            TempStatus::Str(s) => s.parse::<i32>().map_err(|_| {
+                serde::de::Error::custom(format!(
+                    "Expected numeric string for status code, got: '{s}'"
+                ))
+            })?,
         };
 
-        // 3. 對應回 StatusCode
+        // 3. Map the normalized i32 code to the corresponding StatusCode variant
         match code {
             400 => Ok(StatusCode::BadRequest),
             401 => Ok(StatusCode::Unauthorized),

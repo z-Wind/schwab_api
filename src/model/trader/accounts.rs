@@ -22,10 +22,13 @@ pub struct SecuritiesAccountBase {
     pub account_number: String,
     pub round_trips: i64,
     /// default: false
+    #[serde(default)]
     pub is_day_trader: bool,
     /// default: false
+    #[serde(default)]
     pub is_closing_only_restricted: bool,
     /// default: false
+    #[serde(default)]
     pub pfcb_flag: bool,
     pub positions: Option<Vec<Position>>,
 }
@@ -151,7 +154,7 @@ pub struct CashBalance {
     pub cash_debit_call_value: Option<f64>,
     pub unsettled_cash: Option<f64>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub accrued_interest: Option<f64>,
     pub cash_balance: Option<f64>,
     pub cash_receipts: Option<f64>,
@@ -173,7 +176,7 @@ pub struct Position {
     pub short_quantity: f64,
     pub average_price: f64,
     pub current_day_profit_loss: f64,
-    pub current_day_profit_loss_percentage: i64,
+    pub current_day_profit_loss_percentage: f64,
     pub long_quantity: f64,
     pub settled_long_quantity: f64,
     pub settled_short_quantity: f64,
@@ -254,7 +257,7 @@ pub struct AccountOption {
 
     /// xml: `OrderedMap` { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<AccountAPIOptionDeliverable>,
-    pub put_call: AccountOptionPullCall,
+    pub put_call: AccountOptionPutCall,
     pub option_multiplier: Option<i64>,
     #[serde(rename = "type")]
     pub type_field: AccountOptionType,
@@ -326,6 +329,8 @@ pub enum AssetType {
     Product,
     Currency,
     CollectiveInvestment,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -340,7 +345,7 @@ pub enum AccountCashEquivalentType {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum AccountOptionPullCall {
+pub enum AccountOptionPutCall {
     #[default]
     Put,
     Call,

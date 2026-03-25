@@ -57,9 +57,11 @@ pub struct OrderRequest {
     pub order_strategy_type: OrderStrategyType,
     pub order_id: Option<i64>,
     /// default: false
-    pub cancelable: Option<bool>,
+    #[serde(default)]
+    pub cancelable: bool,
     /// default: false
-    pub editable: Option<bool>,
+    #[serde(default)]
+    pub editable: bool,
     pub status: Option<Status>,
     pub entered_time: Option<chrono::DateTime<chrono::Utc>>,
     pub close_time: Option<chrono::DateTime<chrono::Utc>>,
@@ -108,8 +110,8 @@ impl TryFrom<Order> for OrderRequest {
             special_instruction: value.special_instruction,
             order_strategy_type: value.order_strategy_type,
             order_id: Some(value.order_id),
-            cancelable: Some(value.cancelable),
-            editable: Some(value.editable),
+            cancelable: value.cancelable,
+            editable: value.editable,
             status: Some(value.status),
             entered_time: Some(value.entered_time),
             close_time: value.close_time,

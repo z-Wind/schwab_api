@@ -1,5 +1,5 @@
 use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use super::accounts::AssetType;
 
@@ -65,8 +65,9 @@ impl<'de, T: DeserializeOwned> Deserialize<'de> for DuplicatedKey<T> {
     where
         D: Deserializer<'de>,
     {
-        let value: Value = Deserialize::deserialize(deserializer)?;
-        serde_json::from_value(value)
+        let map = Map::<String, Value>::deserialize(deserializer)?;
+
+        T::deserialize(Value::Object(map))
             .map(DuplicatedKey)
             .map_err(serde::de::Error::custom)
     }
@@ -134,9 +135,9 @@ pub struct TransactionFixedIncome {
     #[serde(rename = "type")]
     pub type_field: TransactionFixedIncomeType,
     pub maturity_date: chrono::DateTime<chrono::Utc>,
-    pub factor: f64,
-    pub multiplier: f64,
-    pub variable_rate: f64,
+    pub factor: Option<f64>,
+    pub multiplier: Option<f64>,
+    pub variable_rate: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -158,6 +159,7 @@ pub struct Future {
     pub transaction_base_instrument: TransactionBaseInstrument,
 
     /// default: false
+    #[serde(default)]
     pub active_contract: bool,
     #[serde(rename = "type")]
     pub type_field: FutureType,
@@ -174,6 +176,7 @@ pub struct Index {
     pub transaction_base_instrument: TransactionBaseInstrument,
 
     /// default: false
+    #[serde(default)]
     pub active_contract: bool,
     #[serde(rename = "type")]
     pub type_field: IndexType,
@@ -205,7 +208,7 @@ pub struct TransactionOption {
     /// xml: `OrderedMap` { "name": "optionDeliverables", "wrapped": true }
     pub option_deliverables: Vec<TransactionAPIOptionDeliverable>,
     pub option_premium_multiplier: i64,
-    pub put_call: TransactionOptionPullCall,
+    pub put_call: TransactionOptionPutCall,
     pub strike_price: f64,
     #[serde(rename = "type")]
     pub type_field: TransactionOptionType,
@@ -247,7 +250,7 @@ pub struct TransactionBaseInstrument {
     pub instrument_id: Option<i64>,
     pub net_change: Option<f64>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub status: Option<String>,
     pub closing_price: Option<f64>,
 }
@@ -258,6 +261,7 @@ pub enum TransactionCashEquivalentType {
     SweepVehicle,
     Savings,
     MoneyMarketFund,
+    #[serde(other)]
     Unknown,
 }
 
@@ -269,6 +273,8 @@ pub enum CollectiveInvestmentType {
     ClosedEndFund,
     Index,
     Units,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -286,6 +292,7 @@ pub enum TransactionEquityType {
     ConvertibleStock,
     LimitedPartnership,
     WhenIssued,
+    #[serde(other)]
     Unknown,
 }
 
@@ -310,6 +317,7 @@ pub enum TransactionFixedIncomeType {
     AgencyBond,
     WhenAsAndIfIssuedBond,
     AssetBackedSecurity,
+    #[serde(other)]
     Unknown,
 }
 
@@ -318,6 +326,7 @@ pub enum TransactionFixedIncomeType {
 pub enum ForexType {
     Standard,
     Nbbo,
+    #[serde(other)]
     Unknown,
 }
 
@@ -325,6 +334,7 @@ pub enum ForexType {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum FutureType {
     Standard,
+    #[serde(other)]
     Unknown,
 }
 
@@ -333,6 +343,7 @@ pub enum FutureType {
 pub enum IndexType {
     BroadBased,
     NarrowBased,
+    #[serde(other)]
     Unknown,
 }
 
@@ -344,14 +355,16 @@ pub enum TransactionMutualFundType {
     OpenEndTaxable,
     NoLoadNonTaxable,
     NoLoadTaxable,
+    #[serde(other)]
     Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum TransactionOptionPullCall {
+pub enum TransactionOptionPutCall {
     Put,
     Call,
+    #[serde(other)]
     Unknown,
 }
 
@@ -359,6 +372,7 @@ pub enum TransactionOptionPullCall {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProductType {
     Tbd,
+    #[serde(other)]
     Unknown,
 }
 
@@ -368,6 +382,7 @@ pub enum TransactionOptionType {
     Vanilla,
     Binary,
     Barrier,
+    #[serde(other)]
     Unknown,
 }
 
@@ -397,6 +412,7 @@ pub enum TransactionStatus {
     Valid,
     Invalid,
     Pending,
+    #[serde(other)]
     Unknown,
 }
 
@@ -408,7 +424,15 @@ pub enum TransactionSubAccount {
     Short,
     Div,
     Income,
+    #[serde(other)]
     Unknown,
+}
+
+impl std::fmt::Display for TransactionSubAccount {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = serde_json::to_string(self).unwrap_or_else(|_| "UNKNOWN".to_string());
+        write!(f, "{}", s.replace('"', ""))
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -418,6 +442,7 @@ pub enum TransactionActivityType {
     Execution,
     OrderAction,
     Transfer,
+    #[serde(other)]
     Unknown,
 }
 
@@ -428,6 +453,7 @@ pub enum UserDetailsType {
     BrokerUser,
     ClientUser,
     SystemUser,
+    #[serde(other)]
     Unknown,
 }
 
@@ -449,6 +475,7 @@ pub enum TransferItemFeeType {
     GstFee,
     TafFee,
     IndexOptionFee,
+    #[serde(other)]
     Unknown,
 }
 
@@ -458,6 +485,7 @@ pub enum TransferItemPositionEffect {
     Opening,
     Closing,
     Automatic,
+    #[serde(other)]
     Unknown,
 }
 
@@ -477,6 +505,7 @@ mod tests {
 
         let val = serde_json::from_str::<Vec<Transaction>>(json);
         tracing::debug!(?val);
+        dbg!(&val);
         assert!(val.is_ok());
     }
 

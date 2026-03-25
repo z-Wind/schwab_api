@@ -76,7 +76,7 @@ pub struct QuoteMutualFund {
 
     /// example: 20171188
     ///
-    /// Aggregated shares taded throughout the day, including pre/post market hours.
+    /// Aggregated shares traded throughout the day, including pre/post market hours.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub total_volume: Option<u64>,
 
@@ -86,7 +86,7 @@ pub struct QuoteMutualFund {
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub trade_time: chrono::DateTime<chrono::Utc>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub last_price: Option<f64>,
 }
 

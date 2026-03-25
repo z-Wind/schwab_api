@@ -25,7 +25,7 @@ pub struct OptionChain {
     pub call_exp_date_map: HashMap<String, HashMap<String, Vec<OptionContract>>>,
     pub put_exp_date_map: HashMap<String, HashMap<String, Vec<OptionContract>>>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub number_of_contracts: Option<i64>,
     pub asset_main_type: Option<String>,
     pub asset_sub_type: Option<String>,
@@ -36,21 +36,21 @@ pub struct OptionChain {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Underlying {
-    pub ask: i64,
+    pub ask: f64,
     pub ask_size: i64,
-    pub bid: i64,
+    pub bid: f64,
     pub bid_size: i64,
-    pub change: i64,
-    pub close: i64,
+    pub change: f64,
+    pub close: f64,
     pub delayed: bool,
     pub description: String,
     pub exchange_name: ExchangeName,
-    pub fifty_two_week_high: i64,
-    pub fifty_two_week_low: i64,
+    pub fifty_two_week_high: f64,
+    pub fifty_two_week_low: f64,
     pub high_price: f64,
-    pub last: i64,
+    pub last: f64,
     pub low_price: f64,
-    pub mark: i64,
+    pub mark: f64,
     pub mark_change: f64,
     pub mark_percent_change: f64,
     pub open_price: f64,
@@ -124,7 +124,7 @@ pub struct OptionContract {
     pub intrinsic_value: f64,
     pub option_root: String,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub bid: Option<f64>,
     pub ask: Option<f64>,
     pub last: Option<f64>,
@@ -180,6 +180,8 @@ pub enum ExchangeName {
     Pac,
     Opr,
     Bats,
+    #[serde(other)]
+    Unknown,
 }
 
 /// Available values : `PUT`, `CALL`

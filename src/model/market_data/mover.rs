@@ -25,7 +25,7 @@ pub struct Screener {
     pub symbol: String,
     pub total_volume: u64,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub volume: Option<u64>,
     pub last_price: Option<f64>,
     pub net_change: Option<f64>,

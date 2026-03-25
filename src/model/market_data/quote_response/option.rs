@@ -310,7 +310,7 @@ pub struct ReferenceOption {
     /// A company, index or fund name
     pub underlying: String,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub uv_expiration_type: Option<String>,
 }
 

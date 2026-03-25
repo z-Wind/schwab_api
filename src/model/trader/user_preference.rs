@@ -5,14 +5,17 @@ use serde::Serialize;
 #[serde(untagged, rename_all = "camelCase")]
 pub enum UserPreferences {
     One(UserPreference),
-    Mutiple(Vec<UserPreference>),
+    Multiple(Vec<UserPreference>),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserPreference {
+    #[serde(default)]
     pub accounts: Vec<UserPreferenceAccount>,
+    #[serde(default)]
     pub streamer_info: Vec<StreamerInfo>,
+    #[serde(default)]
     pub offers: Vec<Offer>,
 }
 
@@ -21,6 +24,7 @@ pub struct UserPreference {
 pub struct UserPreferenceAccount {
     pub account_number: String,
     /// default: false
+    #[serde(default)]
     pub primary_account: bool,
     #[serde(rename = "type")]
     pub type_field: String,
@@ -28,6 +32,7 @@ pub struct UserPreferenceAccount {
     pub account_color: UserPreferenceAccountColor,
     pub display_acct_id: String,
     /// default: false
+    #[serde(default)]
     pub auto_position_effect: bool,
 }
 
@@ -45,6 +50,7 @@ pub struct StreamerInfo {
 #[serde(rename_all = "camelCase")]
 pub struct Offer {
     /// default: false
+    #[serde(default)]
     pub level_2_permissions: bool,
     pub mkt_data_permission: Option<String>,
 }

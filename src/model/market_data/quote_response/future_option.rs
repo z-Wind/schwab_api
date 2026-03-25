@@ -136,7 +136,7 @@ pub struct QuoteFutureOption {
     /// example: 52.8
     ///
     /// Price at market open
-    pub settlemet_price: f64,
+    pub settlement_price: f64,
 
     /// example: 0
     ///
@@ -196,7 +196,7 @@ pub struct ReferenceFutureOption {
     /// example: 2300
     ///
     /// Strike Price
-    pub stricke_price: f64,
+    pub strike_price: f64,
 
     /// example: AMZN Aug 20 2021 2300 Put
     ///

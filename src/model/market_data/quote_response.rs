@@ -19,7 +19,7 @@ pub(crate) struct QuoteResponseMap {
     pub(crate) errors: Option<quote_error::QuoteError>,
 }
 
-/// a (symbol, `QuoteResponse`) map. `SCHWis` an example key
+/// a (symbol, `QuoteResponse`) map. "SCHW" is an example key
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "assetMainType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum QuoteResponse {

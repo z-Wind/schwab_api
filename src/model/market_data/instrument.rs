@@ -28,7 +28,7 @@ pub struct InstrumentResponse {
 
     /// writeOnly: true
     #[serde(rename = "type")]
-    pub type_filed: Option<InstrumentAssetType>,
+    pub type_field: Option<InstrumentAssetType>,
 }
 
 #[serde_with::apply(
@@ -123,7 +123,7 @@ pub struct Instrument {
 
     /// writeOnly: true
     #[serde(rename = "type")]
-    pub type_filed: Option<InstrumentAssetType>,
+    pub type_field: Option<InstrumentAssetType>,
 }
 
 #[allow(clippy::struct_field_names)]
@@ -141,7 +141,7 @@ pub struct Bond {
 
     /// writeOnly: true
     #[serde(rename = "type")]
-    pub type_filed: Option<InstrumentAssetType>,
+    pub type_field: Option<InstrumentAssetType>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -159,6 +159,8 @@ pub enum InstrumentAssetType {
     Indicator,
     MutualFund,
     Option,
+
+    #[serde(other)]
     Unknown,
 }
 
@@ -173,12 +175,10 @@ mod custom_date_format {
     where
         S: Serializer,
     {
-        match date {
-            Some(date) => {
-                let s = date.format(FORMAT).to_string();
-                serializer.serialize_str(&s)
-            }
-            None => serializer.serialize_none(),
+        if let Some(d) = date {
+            serializer.serialize_str(&d.format(FORMAT).to_string())
+        } else {
+            serializer.serialize_none()
         }
     }
 
@@ -186,10 +186,13 @@ mod custom_date_format {
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        let date = NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)?;
-
-        Ok(Some(date))
+        let s: Option<String> = Option::deserialize(deserializer)?;
+        match s {
+            Some(ref s) if !s.is_empty() => NaiveDateTime::parse_from_str(s, FORMAT)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+            _ => Ok(None),
+        }
     }
 }
 

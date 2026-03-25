@@ -76,7 +76,7 @@ pub struct OrderLeg {
     pub asset_type: AssetType,
     pub instruction: Instruction,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub instrument: Option<TransactionInstrument>,
     pub position_effect: Option<PositionEffect>,
 }

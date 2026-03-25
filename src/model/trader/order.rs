@@ -1,9 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::model::trader::accounts::AccountsInstrument;
-
 use super::preview_order::Instruction;
+use crate::model::trader::accounts::AccountsInstrument;
 
 #[allow(clippy::struct_field_names)]
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -36,8 +35,10 @@ pub struct Order {
     pub order_strategy_type: OrderStrategyType,
     pub order_id: i64,
     /// default: false
+    #[serde(default)]
     pub cancelable: bool,
     /// default: false
+    #[serde(default)]
     pub editable: bool,
     pub status: Status,
     pub entered_time: chrono::DateTime<chrono::Utc>,
@@ -124,6 +125,7 @@ pub enum Duration {
     EndOfWeek,
     EndOfMonth,
     NextEndOfMonth,
+    #[serde(other)]
     Unknown,
 }
 
@@ -174,6 +176,7 @@ pub enum OrderType {
     /// `More info <https://www.investopedia.com/ask/answers/042215/whats-difference-between-credit-spread-and-debt-spread.asp>`__
     NetZero,
     LimitOnClose,
+    #[serde(other)]
     Unknown,
 }
 
@@ -371,6 +374,7 @@ pub enum Status {
     AwaitingReleaseTime,
     PendingAcknowledgement,
     PendingRecall,
+    #[serde(other)]
     Unknown,
 }
 

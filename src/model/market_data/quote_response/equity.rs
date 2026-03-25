@@ -183,7 +183,7 @@ pub struct Fundamental {
     /// P/E Ratio
     pub pe_ratio: f64,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub last_earnings_date: Option<chrono::DateTime<chrono::Utc>>,
 }
 
@@ -337,7 +337,7 @@ pub struct QuoteEquity {
     /// Option Risk/Volatility Measurement
     pub volatility: Option<f64>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub post_market_change: Option<f64>,
     pub post_market_percent_change: Option<f64>,
 }
@@ -373,7 +373,7 @@ pub struct ReferenceEquity {
     /// example: 100
     ///
     /// Hard to borrow quantity.
-    pub htb_quantity: Option<i32>,
+    pub htb_quantity: Option<i64>,
 
     /// example: 4.5
     ///

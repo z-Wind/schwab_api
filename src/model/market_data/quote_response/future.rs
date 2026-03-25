@@ -236,7 +236,7 @@ pub struct ReferenceFuture {
     /// Futures product symbol
     pub product: String,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub future_is_tradable: Option<bool>,
 }
 

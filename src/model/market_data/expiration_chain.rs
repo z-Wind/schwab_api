@@ -25,7 +25,7 @@ pub struct Expiration {
     pub settlement_type: Option<SettlementType>,
     pub option_roots: Option<String>,
 
-    // not in schema
+    // Fields not explicitly defined in the official schema
     pub expiration_date: chrono::NaiveDate,
 }
 

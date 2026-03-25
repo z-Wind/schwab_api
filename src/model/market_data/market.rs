@@ -43,6 +43,7 @@ pub enum MarketType {
     Indicator,
     MutualFund,
     Option,
+    #[serde(other)]
     Unknown,
 }
 
