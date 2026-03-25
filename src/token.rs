@@ -410,7 +410,7 @@ mod tests {
 
         let token = Token::load(&path).unwrap();
 
-        tracing::debug!(?token, "Token 載入成功");
+        tracing::debug!(?token, "Token loaded successfully");
     }
 
     #[test]

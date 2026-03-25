@@ -1446,16 +1446,14 @@ impl GetInstrumentRequest {
 
         let count = data.instruments.len();
         let instrument = if data.instruments.is_empty() {
-            // 記錄警告，並標註具體的 cusip_id
             tracing::warn!(cusip = %cusip_id, "no instruments found for the given CUSIP");
 
             return Err(Error::Quote(model::QuoteError {
                 invalid_symbols: None,
-                invalid_cusips: Some(vec![cusip_id]), // 直接將當前的 ID 封裝進錯誤
+                invalid_cusips: Some(vec![cusip_id]),
                 invalid_ssids: None,
             }));
         } else {
-            // 取出最匹配的一筆
             data.instruments.remove(0)
         };
 

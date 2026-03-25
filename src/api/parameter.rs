@@ -26,7 +26,7 @@ impl QuoteField {
     pub fn as_str(&self) -> &str {
         match self {
             Self::Extra(s) => s.as_str(),
-            _ => self.as_ref(), // 這裡獲取的是 &'static str
+            _ => self.as_ref(),
         }
     }
 }

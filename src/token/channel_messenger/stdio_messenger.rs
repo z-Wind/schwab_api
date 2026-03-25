@@ -24,7 +24,6 @@ impl StdioMessenger {
     fn uri_to_auth_code(uri: &Uri, csrf: &CsrfToken) -> Result<String, Error> {
         tracing::debug!(path = %uri.path(), "parsing authorization callback");
 
-        // 解析查詢參數
         let Query(query): Query<AuthRequest> = Query::try_from_uri(uri).map_err(|e| {
             tracing::error!(
                 error = %e,
@@ -35,7 +34,7 @@ impl StdioMessenger {
 
         tracing::debug!("successfully parsed callback query parameters");
 
-        // CSRF 驗證
+        // CSRF Verification
         if &query.state != csrf.secret() {
             tracing::Span::current().record("csrf_valid", false);
             tracing::error!("CSRF validation failed");
