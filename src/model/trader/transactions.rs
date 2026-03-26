@@ -506,7 +506,7 @@ mod tests {
         let val = serde_json::from_str::<Vec<Transaction>>(json);
         tracing::debug!(?val);
         dbg!(&val);
-        assert!(val.is_ok());
+        assert!(val.is_ok(), "Failed to deserialize: {:?}", val.err());
     }
 
     #[test]

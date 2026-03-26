@@ -52,7 +52,7 @@ mod tests {
 
         tracing::debug!(?val);
 
-        assert!(val.is_ok());
+        assert!(val.is_ok(), "Failed to deserialize: {:?}", val.err());
     }
 
     #[test]

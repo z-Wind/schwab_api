@@ -33,6 +33,6 @@ mod tests {
 
         let val = serde_json::from_str::<HashMap<String, QuoteError>>(json);
         tracing::debug!(?val);
-        assert!(val.is_ok());
+        assert!(val.is_ok(), "Failed to deserialize: {:?}", val.err());
     }
 }
