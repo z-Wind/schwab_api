@@ -176,7 +176,11 @@ mod custom_date_format {
         S: Serializer,
     {
         if let Some(d) = date {
-            serializer.serialize_str(&d.format(FORMAT).to_string())
+            let mut s = d.format(FORMAT).to_string();
+            if !s.contains('.') {
+                s.push_str(".0");
+            }
+            serializer.serialize_str(&s)
         } else {
             serializer.serialize_none()
         }
@@ -198,7 +202,7 @@ mod custom_date_format {
 
 #[cfg(test)]
 mod tests {
-    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
     use test_log::test;
 
     use super::*;
@@ -226,19 +230,10 @@ mod tests {
         let val = serde_json::from_value::<Instruments>(json.clone()).unwrap();
         tracing::debug!(?val);
 
-        let message = assert_json_matches_no_panic(
-            &val,
-            &json,
-            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
-        )
-        .unwrap_err();
-
-        let re =
-            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
-                .unwrap();
-        let message = re.replace_all(&message, "");
-        let message = message.trim();
-        tracing::debug!(%message);
-        assert_eq!(message, "");
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

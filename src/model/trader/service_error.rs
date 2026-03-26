@@ -14,13 +14,22 @@ pub struct ServiceError {
 impl std::fmt::Display for ServiceError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(ref msg) = self.message {
-            write!(f, "Message: {msg} ")?;
+            write!(f, "Service Message: {msg} ")?;
         }
+
         if let Some(ref details) = self.errors {
-            for err in details {
-                write!(f, "[{}: {}] ", err.title, err.detail)?;
+            if !details.is_empty() {
+                let error_list: Vec<String> = details
+                    .iter()
+                    .map(std::string::ToString::to_string) // 呼叫 ErrorDetail 的 Display
+                    .collect();
+
+                write!(f, "Details: [{}]", error_list.join(", "))?;
             }
+        } else if self.message.is_none() {
+            write!(f, "Unknown Service Error")?;
         }
+
         Ok(())
     }
 }
@@ -32,6 +41,16 @@ pub struct ErrorDetail {
     pub status: i64,
     pub title: String,
     pub detail: String,
+}
+
+impl std::fmt::Display for ErrorDetail {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ id: {}, status: {}, title: {}, detail: {} }}",
+            self.id, self.status, self.title, self.detail
+        )
+    }
 }
 
 #[cfg(test)]

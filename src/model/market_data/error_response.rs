@@ -1,11 +1,30 @@
-use serde::Serialize;
-use serde::{Deserialize, Deserializer};
-use serde_repr::Serialize_repr;
+use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorResponse {
     pub errors: Vec<Error>,
+}
+
+impl std::fmt::Display for ErrorResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.errors.is_empty() {
+            return write!(f, "ErrorResponse contains no errors");
+        }
+
+        let all_errors: Vec<String> = self
+            .errors
+            .iter()
+            .map(std::string::ToString::to_string)
+            .collect();
+
+        write!(
+            f,
+            "API Error (Total {}): [{}]",
+            self.errors.len(),
+            all_errors.join(", ")
+        )
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -41,6 +60,20 @@ pub struct Error {
     pub source: Option<ErrorSource>,
 }
 
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ id: {}, status: {}, title: {}, detail: {:?}, source: {:?} }}",
+            self.id,
+            self.status,
+            self.title,
+            self.detail.as_deref().unwrap_or("N/A"),
+            self.source
+        )
+    }
+}
+
 /// Who is responsible for triggering these errors.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -68,60 +101,89 @@ pub struct ErrorSource {
 }
 
 /// The HTTP status code .
-#[derive(Debug, Clone, Copy, PartialEq, Serialize_repr)]
-#[repr(i32)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum StatusCode {
     /// 400 Bad Request
     /// [[RFC7231, Section 6.5.1](https://tools.ietf.org/html/rfc7231#section-6.5.1)]
-    BadRequest = 400,
+    BadRequest,
 
     /// 401 Unauthorized
     /// [[RFC7235, Section 3.1](https://tools.ietf.org/html/rfc7235#section-3.1)]
-    Unauthorized = 401,
+    Unauthorized,
 
     /// 404 Not Found
     /// [[RFC7231, Section 6.5.4](https://tools.ietf.org/html/rfc7231#section-6.5.4)]
-    NotFound = 404,
+    NotFound,
 
     /// 500 Internal Server Error
     /// [[RFC7231, Section 6.6.1](https://tools.ietf.org/html/rfc7231#section-6.6.1)]
-    InternalServerError = 500,
+    InternalServerError,
+
+    Unknown(i32),
 }
+
+impl std::fmt::Display for StatusCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::BadRequest => write!(f, "400 Bad Request"),
+            Self::Unauthorized => write!(f, "401 Unauthorized"),
+            Self::NotFound => write!(f, "404 Not Found"),
+            Self::InternalServerError => write!(f, "500 Internal Server Error"),
+            Self::Unknown(code) => write!(f, "[UNKNOWN_STATUS] {code}"),
+        }
+    }
+}
+
+impl From<i32> for StatusCode {
+    fn from(code: i32) -> Self {
+        match code {
+            400 => Self::BadRequest,
+            401 => Self::Unauthorized,
+            404 => Self::NotFound,
+            500 => Self::InternalServerError,
+            other => Self::Unknown(other),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum TempStatus<'a> {
+    Int(i32),
+    Str(&'a str),
+}
+
+impl From<TempStatus<'_>> for StatusCode {
+    fn from(temp: TempStatus) -> Self {
+        match temp {
+            TempStatus::Int(i) => Self::from(i),
+            TempStatus::Str(s) => Self::from(s.parse::<i32>().unwrap_or(-1)),
+        }
+    }
+}
+
 impl<'de> Deserialize<'de> for StatusCode {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>,
+        D: serde::Deserializer<'de>,
     {
-        // 1. Parse into a temporary untagged enum to handle both numeric and string formats
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum TempStatus {
-            Int(i32),
-            Str(String),
-        }
+        TempStatus::deserialize(deserializer).map(Into::into)
+    }
+}
 
-        let temp = TempStatus::deserialize(deserializer)?;
-
-        // 2. Normalize both string and integer inputs into an i32 value
-        let code = match temp {
-            TempStatus::Int(i) => i,
-            TempStatus::Str(s) => s.parse::<i32>().map_err(|_| {
-                serde::de::Error::custom(format!(
-                    "Expected numeric string for status code, got: '{s}'"
-                ))
-            })?,
+impl Serialize for StatusCode {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let val = match *self {
+            Self::BadRequest => 400,
+            Self::Unauthorized => 401,
+            Self::NotFound => 404,
+            Self::InternalServerError => 500,
+            Self::Unknown(code) => code,
         };
-
-        // 3. Map the normalized i32 code to the corresponding StatusCode variant
-        match code {
-            400 => Ok(StatusCode::BadRequest),
-            401 => Ok(StatusCode::Unauthorized),
-            404 => Ok(StatusCode::NotFound),
-            500 => Ok(StatusCode::InternalServerError),
-            _ => Err(serde::de::Error::custom(format!(
-                "Unknown status code: {code}",
-            ))),
-        }
+        serializer.serialize_i32(val)
     }
 }
 

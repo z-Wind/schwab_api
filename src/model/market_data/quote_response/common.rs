@@ -24,7 +24,7 @@ pub struct CommonResponse {
     pub quote: QuoteCommon,
 
     #[serde(flatten)]
-    pub _extra: serde_json::Value,
+    pub extra: serde_json::Value,
 }
 
 /// Quote data of Equity security
@@ -62,7 +62,7 @@ pub struct QuoteCommon {
     pub trade_time: chrono::DateTime<chrono::Utc>,
 
     #[serde(flatten)]
-    pub _extra: serde_json::Value,
+    pub extra: serde_json::Value,
 }
 
 #[cfg(test)]
@@ -91,7 +91,7 @@ mod tests {
 
             // Load the actual file content as a string
             let json_content = std::fs::read_to_string(&file_path)
-                .unwrap_or_else(|_| panic!("Failed to read file: {:?}", file_path));
+                .unwrap_or_else(|_| panic!("Failed to read file: {file_path:?}"));
 
             let val = serde_json::from_str::<HashMap<String, CommonResponse>>(&json_content);
 

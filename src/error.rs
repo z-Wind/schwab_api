@@ -12,9 +12,9 @@ pub enum Error {
     OrderRequestBuild(crate::model::trader::order_request::OrderRequestBuilderError),
     #[error("QuoteError: {0:?}")]
     Quote(crate::model::QuoteError),
-    #[error("ErrorResponse: {0:?}")]
+    #[error("ErrorResponse: {0}")]
     Response(crate::model::ErrorResponse),
-    #[error("ServiceError: {0:?}")]
+    #[error("ServiceError: {0}")]
     Service(crate::model::ServiceError),
     #[error("Json error: {0}")]
     Json(#[from] serde_json::Error),

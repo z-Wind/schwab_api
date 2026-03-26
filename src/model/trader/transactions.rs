@@ -19,7 +19,7 @@ pub struct Transaction {
     pub status: TransactionStatus,
     pub sub_account: TransactionSubAccount,
     pub trade_date: chrono::DateTime<chrono::Utc>,
-    pub settlement_date: Option<chrono::DateTime<chrono::Utc>>,
+    pub settlement_date: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub position_id: Option<i64>,
     pub order_id: Option<i64>,
     pub net_amount: f64,
@@ -491,7 +491,8 @@ pub enum TransferItemPositionEffect {
 
 #[cfg(test)]
 mod tests {
-    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
+    use regex::Regex;
     use test_log::test;
 
     use super::*;
@@ -505,7 +506,7 @@ mod tests {
 
         let val = serde_json::from_str::<Vec<Transaction>>(json);
         tracing::debug!(?val);
-        dbg!(&val);
+
         assert!(val.is_ok(), "Failed to deserialize: {:?}", val.err());
     }
 
@@ -515,25 +516,25 @@ mod tests {
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Transactions_real.json"
         ));
-        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        // 1. Create a more robust regex to handle multiple ISO 8601 variations:
+        // - (\.000)? : Optional milliseconds
+        // - (\+00:00|\+0000) : Timezone as +00:00 or +0000
+        let re = Regex::new(r"(\.000)?(\+00:00|\+0000)").unwrap();
+
+        // 2. Normalize all variations to "Z" to match Rust's default output
+        let json = re.replace_all(json, "Z");
+
+        let json: serde_json::Value = serde_json::from_str(&json).unwrap();
 
         let val = serde_json::from_value::<Vec<Transaction>>(json.clone()).unwrap();
         tracing::debug!(?val);
 
-        let message = assert_json_matches_no_panic(
-            &val,
-            &json,
-            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
-        )
-        .unwrap_err();
-
-        let re =
-            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
-                .unwrap();
-        let message = re.replace_all(&message, "");
-        let message = message.trim();
-        tracing::debug!(%message);
-        assert_eq!(message, "");
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 
     #[test]
@@ -542,24 +543,24 @@ mod tests {
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/Trader/Transaction_real.json"
         ));
-        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        // 1. Create a more robust regex to handle multiple ISO 8601 variations:
+        // - (\.000)? : Optional milliseconds
+        // - (\+00:00|\+0000) : Timezone as +00:00 or +0000
+        let re = Regex::new(r"(\.000)?(\+00:00|\+0000)").unwrap();
+
+        // 2. Normalize all variations to "Z" to match Rust's default output
+        let json = re.replace_all(json, "Z");
+
+        let json: serde_json::Value = serde_json::from_str(&json).unwrap();
 
         let val = serde_json::from_value::<Transaction>(json.clone()).unwrap();
         tracing::debug!(?val);
 
-        let message = assert_json_matches_no_panic(
-            &val,
-            &json,
-            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
-        )
-        .unwrap_err();
-
-        let re =
-            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
-                .unwrap();
-        let message = re.replace_all(&message, "");
-        let message = message.trim();
-        tracing::debug!(%message);
-        assert_eq!(message, "");
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

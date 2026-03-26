@@ -24,8 +24,8 @@ pub struct Hours {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Interval {
-    pub start: chrono::DateTime<chrono::Utc>,
-    pub end: chrono::DateTime<chrono::Utc>,
+    pub start: chrono::DateTime<chrono::FixedOffset>,
+    pub end: chrono::DateTime<chrono::FixedOffset>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -49,7 +49,7 @@ pub enum MarketType {
 
 #[cfg(test)]
 mod tests {
-    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
     use test_log::test;
 
     use super::*;
@@ -77,17 +77,10 @@ mod tests {
         let val = serde_json::from_value::<Markets>(json.clone()).unwrap();
         tracing::debug!(?val);
 
-        let message = assert_json_matches_no_panic(
-            &val,
-            &json,
-            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
-        )
-        .unwrap_err();
-
-        let re = regex::Regex::new(r"(?:json atoms at path.*start.*are not equal.*\n.*\n.*\n.*\n.*)|(?:json atoms at path.*end.*are not equal.*\n.*\n.*\n.*\n.*)").unwrap();
-        let message = re.replace_all(&message, "");
-        let message = message.trim();
-        tracing::debug!(%message);
-        assert_eq!(message, "");
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }

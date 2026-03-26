@@ -108,7 +108,7 @@ pub struct OptionContract {
     pub is_non_standard: Option<bool>,
     pub option_deliverables_list: Vec<OptionDeliverable>,
     pub strike_price: f64,
-    pub expiration_date: chrono::DateTime<chrono::Utc>,
+    pub expiration_date: chrono::DateTime<chrono::FixedOffset>,
     pub days_to_expiration: i64,
     pub expiration_type: ExpirationType,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
@@ -194,7 +194,8 @@ pub enum PutCall {
 
 #[cfg(test)]
 mod tests {
-    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches_no_panic};
+    use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
+    use regex::Regex;
     use test_log::test;
 
     use super::*;
@@ -217,24 +218,24 @@ mod tests {
             env!("CARGO_MANIFEST_DIR"),
             "/tests/model/MarketData/OptionChain_real.json"
         ));
-        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        // 1. Create a more robust regex to handle multiple ISO 8601 variations:
+        // - (\.000)? : Optional milliseconds
+        // - (\+00:00|\+0000) : Timezone as +00:00 or +0000
+        let re = Regex::new(r"(\.000)?(\+00:00|\+0000)").unwrap();
+
+        // 2. Normalize all variations to "Z" to match Rust's default output
+        let json = re.replace_all(json, "Z");
+
+        let json: serde_json::Value = serde_json::from_str(&json).unwrap();
 
         let val = serde_json::from_value::<OptionChain>(json.clone()).unwrap();
         // tracing::debug!(?val);
 
-        let message = assert_json_matches_no_panic(
-            &val,
-            &json,
-            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat),
-        )
-        .unwrap_err();
-
-        let re =
-            regex::Regex::new(r"(?:json atoms at path.*Date.*are not equal.*\n.*\n.*\n.*\n.*)")
-                .unwrap();
-        let message = re.replace_all(&message, "");
-        let message = message.trim();
-        tracing::debug!(%message);
-        assert_eq!(message, "");
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
     }
 }
