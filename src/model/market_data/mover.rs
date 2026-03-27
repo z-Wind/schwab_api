@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::Number;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Mover {
@@ -15,23 +17,25 @@ pub struct Mover {
 #[serde(rename_all = "camelCase")]
 pub struct Screener {
     /// percent or value changed, by default its percent changed
-    pub change: Option<f64>,
+    pub change: Option<Number>,
     /// Name of security
     pub description: String,
     pub direction: Option<Direction>,
     /// what was last quoted price
-    pub last: Option<f64>,
+    pub last: Option<Number>,
     /// schwab security symbol
     pub symbol: String,
     pub total_volume: u64,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub volume: Option<u64>,
-    pub last_price: Option<f64>,
-    pub net_change: Option<f64>,
-    pub market_share: Option<f64>,
+    pub last_price: Option<Number>,
+    pub net_change: Option<Number>,
+    pub market_share: Option<Number>,
     pub trades: Option<i64>,
-    pub net_percent_change: Option<f64>,
+    pub net_percent_change: Option<Number>,
+    // ===================================================
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

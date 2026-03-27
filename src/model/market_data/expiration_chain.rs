@@ -26,7 +26,9 @@ pub struct Expiration {
     pub option_roots: Option<String>,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub expiration_date: chrono::NaiveDate,
+    // ===================================================
 }
 
 #[cfg(test)]

@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
+use crate::Number;
+
 pub type Accounts = Vec<Account>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -46,66 +48,66 @@ pub struct MarginAccount {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginInitialBalance {
-    pub accrued_interest: f64,
-    pub available_funds_non_marginable_trade: f64,
-    pub bond_value: f64,
-    pub buying_power: f64,
-    pub cash_balance: f64,
+    pub accrued_interest: Number,
+    pub available_funds_non_marginable_trade: Number,
+    pub bond_value: Number,
+    pub buying_power: Number,
+    pub cash_balance: Number,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub cash_available_for_trading: Option<f64>,
-    pub cash_receipts: f64,
-    pub day_trading_buying_power: f64,
-    pub day_trading_buying_power_call: f64,
-    pub day_trading_equity_call: f64,
-    pub equity: f64,
-    pub equity_percentage: f64,
-    pub liquidation_value: f64,
-    pub long_margin_value: f64,
-    pub long_option_market_value: f64,
-    pub long_stock_value: f64,
-    pub maintenance_call: f64,
-    pub maintenance_requirement: f64,
-    pub margin: f64,
-    pub margin_equity: f64,
-    pub money_market_fund: f64,
-    pub mutual_fund_value: f64,
-    pub reg_t_call: f64,
-    pub short_margin_value: f64,
-    pub short_option_market_value: f64,
-    pub short_stock_value: f64,
-    pub total_cash: f64,
+    pub cash_available_for_trading: Option<Number>,
+    pub cash_receipts: Number,
+    pub day_trading_buying_power: Number,
+    pub day_trading_buying_power_call: Number,
+    pub day_trading_equity_call: Number,
+    pub equity: Number,
+    pub equity_percentage: Number,
+    pub liquidation_value: Number,
+    pub long_margin_value: Number,
+    pub long_option_market_value: Number,
+    pub long_stock_value: Number,
+    pub maintenance_call: Number,
+    pub maintenance_requirement: Number,
+    pub margin: Number,
+    pub margin_equity: Number,
+    pub money_market_fund: Number,
+    pub mutual_fund_value: Number,
+    pub reg_t_call: Number,
+    pub short_margin_value: Number,
+    pub short_option_market_value: Number,
+    pub short_stock_value: Number,
+    pub total_cash: Number,
     pub is_in_call: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub unsettled_cash: Option<f64>,
-    pub pending_deposits: f64,
-    pub margin_balance: f64,
-    pub short_balance: f64,
-    pub account_value: f64,
+    pub unsettled_cash: Option<Number>,
+    pub pending_deposits: Number,
+    pub margin_balance: Number,
+    pub short_balance: Number,
+    pub account_value: Number,
 }
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarginBalance {
-    pub available_funds: Option<f64>,
-    pub available_funds_non_marginable_trade: Option<f64>,
-    pub buying_power: Option<f64>,
-    pub buying_power_non_marginable_trade: Option<f64>,
-    pub day_trading_buying_power: Option<f64>,
-    pub day_trading_buying_power_call: Option<f64>,
-    pub equity: Option<f64>,
-    pub equity_percentage: Option<f64>,
-    pub long_margin_value: Option<f64>,
-    pub maintenance_call: Option<f64>,
-    pub maintenance_requirement: Option<f64>,
-    pub margin_balance: Option<f64>,
-    pub reg_t_call: Option<f64>,
-    pub short_balance: Option<f64>,
-    pub short_margin_value: Option<f64>,
-    pub sma: Option<f64>,
+    pub available_funds: Option<Number>,
+    pub available_funds_non_marginable_trade: Option<Number>,
+    pub buying_power: Option<Number>,
+    pub buying_power_non_marginable_trade: Option<Number>,
+    pub day_trading_buying_power: Option<Number>,
+    pub day_trading_buying_power_call: Option<Number>,
+    pub equity: Option<Number>,
+    pub equity_percentage: Option<Number>,
+    pub long_margin_value: Option<Number>,
+    pub maintenance_call: Option<Number>,
+    pub maintenance_requirement: Option<Number>,
+    pub margin_balance: Option<Number>,
+    pub reg_t_call: Option<Number>,
+    pub short_balance: Option<Number>,
+    pub short_margin_value: Option<Number>,
+    pub sma: Option<Number>,
     pub is_in_call: Option<bool>,
-    pub stock_buying_power: Option<f64>,
-    pub option_buying_power: Option<f64>,
+    pub stock_buying_power: Option<Number>,
+    pub option_buying_power: Option<Number>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -122,77 +124,79 @@ pub struct CashAccount {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CashInitialBalance {
-    pub accrued_interest: f64,
-    pub cash_available_for_trading: f64,
-    pub cash_available_for_withdrawal: f64,
-    pub cash_balance: f64,
-    pub bond_value: f64,
-    pub cash_receipts: f64,
-    pub liquidation_value: f64,
-    pub long_option_market_value: f64,
-    pub long_stock_value: f64,
-    pub money_market_fund: f64,
-    pub mutual_fund_value: f64,
-    pub short_option_market_value: f64,
-    pub short_stock_value: f64,
+    pub accrued_interest: Number,
+    pub cash_available_for_trading: Number,
+    pub cash_available_for_withdrawal: Number,
+    pub cash_balance: Number,
+    pub bond_value: Number,
+    pub cash_receipts: Number,
+    pub liquidation_value: Number,
+    pub long_option_market_value: Number,
+    pub long_stock_value: Number,
+    pub money_market_fund: Number,
+    pub mutual_fund_value: Number,
+    pub short_option_market_value: Number,
+    pub short_stock_value: Number,
     pub is_in_call: bool,
-    pub unsettled_cash: f64,
-    pub cash_debit_call_value: f64,
-    pub pending_deposits: f64,
-    pub account_value: f64,
+    pub unsettled_cash: Number,
+    pub cash_debit_call_value: Number,
+    pub pending_deposits: Number,
+    pub account_value: Number,
 }
 
 #[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CashBalance {
-    pub cash_available_for_trading: f64,
-    pub cash_available_for_withdrawal: f64,
-    pub cash_call: Option<f64>,
-    pub long_non_marginable_market_value: Option<f64>,
-    pub total_cash: Option<f64>,
-    pub cash_debit_call_value: Option<f64>,
-    pub unsettled_cash: Option<f64>,
+    pub cash_available_for_trading: Number,
+    pub cash_available_for_withdrawal: Number,
+    pub cash_call: Option<Number>,
+    pub long_non_marginable_market_value: Option<Number>,
+    pub total_cash: Option<Number>,
+    pub cash_debit_call_value: Option<Number>,
+    pub unsettled_cash: Option<Number>,
 
     // Fields not explicitly defined in the official schema
-    pub accrued_interest: Option<f64>,
-    pub cash_balance: Option<f64>,
-    pub cash_receipts: Option<f64>,
-    pub long_option_market_value: Option<f64>,
-    pub liquidation_value: Option<f64>,
-    pub long_market_value: Option<f64>,
-    pub money_market_fund: Option<f64>,
-    pub savings: Option<f64>,
-    pub short_market_value: Option<f64>,
-    pub pending_deposits: Option<f64>,
-    pub mutual_fund_value: Option<f64>,
-    pub bond_value: Option<f64>,
-    pub short_option_market_value: Option<f64>,
+    // ===================================================
+    pub accrued_interest: Option<Number>,
+    pub cash_balance: Option<Number>,
+    pub cash_receipts: Option<Number>,
+    pub long_option_market_value: Option<Number>,
+    pub liquidation_value: Option<Number>,
+    pub long_market_value: Option<Number>,
+    pub money_market_fund: Option<Number>,
+    pub savings: Option<Number>,
+    pub short_market_value: Option<Number>,
+    pub pending_deposits: Option<Number>,
+    pub mutual_fund_value: Option<Number>,
+    pub bond_value: Option<Number>,
+    pub short_option_market_value: Option<Number>,
+    // ===================================================
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    pub short_quantity: f64,
-    pub average_price: f64,
-    pub current_day_profit_loss: f64,
-    pub current_day_profit_loss_percentage: f64,
-    pub long_quantity: f64,
-    pub settled_long_quantity: f64,
-    pub settled_short_quantity: f64,
-    pub aged_quantity: f64,
+    pub short_quantity: Number,
+    pub average_price: Number,
+    pub current_day_profit_loss: Number,
+    pub current_day_profit_loss_percentage: Number,
+    pub long_quantity: Number,
+    pub settled_long_quantity: Number,
+    pub settled_short_quantity: Number,
+    pub aged_quantity: Number,
     pub instrument: AccountsInstrument,
-    pub market_value: f64,
-    pub maintenance_requirement: f64,
-    pub average_long_price: f64,
-    pub average_short_price: f64,
-    pub tax_lot_average_long_price: f64,
-    pub tax_lot_average_short_price: f64,
-    pub long_open_profit_loss: f64,
-    pub short_open_profit_loss: f64,
+    pub market_value: Number,
+    pub maintenance_requirement: Number,
+    pub average_long_price: Number,
+    pub average_short_price: Number,
+    pub tax_lot_average_long_price: Number,
+    pub tax_lot_average_short_price: Number,
+    pub long_open_profit_loss: Number,
+    pub short_open_profit_loss: Number,
     pub previous_session_long_quantity: i64,
     pub previous_session_short_quantity: i64,
-    pub current_day_cost: f64,
+    pub current_day_cost: Number,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -238,8 +242,8 @@ pub struct AccountFixedIncome {
     pub accounts_base_instrument: AccountsBaseInstrument,
 
     pub maturity_date: chrono::DateTime<chrono::Utc>,
-    pub factor: f64,
-    pub variable_rate: f64,
+    pub factor: Number,
+    pub variable_rate: Number,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -289,7 +293,7 @@ pub struct AccountCollectiveInvestment {
 #[serde(rename_all = "camelCase")]
 pub struct AccountAPIOptionDeliverable {
     pub symbol: String,
-    pub deliverable_units: f64,
+    pub deliverable_units: Number,
     pub api_currency_type: Option<APICurrencyType>,
     pub asset_type: Option<AssetType>,
 }
@@ -301,7 +305,7 @@ pub struct AccountsBaseInstrument {
     pub symbol: String,
     pub description: Option<String>,
     pub instrument_id: i64,
-    pub net_change: Option<f64>,
+    pub net_change: Option<Number>,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

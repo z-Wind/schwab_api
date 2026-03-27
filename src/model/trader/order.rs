@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use super::preview_order::Instruction;
+use crate::Number;
 use crate::model::trader::accounts::AccountsInstrument;
 
 #[allow(clippy::struct_field_names)]
@@ -13,24 +14,24 @@ pub struct Order {
     pub order_type: OrderType,
     pub cancel_time: Option<chrono::DateTime<chrono::Utc>>,
     pub complex_order_strategy_type: ComplexOrderStrategyType,
-    pub quantity: f64,
-    pub filled_quantity: f64,
-    pub remaining_quantity: f64,
+    pub quantity: Number,
+    pub filled_quantity: Number,
+    pub remaining_quantity: Number,
     pub requested_destination: RequestedDestination,
     pub destination_link_name: String,
     pub release_time: Option<chrono::DateTime<chrono::Utc>>,
-    pub stop_price: Option<f64>,
+    pub stop_price: Option<Number>,
     pub stop_price_link_basis: Option<StopPriceLinkBasis>,
     pub stop_price_link_type: Option<StopPriceLinkType>,
-    pub stop_price_offset: Option<f64>,
+    pub stop_price_offset: Option<Number>,
     pub stop_type: Option<StopType>,
     pub price_link_basis: Option<PriceLinkBasis>,
     pub price_link_type: Option<PriceLinkType>,
-    pub price: f64,
+    pub price: Number,
     pub tax_lot_method: Option<TaxLotMethod>,
     /// xml: `OrderedMap` { "name": "orderLegCollection", "wrapped": true }
     pub order_leg_collection: Vec<OrderLegCollection>,
-    pub activation_price: Option<f64>,
+    pub activation_price: Option<Number>,
     pub special_instruction: Option<SpecialInstruction>,
     pub order_strategy_type: OrderStrategyType,
     pub order_id: i64,
@@ -62,7 +63,7 @@ pub struct OrderLegCollection {
     pub instrument: AccountsInstrument,
     pub instruction: Instruction,
     pub position_effect: PositionEffect,
-    pub quantity: f64,
+    pub quantity: Number,
     pub quantity_type: Option<QuantityType>,
     pub div_cap_gains: Option<DivCapGains>,
     pub to_symbol: Option<String>,
@@ -73,8 +74,8 @@ pub struct OrderLegCollection {
 pub struct OrderActivity {
     pub activity_type: ActivityType,
     pub execution_type: ExecutionType,
-    pub quantity: f64,
-    pub order_remaining_quantity: f64,
+    pub quantity: Number,
+    pub order_remaining_quantity: Number,
     /// xml: `OrderedMap` { "name": "executionLegs", "wrapped": true }
     pub execution_legs: Vec<ExecutionLeg>,
 }
@@ -83,9 +84,9 @@ pub struct OrderActivity {
 #[serde(rename_all = "camelCase")]
 pub struct ExecutionLeg {
     pub leg_id: i64,
-    pub price: f64,
-    pub quantity: f64,
-    pub mismarked_quantity: f64,
+    pub price: Number,
+    pub quantity: Number,
+    pub mismarked_quantity: Number,
     pub instrument_id: i64,
     pub time: chrono::DateTime<chrono::Utc>,
 }

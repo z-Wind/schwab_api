@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
 use super::option::ContractType;
+use crate::Number;
 
 /// Quote info of Future Option security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -40,7 +41,7 @@ pub struct QuoteFutureOption {
     /// example: 124.63
     ///
     /// Current Best Ask Price
-    pub ask_price: f64,
+    pub ask_price: Number,
 
     /// example: 700
     ///
@@ -56,7 +57,7 @@ pub struct QuoteFutureOption {
     /// example: 124.6
     ///
     /// Current Best Bid Price
-    pub bid_price: f64,
+    pub bid_price: Number,
 
     /// example: 300
     ///
@@ -66,12 +67,12 @@ pub struct QuoteFutureOption {
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: 126.99
     ///
     /// Day's high trade price
-    pub high_price: f64,
+    pub high_price: Number,
 
     /// example: XNYS
     ///
@@ -80,7 +81,7 @@ pub struct QuoteFutureOption {
     pub last_micid: String,
 
     /// example: 122.3
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 100
     ///
@@ -90,7 +91,7 @@ pub struct QuoteFutureOption {
     /// example: 52.74
     ///
     /// Day's low trade price
-    pub low_price: f64,
+    pub low_price: Number,
 
     /// example: 52.93
     ///
@@ -100,17 +101,17 @@ pub struct QuoteFutureOption {
     /// example: -0.04
     ///
     /// Mark Price change
-    pub mark_change: f64,
+    pub mark_change: Number,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: f64,
+    pub net_percent_change: Number,
 
     /// example: 317
     ///
@@ -120,7 +121,7 @@ pub struct QuoteFutureOption {
     /// example: 52.8
     ///
     /// Price at market open
-    pub open_price: f64,
+    pub open_price: Number,
 
     /// example: 1621376892336
     ///
@@ -136,17 +137,17 @@ pub struct QuoteFutureOption {
     /// example: 52.8
     ///
     /// Price at market open
-    pub settlement_price: f64,
+    pub settlement_price: Number,
 
     /// example: 0
     ///
     /// Tick Price
-    pub tick: f64,
+    pub tick: Number,
 
     /// example: 0
     ///
     /// Tick Amount
-    pub tick_amount: f64,
+    pub tick_amount: Number,
 
     /// example: 20171188
     ///
@@ -184,7 +185,7 @@ pub struct ReferenceFutureOption {
     /// example: 100
     ///
     /// Option multiplier
-    pub multiplier: f64,
+    pub multiplier: Number,
 
     /// date of expiration in long
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
@@ -196,7 +197,7 @@ pub struct ReferenceFutureOption {
     /// example: 2300
     ///
     /// Strike Price
-    pub strike_price: f64,
+    pub strike_price: Number,
 
     /// example: AMZN Aug 20 2021 2300 Put
     ///

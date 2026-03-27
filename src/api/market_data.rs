@@ -12,7 +12,7 @@ use super::parameter::{
 };
 use super::save_raw_json;
 use crate::api::Error;
-use crate::model;
+use crate::{Number, model};
 
 /// Get Quotes by list of symbols.
 #[derive(Debug)]
@@ -312,10 +312,10 @@ pub struct GetOptionChainsRequest {
     strategy: Option<OptionChainStrategy>,
 
     /// Strike interval for spread strategy chains (see [`Self::strategy`] param)
-    interval: Option<f64>,
+    interval: Option<Number>,
 
     /// Strike Price
-    strike: Option<f64>,
+    strike: Option<Number>,
 
     /// Range(ITM/NTM/OTM etc.)
     range: Option<String>,
@@ -331,17 +331,17 @@ pub struct GetOptionChainsRequest {
     /// Volatility to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    volatility: Option<f64>,
+    volatility: Option<Number>,
 
     /// Underlying price to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    underlying_price: Option<f64>,
+    underlying_price: Option<Number>,
 
     /// Interest rate to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    interest_rate: Option<f64>,
+    interest_rate: Option<Number>,
 
     /// Days to expiration to use in calculations.
     ///
@@ -427,13 +427,13 @@ impl GetOptionChainsRequest {
     }
 
     /// Strike interval for spread strategy chains (see [`Self::strategy`] param)
-    pub fn interval(&mut self, val: f64) -> &mut Self {
+    pub fn interval(&mut self, val: Number) -> &mut Self {
         self.interval = Some(val);
         self
     }
 
     /// Strike Price
-    pub fn strike(&mut self, val: f64) -> &mut Self {
+    pub fn strike(&mut self, val: Number) -> &mut Self {
         self.strike = Some(val);
         self
     }
@@ -461,7 +461,7 @@ impl GetOptionChainsRequest {
     /// Volatility to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    pub fn volatility(&mut self, val: f64) -> &mut Self {
+    pub fn volatility(&mut self, val: Number) -> &mut Self {
         self.volatility = Some(val);
         self
     }
@@ -469,7 +469,7 @@ impl GetOptionChainsRequest {
     /// Underlying price to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    pub fn underlying_price(&mut self, val: f64) -> &mut Self {
+    pub fn underlying_price(&mut self, val: Number) -> &mut Self {
         self.underlying_price = Some(val);
         self
     }
@@ -477,7 +477,7 @@ impl GetOptionChainsRequest {
     /// Interest rate to use in calculations.
     ///
     /// Applies only to `ANALYTICAL` strategy chains (see [`Self::strategy`] param)
-    pub fn interest_rate(&mut self, val: f64) -> &mut Self {
+    pub fn interest_rate(&mut self, val: Number) -> &mut Self {
         self.interest_rate = Some(val);
         self
     }
@@ -1474,6 +1474,8 @@ mod tests {
     use reqwest::Client;
     use test_log::test;
 
+    use crate::to_number;
+
     use super::*;
 
     #[test(tokio::test)]
@@ -1803,14 +1805,14 @@ mod tests {
         let strike_count = 1;
         let include_underlying_quote = true;
         let strategy = OptionChainStrategy::Single;
-        let interval = 1.1;
-        let strike = 2.2;
+        let interval = to_number(1.1);
+        let strike = to_number(2.2);
         let range = "ITM".to_string();
         let from_date = chrono::NaiveDate::from_ymd_opt(2015, 3, 14).unwrap();
         let to_date = chrono::NaiveDate::from_ymd_opt(2015, 5, 14).unwrap();
-        let volatility = 3.3;
-        let underlying_price = 4.4;
-        let interest_rate = 5.5;
+        let volatility = to_number(3.3);
+        let underlying_price = to_number(4.4);
+        let interest_rate = to_number(5.5);
         let days_to_expiration = 2;
         let exp_month = Month::Jan;
         let option_type = "option_type".to_string();

@@ -2,6 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 /// Quote info of Index security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,8 +25,10 @@ pub struct IndexResponse {
     pub quote: QuoteIndex,
     pub reference: ReferenceIndex,
 
-    // not in schama
+    // Fields not explicitly defined in the official schema
+    // ===================================================
     pub fundamental: Option<super::equity::Fundamental>,
+    // ===================================================
 }
 
 /// Quote data of Index security
@@ -36,46 +40,46 @@ pub struct QuoteIndex {
     ///
     /// Higest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekHigh")]
-    pub n52week_high: f64,
+    pub n52week_high: Number,
 
     /// example: 77.581
     ///
     /// Lowest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekLow")]
-    pub n52week_low: f64,
+    pub n52week_low: Number,
 
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: 126.99
     ///
     /// Day's high trade price
-    pub high_price: f64,
+    pub high_price: Number,
 
     /// example: 122.3
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 52.74
     ///
     /// Day's low trade price
-    pub low_price: f64,
+    pub low_price: Number,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: f64,
+    pub net_percent_change: Number,
 
     /// example: 52.8
     ///
     /// Price at market open
-    pub open_price: f64,
+    pub open_price: Number,
 
     /// example: Normal
     ///

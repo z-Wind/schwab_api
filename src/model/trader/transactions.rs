@@ -2,6 +2,7 @@ use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::{Map, Value};
 
 use super::accounts::AssetType;
+use crate::Number;
 
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
@@ -22,7 +23,7 @@ pub struct Transaction {
     pub settlement_date: Option<chrono::DateTime<chrono::FixedOffset>>,
     pub position_id: Option<i64>,
     pub order_id: Option<i64>,
-    pub net_amount: f64,
+    pub net_amount: Number,
     pub activity_type: Option<TransactionActivityType>,
     /// xml: `OrderedMap` { "name": "transferItems", "wrapped": true }
     pub transfer_items: Vec<TransferItem>,
@@ -49,9 +50,9 @@ pub struct UserDetails {
 #[serde(rename_all = "camelCase")]
 pub struct TransferItem {
     pub instrument: DuplicatedKey<TransactionInstrument>,
-    pub amount: f64,
-    pub cost: f64,
-    pub price: Option<f64>,
+    pub amount: Number,
+    pub cost: Number,
+    pub price: Option<Number>,
     pub fee_type: Option<TransferItemFeeType>,
     pub position_effect: Option<TransferItemPositionEffect>,
 }
@@ -135,9 +136,9 @@ pub struct TransactionFixedIncome {
     #[serde(rename = "type")]
     pub type_field: TransactionFixedIncomeType,
     pub maturity_date: chrono::DateTime<chrono::Utc>,
-    pub factor: Option<f64>,
-    pub multiplier: Option<f64>,
-    pub variable_rate: Option<f64>,
+    pub factor: Option<Number>,
+    pub multiplier: Option<Number>,
+    pub variable_rate: Option<Number>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -166,7 +167,7 @@ pub struct Future {
     pub expiration_date: chrono::DateTime<chrono::Utc>,
     pub last_trading_date: chrono::DateTime<chrono::Utc>,
     pub first_notice_date: chrono::DateTime<chrono::Utc>,
-    pub multiplier: f64,
+    pub multiplier: Number,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -209,7 +210,7 @@ pub struct TransactionOption {
     pub option_deliverables: Vec<TransactionAPIOptionDeliverable>,
     pub option_premium_multiplier: i64,
     pub put_call: TransactionOptionPutCall,
-    pub strike_price: f64,
+    pub strike_price: Number,
     #[serde(rename = "type")]
     pub type_field: TransactionOptionType,
     pub underlying_symbol: String,
@@ -223,7 +224,7 @@ pub struct TransactionAPIOptionDeliverable {
     pub root_symbol: String,
     pub strike_percent: i64,
     pub deliverable_number: i64,
-    pub deliverable_units: f64,
+    pub deliverable_units: Number,
     pub deliverable: DuplicatedKey<TransactionInstrument>,
     pub asset_type: AssetType,
 }
@@ -248,11 +249,13 @@ pub struct TransactionBaseInstrument {
     pub symbol: String,
     pub description: Option<String>,
     pub instrument_id: Option<i64>,
-    pub net_change: Option<f64>,
+    pub net_change: Option<Number>,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub status: Option<String>,
-    pub closing_price: Option<f64>,
+    pub closing_price: Option<Number>,
+    // ===================================================
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

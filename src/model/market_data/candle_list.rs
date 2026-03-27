@@ -2,6 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 #[serde_as]
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
@@ -11,7 +13,7 @@ use serde_with::{TimestampMilliSeconds, serde_as};
 pub struct CandleList {
     pub candles: Vec<Candle>,
     pub empty: Option<bool>,
-    pub previous_close: Option<f64>,
+    pub previous_close: Option<Number>,
     #[serde_as(as = "Option<TimestampMilliSeconds<i64>>")]
     pub previous_close_date: Option<chrono::DateTime<chrono::Utc>>,
     #[serde(rename = "previousCloseDateISO8601")]
@@ -20,18 +22,21 @@ pub struct CandleList {
 }
 
 #[serde_as]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Candle {
-    pub close: f64,
+    pub open: Number,
+    pub high: Number,
+    pub low: Number,
+    pub close: Number,
+    pub volume: u64,
     #[serde_as(as = "TimestampMilliSeconds<i64>")]
     pub datetime: chrono::DateTime<chrono::Utc>,
-    #[serde(rename = "dateTimeISO8601", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dateTimeISO8601")]
     pub datetime_iso8601: Option<chrono::DateTime<chrono::Utc>>,
-    pub high: f64,
-    pub low: f64,
-    pub open: f64,
-    pub volume: u64,
 }
 
 #[cfg(test)]

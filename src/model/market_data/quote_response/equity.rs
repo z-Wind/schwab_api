@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 /// Quote info of Equity security
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
@@ -47,7 +49,7 @@ pub struct ExtendedMarket {
     /// example: 124.85
     ///
     /// Extended market ask price
-    pub ask_price: f64,
+    pub ask_price: Number,
 
     /// example: 51771
     ///
@@ -57,7 +59,7 @@ pub struct ExtendedMarket {
     /// example: 124.85
     ///
     /// Extended market bid price
-    pub bid_price: f64,
+    pub bid_price: Number,
 
     /// example: 51771
     ///
@@ -67,7 +69,7 @@ pub struct ExtendedMarket {
     /// example: 124.85
     ///
     /// Extended market last price
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 51771
     ///
@@ -77,7 +79,7 @@ pub struct ExtendedMarket {
     /// example: 1.1246
     ///
     /// mark price
-    pub mark: f64,
+    pub mark: Number,
 
     /// example: 1621368000400
     ///
@@ -105,10 +107,10 @@ Option => #[serde(skip_serializing_if = "Option::is_none")],
 #[serde(rename_all = "camelCase")]
 pub struct Fundamental {
     /// Average 10 day volume
-    pub avg_10_days_volume: f64,
+    pub avg_10_days_volume: Number,
 
     /// Average 1 day volume
-    pub avg_1_year_volume: f64,
+    pub avg_1_year_volume: Number,
 
     /// example: 2021-04-28T00:00:00Z
     ///
@@ -120,7 +122,7 @@ pub struct Fundamental {
     /// example: 0.88
     ///
     /// Dividend Amount
-    pub div_amount: f64,
+    pub div_amount: Number,
 
     /// example: 2021-05-07T00:00:00Z
     ///
@@ -135,7 +137,7 @@ pub struct Fundamental {
     /// example: 0.22
     ///
     /// Dividend Pay Amount
-    pub div_pay_amount: f64,
+    pub div_pay_amount: Number,
 
     /// example: 2021-05-13T00:00:00Z
     ///
@@ -147,17 +149,17 @@ pub struct Fundamental {
     /// example: 0.7
     ///
     /// Dividend yield
-    pub div_yield: f64,
+    pub div_yield: Number,
 
     /// example: 4.45645
     ///
     /// Earnings per Share
-    pub eps: f64,
+    pub eps: Number,
 
     /// example: -1
     ///
     /// Fund Leverage Factor + > 0 <-
-    pub fund_leverage_factor: f64,
+    pub fund_leverage_factor: Number,
 
     /// nullable: true
     ///
@@ -181,10 +183,12 @@ pub struct Fundamental {
     /// example: 28.599
     ///
     /// P/E Ratio
-    pub pe_ratio: f64,
+    pub pe_ratio: Number,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub last_earnings_date: Option<chrono::DateTime<chrono::Utc>>,
+    // ===================================================
 }
 
 /// Quote data of Equity security
@@ -199,13 +203,13 @@ pub struct QuoteEquity {
     ///
     /// Higest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekHigh")]
-    pub n52week_high: f64,
+    pub n52week_high: Number,
 
     /// example: 77.581
     ///
     /// Lowest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekLow")]
-    pub n52week_low: f64,
+    pub n52week_low: Number,
 
     /// example: XNYS
     ///
@@ -216,7 +220,7 @@ pub struct QuoteEquity {
     /// example: 124.63
     ///
     /// Current Best Ask Price
-    pub ask_price: f64,
+    pub ask_price: Number,
 
     /// example: 700
     ///
@@ -238,7 +242,7 @@ pub struct QuoteEquity {
     /// example: 124.6
     ///
     /// Current Best Bid Price
-    pub bid_price: f64,
+    pub bid_price: Number,
 
     /// example: 300
     ///
@@ -254,12 +258,12 @@ pub struct QuoteEquity {
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: 126.99
     ///
     /// Day's high trade price
-    pub high_price: f64,
+    pub high_price: Number,
 
     /// example: XNYS
     ///
@@ -268,7 +272,7 @@ pub struct QuoteEquity {
     pub last_micid: Option<String>,
 
     /// example: 122.3
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 100
     ///
@@ -278,37 +282,37 @@ pub struct QuoteEquity {
     /// example: 52.74
     ///
     /// Day's low trade price
-    pub low_price: f64,
+    pub low_price: Number,
 
     /// example: 52.93
     ///
     /// Mark price
-    pub mark: f64,
+    pub mark: Number,
 
     /// example: -0.01
     ///
     /// Mark Price change
-    pub mark_change: Option<f64>,
+    pub mark_change: Option<Number>,
 
     /// example: -0.0189
     ///
     /// Mark Price percent change
-    pub mark_percent_change: Option<f64>,
+    pub mark_percent_change: Option<Number>,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: Option<f64>,
+    pub net_percent_change: Option<Number>,
 
     /// example: 52.8
     ///
     /// Price at market open
-    pub open_price: f64,
+    pub open_price: Number,
 
     /// example: 1621376892336
     ///
@@ -335,11 +339,13 @@ pub struct QuoteEquity {
     /// example: 0.0094
     ///
     /// Option Risk/Volatility Measurement
-    pub volatility: Option<f64>,
+    pub volatility: Option<Number>,
 
     // Fields not explicitly defined in the official schema
-    pub post_market_change: Option<f64>,
-    pub post_market_percent_change: Option<f64>,
+    // ===================================================
+    pub post_market_change: Option<Number>,
+    pub post_market_percent_change: Option<Number>,
+    // ===================================================
 }
 
 /// Reference data of Equity security
@@ -378,7 +384,7 @@ pub struct ReferenceEquity {
     /// example: 4.5
     ///
     /// Hard to borrow rate.
-    pub htb_rate: Option<f64>,
+    pub htb_rate: Option<Number>,
 
     /// example: false
     ///
@@ -403,7 +409,7 @@ pub struct RegularMarket {
     ///
     /// Regular market last price
     #[serde(rename = "regularMarketLastPrice")]
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 51771
     ///
@@ -415,13 +421,13 @@ pub struct RegularMarket {
     ///
     /// Regular market net change
     #[serde(rename = "regularMarketNetChange")]
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -1.1246
     ///
     /// Regular market percent change
     #[serde(rename = "regularMarketPercentChange")]
-    pub percent_change: Option<f64>,
+    pub percent_change: Option<Number>,
 
     /// example: 1621368000400
     ///

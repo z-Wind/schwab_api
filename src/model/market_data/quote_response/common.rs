@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 /// Quote info of Common security
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
@@ -38,12 +40,12 @@ pub struct QuoteCommon {
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: Normal
     ///

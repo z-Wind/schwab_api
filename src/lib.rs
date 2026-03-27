@@ -61,6 +61,21 @@ unused_allocation
     clippy::module_name_repetitions
 )]
 
+/// Asserts that two `Number` values are equal.
+///
+/// In `decimal` mode, it performs an exact match (`assert_eq!`).
+/// In `default` (f64) mode, it performs an approximate match using `float_cmp`.
+#[cfg(test)]
+macro_rules! assert_number_eq {
+    ($left:expr, $right:expr) => {
+        #[cfg(feature = "decimal")]
+        assert_eq!($left, $right, "Decimal values are not exactly equal");
+
+        #[cfg(not(feature = "decimal"))]
+        float_cmp::assert_approx_eq!(f64, $left, $right);
+    };
+}
+
 pub mod api;
 pub mod error;
 pub mod model;
@@ -68,3 +83,33 @@ pub mod token;
 
 pub use api::Api;
 pub use error::Error;
+
+/// The numeric type used throughout the library.
+/// Defaults to `f64` for performance, but can be switched to `rust_decimal::Decimal`
+/// by enabling the `decimal` feature for financial precision.
+#[cfg(feature = "decimal")]
+pub type Number = rust_decimal::Decimal;
+
+/// The numeric type used throughout the library.
+/// Defaults to `f64` for performance.
+#[cfg(not(feature = "decimal"))]
+pub type Number = f64;
+
+/// Converts an `f64` value to the library's internal `Number` type.
+///
+/// # Panics
+///
+/// Panics if the `f64` value is not a finite number and the `decimal` feature is enabled.
+#[cfg(test)]
+fn to_number(val: f64) -> Number {
+    #[cfg(feature = "decimal")]
+    {
+        use std::str::FromStr;
+        rust_decimal::Decimal::from_str(&val.to_string())
+            .expect("Failed to convert f64 to Decimal: value must be finite")
+    }
+    #[cfg(not(feature = "decimal"))]
+    {
+        val
+    }
+}

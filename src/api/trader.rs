@@ -1320,6 +1320,7 @@ mod tests {
     use test_log::test;
 
     use crate::model::trader::accounts::SecuritiesAccount;
+    use crate::to_number;
 
     use super::*;
 
@@ -1930,8 +1931,8 @@ mod tests {
                 symbol: "VEA".to_string(),
             },
             model::Instruction::Buy,
-            1.0,
-            10.0,
+            to_number(1.0),
+            to_number(10.0),
         )
         .unwrap();
 

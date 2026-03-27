@@ -22,6 +22,7 @@ use super::order::StopType;
 use super::order::TaxLotMethod;
 use super::preview_order::Instruction;
 use crate::Error;
+use crate::Number;
 use crate::model::InstrumentResponse;
 use crate::model::market_data::instrument::InstrumentAssetType;
 
@@ -36,23 +37,23 @@ pub struct OrderRequest {
     pub order_type: Option<OrderTypeRequest>,
     pub cancel_time: Option<chrono::DateTime<chrono::Utc>>,
     pub complex_order_strategy_type: Option<ComplexOrderStrategyType>,
-    pub quantity: Option<f64>,
-    pub filled_quantity: Option<f64>,
-    pub remaining_quantity: Option<f64>,
+    pub quantity: Option<Number>,
+    pub filled_quantity: Option<Number>,
+    pub remaining_quantity: Option<Number>,
     pub destination_link_name: Option<String>,
     pub release_time: Option<chrono::DateTime<chrono::Utc>>,
-    pub stop_price: Option<f64>,
+    pub stop_price: Option<Number>,
     pub stop_price_link_basis: Option<StopPriceLinkBasis>,
     pub stop_price_link_type: Option<StopPriceLinkType>,
-    pub stop_price_offset: Option<f64>,
+    pub stop_price_offset: Option<Number>,
     pub stop_type: Option<StopType>,
     pub price_link_basis: Option<PriceLinkBasis>,
     pub price_link_type: Option<PriceLinkType>,
-    pub price: Option<f64>,
+    pub price: Option<Number>,
     pub tax_lot_method: Option<TaxLotMethod>,
     /// xml: `OrderedMap` { "name": "orderLegCollection", "wrapped": true }
     pub order_leg_collection: Option<Vec<OrderLegCollectionRequest>>,
-    pub activation_price: Option<f64>,
+    pub activation_price: Option<Number>,
     pub special_instruction: Option<SpecialInstruction>,
     pub order_strategy_type: OrderStrategyType,
     pub order_id: Option<i64>,
@@ -137,7 +138,7 @@ impl OrderRequest {
     pub fn market(
         symbol: InstrumentRequest,
         instruction: Instruction,
-        quantity: f64,
+        quantity: Number,
     ) -> Result<Self, Error> {
         let order_leg_collection = vec![OrderLegCollectionRequest {
             instruction,
@@ -158,8 +159,8 @@ impl OrderRequest {
     pub fn limit(
         symbol: InstrumentRequest,
         instruction: Instruction,
-        quantity: f64,
-        price: f64,
+        quantity: Number,
+        price: Number,
     ) -> Result<Self, Error> {
         let order_leg_collection = vec![OrderLegCollectionRequest {
             instruction,
@@ -261,7 +262,7 @@ impl TryFrom<OrderType> for OrderTypeRequest {
 pub struct OrderLegCollectionRequest {
     pub instrument: InstrumentRequest,
     pub instruction: Instruction,
-    pub quantity: f64,
+    pub quantity: Number,
 }
 
 impl From<OrderLegCollection> for OrderLegCollectionRequest {
@@ -343,6 +344,8 @@ mod tests {
     use serde_json::json;
     use test_log::test;
 
+    use crate::to_number;
+
     use super::*;
 
     #[test]
@@ -381,7 +384,7 @@ mod tests {
         let symbol = InstrumentRequest::Equity {
             symbol: "XYZ".to_string(),
         };
-        let order_req = OrderRequest::market(symbol, Instruction::Buy, 15.0).unwrap();
+        let order_req = OrderRequest::market(symbol, Instruction::Buy, to_number(15.0)).unwrap();
         let order_req = serde_json::to_value(order_req).unwrap();
         assert_json_matches!(
             order_req,
@@ -416,7 +419,13 @@ mod tests {
         let symbol = InstrumentRequest::Option {
             symbol: "XYZ   240315C00500000".to_string(),
         };
-        let order_req = OrderRequest::limit(symbol, Instruction::BuyToOpen, 10.0, 6.45).unwrap();
+        let order_req = OrderRequest::limit(
+            symbol,
+            Instruction::BuyToOpen,
+            to_number(10.0),
+            to_number(6.45),
+        )
+        .unwrap();
         let order_req = serde_json::to_value(order_req).unwrap();
         assert_json_matches!(
             order_req,
@@ -465,16 +474,16 @@ mod tests {
             .order_type(OrderTypeRequest::NetDebit)
             .session(Session::Normal)
             .duration(Duration::Day)
-            .price(0.1)
+            .price(to_number(0.1))
             .order_leg_collection(vec![
                 OrderLegCollectionRequest {
                     instruction: Instruction::BuyToOpen,
-                    quantity: 2.0,
+                    quantity: to_number(2.0),
                     instrument: symbol1,
                 },
                 OrderLegCollectionRequest {
                     instruction: Instruction::SellToOpen,
-                    quantity: 2.0,
+                    quantity: to_number(2.0),
                     instrument: symbol2,
                 },
             ])
@@ -537,10 +546,10 @@ mod tests {
             .order_type(OrderTypeRequest::Limit)
             .session(Session::Normal)
             .duration(Duration::Day)
-            .price(42.03)
+            .price(to_number(42.03))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 10.0,
+                quantity: to_number(10.0),
                 instrument: symbol.clone(),
             }])
             .build()
@@ -549,11 +558,11 @@ mod tests {
             .order_type(OrderTypeRequest::Limit)
             .session(Session::Normal)
             .duration(Duration::Day)
-            .price(34.97)
+            .price(to_number(34.97))
             .order_strategy_type(OrderStrategyType::Trigger)
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Buy,
-                quantity: 10.0,
+                quantity: to_number(10.0),
                 instrument: symbol,
             }])
             .child_order_strategies(vec![child_order_req])
@@ -577,7 +586,7 @@ mod tests {
                 {
                     "orderType": "LIMIT",
                     "session": "NORMAL",
-                    "price": 45.97,
+                    "price": to_number(45.97),
                     "duration": "DAY",
                     "orderStrategyType": "SINGLE",
                     "orderLegCollection": [
@@ -594,8 +603,8 @@ mod tests {
                 {
                     "orderType": "STOP_LIMIT",
                     "session": "NORMAL",
-                    "price": 37.0,
-                    "stopPrice": 37.03,
+                    "price": to_number(37.0),
+                    "stopPrice": to_number(37.03),
                     "duration": "DAY",
                     "orderStrategyType": "SINGLE",
                     "orderLegCollection": [
@@ -620,10 +629,10 @@ mod tests {
             .order_type(OrderTypeRequest::Limit)
             .session(Session::Normal)
             .duration(Duration::Day)
-            .price(45.97)
+            .price(to_number(45.97))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 2.0,
+                quantity: to_number(2.0),
                 instrument: symbol.clone(),
             }])
             .build()
@@ -632,11 +641,11 @@ mod tests {
             .order_type(OrderTypeRequest::StopLimit)
             .session(Session::Normal)
             .duration(Duration::Day)
-            .price(37.00)
-            .stop_price(37.03)
+            .price(to_number(37.00))
+            .stop_price(to_number(37.03))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 2.0,
+                quantity: to_number(2.0),
                 instrument: symbol.clone(),
             }])
             .build()
@@ -726,10 +735,10 @@ mod tests {
             .order_type(OrderTypeRequest::Limit)
             .session(Session::Normal)
             .duration(Duration::GoodTillCancel)
-            .price(15.27)
+            .price(to_number(15.27))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 5.0,
+                quantity: to_number(5.0),
                 instrument: symbol.clone(),
             }])
             .build()
@@ -738,10 +747,10 @@ mod tests {
             .order_type(OrderTypeRequest::Stop)
             .session(Session::Normal)
             .duration(Duration::GoodTillCancel)
-            .stop_price(11.27)
+            .stop_price(to_number(11.27))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 5.0,
+                quantity: to_number(5.0),
                 instrument: symbol.clone(),
             }])
             .build()
@@ -756,10 +765,10 @@ mod tests {
             .session(Session::Normal)
             .duration(Duration::Day)
             .order_type(OrderTypeRequest::Limit)
-            .price(14.97)
+            .price(to_number(14.97))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Buy,
-                quantity: 5.0,
+                quantity: to_number(5.0),
                 instrument: symbol.clone(),
             }])
             .child_order_strategies(vec![child_order_req])
@@ -809,11 +818,11 @@ mod tests {
             .duration(Duration::Day)
             .stop_price_link_basis(StopPriceLinkBasis::Bid)
             .stop_price_link_type(StopPriceLinkType::Value)
-            .stop_price_offset(10.0)
-            .price(14.97)
+            .stop_price_offset(to_number(10.0))
+            .price(to_number(14.97))
             .order_leg_collection(vec![OrderLegCollectionRequest {
                 instruction: Instruction::Sell,
-                quantity: 10.0,
+                quantity: to_number(10.0),
                 instrument: symbol.clone(),
             }])
             .build()

@@ -2,6 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 /// Quote info of Option security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -33,18 +35,18 @@ pub struct QuoteOption {
     ///
     /// Higest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekHigh")]
-    pub n52week_high: Option<f64>,
+    pub n52week_high: Option<Number>,
 
     /// example: 77.581
     ///
     /// Lowest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekLow")]
-    pub n52week_low: Option<f64>,
+    pub n52week_low: Option<Number>,
 
     /// example: 124.63
     ///
     /// Current Best Ask Price
-    pub ask_price: f64,
+    pub ask_price: Number,
 
     /// example: 700
     ///
@@ -54,7 +56,7 @@ pub struct QuoteOption {
     /// example: 124.6
     ///
     /// Current Best Bid Price
-    pub bid_price: f64,
+    pub bid_price: Number,
 
     /// example: 300
     ///
@@ -64,32 +66,32 @@ pub struct QuoteOption {
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: -0.0407
     ///
     /// Delta Value
-    pub delta: f64,
+    pub delta: Number,
 
     /// example: 0.0001
     ///
     /// Gamma Value
-    pub gamma: f64,
+    pub gamma: Number,
 
     /// example: 126.99
     ///
     /// Day's high trade price
-    pub high_price: f64,
+    pub high_price: Number,
 
     /// example: 126.99
     ///
     /// Indicative Ask Price applicable only for Indicative Option Symbols
-    pub ind_ask_price: f64,
+    pub ind_ask_price: Number,
 
     /// example: 126.99
     ///
     /// Indicative Bid Price applicable only for Indicative Option Symbols
-    pub ind_bid_price: f64,
+    pub ind_bid_price: Number,
 
     /// example: 126.99
     ///
@@ -100,10 +102,10 @@ pub struct QuoteOption {
     /// example: -0.0067
     ///
     /// Implied Yield
-    pub implied_yield: f64,
+    pub implied_yield: Number,
 
     /// example: 122.3
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 100
     ///
@@ -113,47 +115,47 @@ pub struct QuoteOption {
     /// example: 52.74
     ///
     /// Day's low trade price
-    pub low_price: f64,
+    pub low_price: Number,
 
     /// example: 52.93
     ///
     /// Mark price
-    pub mark: f64,
+    pub mark: Number,
 
     /// example: -0.01
     ///
     /// Mark Price change
-    pub mark_change: f64,
+    pub mark_change: Number,
 
     /// example: -0.0189
     ///
     /// Mark Price percent change
-    pub mark_percent_change: f64,
+    pub mark_percent_change: Number,
 
     /// example: -947.96
     ///
     /// Money Intrinsic Value
-    pub money_intrinsic_value: f64,
+    pub money_intrinsic_value: Number,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: f64,
+    pub net_percent_change: Number,
 
     /// example: 317
     ///
     /// Open Interest
-    pub open_interest: f64,
+    pub open_interest: Number,
 
     /// example: 52.8
     ///
     /// Price at market open
-    pub open_price: f64,
+    pub open_price: Number,
 
     /// example: 1621376892336
     ///
@@ -164,7 +166,7 @@ pub struct QuoteOption {
     /// example: -0.3732
     ///
     /// Rho Value
-    pub rho: f64,
+    pub rho: Number,
 
     /// example: Normal
     ///
@@ -174,17 +176,17 @@ pub struct QuoteOption {
     /// example: 12.275
     ///
     /// Theoretical option Value
-    pub theoretical_option_value: f64,
+    pub theoretical_option_value: Number,
 
     /// example: -0.315
     ///
     /// Theta Value
-    pub theta: f64,
+    pub theta: Number,
 
     /// example: 12.22
     ///
     /// Time Value
-    pub time_value: f64,
+    pub time_value: Number,
 
     /// example: 20171188
     ///
@@ -200,17 +202,17 @@ pub struct QuoteOption {
     /// example: 3247.96
     ///
     /// Underlying Price
-    pub underlying_price: f64,
+    pub underlying_price: Number,
 
     /// example: 1.4455
     ///
     /// Vega Value
-    pub vega: f64,
+    pub vega: Number,
 
     /// example: 0.0094
     ///
     /// Option Risk/Volatility Measurement
-    pub volatility: f64,
+    pub volatility: Number,
 }
 
 /// Reference data of Option security
@@ -295,7 +297,7 @@ pub struct ReferenceOption {
     /// example: 100
     ///
     /// Option multiplier
-    pub multiplier: f64,
+    pub multiplier: Number,
 
     /// option contract settlement type AM or PM
     pub settlement_type: SettlementType,
@@ -303,7 +305,7 @@ pub struct ReferenceOption {
     /// example: 2300
     ///
     /// Strike Price
-    pub strike_price: f64,
+    pub strike_price: Number,
 
     /// example: AMZN Aug 20 2021 2300 Put
     ///
@@ -311,7 +313,9 @@ pub struct ReferenceOption {
     pub underlying: String,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub uv_expiration_type: Option<String>,
+    // ===================================================
 }
 
 /// Indicates call or put

@@ -11,6 +11,8 @@ pub mod quote_error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::Number;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct QuoteResponseMap {
     #[serde(flatten)]
@@ -55,7 +57,7 @@ impl QuoteResponse {
 
     /// Returns the 52-week high price
     #[must_use]
-    pub fn n52week_high(&self) -> Option<f64> {
+    pub fn n52week_high(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.n52week_high),
             QuoteResponse::Forex(x) => Some(x.quote.n52week_high),
@@ -70,7 +72,7 @@ impl QuoteResponse {
 
     /// Returns the 52-week low price
     #[must_use]
-    pub fn n52week_low(&self) -> Option<f64> {
+    pub fn n52week_low(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.n52week_low),
             QuoteResponse::Forex(x) => Some(x.quote.n52week_low),
@@ -85,7 +87,7 @@ impl QuoteResponse {
 
     /// Returns the current best ask price
     #[must_use]
-    pub fn ask_price(&self) -> Option<f64> {
+    pub fn ask_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.ask_price),
             QuoteResponse::Forex(x) => Some(x.quote.ask_price),
@@ -126,7 +128,7 @@ impl QuoteResponse {
 
     /// Returns the current best bid price
     #[must_use]
-    pub fn bid_price(&self) -> Option<f64> {
+    pub fn bid_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.bid_price),
             QuoteResponse::Forex(x) => Some(x.quote.bid_price),
@@ -167,7 +169,7 @@ impl QuoteResponse {
 
     /// Returns the previous day's closing price
     #[must_use]
-    pub fn close_price(&self) -> f64 {
+    pub fn close_price(&self) -> Number {
         match self {
             QuoteResponse::Equity(x) => x.quote.close_price,
             QuoteResponse::Forex(x) => x.quote.close_price,
@@ -182,7 +184,7 @@ impl QuoteResponse {
 
     /// Returns the day's high trade price
     #[must_use]
-    pub fn high_price(&self) -> Option<f64> {
+    pub fn high_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.high_price),
             QuoteResponse::Forex(x) => Some(x.quote.high_price),
@@ -196,7 +198,7 @@ impl QuoteResponse {
 
     /// Returns the latest traded price
     #[must_use]
-    pub fn last_price(&self) -> Option<f64> {
+    pub fn last_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.last_price),
             QuoteResponse::Forex(x) => Some(x.quote.last_price),
@@ -223,7 +225,7 @@ impl QuoteResponse {
 
     /// Returns the day's low trade price
     #[must_use]
-    pub fn low_price(&self) -> Option<f64> {
+    pub fn low_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.low_price),
             QuoteResponse::Forex(x) => Some(x.quote.low_price),
@@ -237,7 +239,7 @@ impl QuoteResponse {
 
     /// Returns the current last-prev close price difference
     #[must_use]
-    pub fn net_change(&self) -> f64 {
+    pub fn net_change(&self) -> Number {
         match self {
             QuoteResponse::Equity(x) => x.quote.net_change,
             QuoteResponse::Forex(x) => x.quote.net_change,
@@ -252,7 +254,7 @@ impl QuoteResponse {
 
     /// Returns the day's open trade price
     #[must_use]
-    pub fn open_price(&self) -> Option<f64> {
+    pub fn open_price(&self) -> Option<Number> {
         match self {
             QuoteResponse::Equity(x) => Some(x.quote.open_price),
             QuoteResponse::Forex(x) => Some(x.quote.open_price),
@@ -311,10 +313,12 @@ impl QuoteResponse {
 #[cfg(test)]
 mod tests {
     use assert_json_diff::{CompareMode, Config, NumericMode, assert_json_matches};
-    use float_cmp::assert_approx_eq;
     use test_log::test;
 
+    use crate::to_number;
+
     use super::*;
+
     #[test]
     fn test_de() {
         let json = include_str!(concat!(
@@ -357,27 +361,27 @@ mod tests {
 
         let result = val.responses.remove("AAPL").unwrap();
         assert_eq!("AAPL", result.symbol());
-        assert_approx_eq!(f64, 199.62, result.n52week_high().unwrap());
-        assert_approx_eq!(f64, 164.075, result.n52week_low().unwrap());
-        assert_approx_eq!(f64, 189.92, result.ask_price().unwrap());
+        assert_number_eq!(to_number(199.62), result.n52week_high().unwrap());
+        assert_number_eq!(to_number(164.075), result.n52week_low().unwrap());
+        assert_number_eq!(to_number(189.92), result.ask_price().unwrap());
         assert_eq!(1, result.ask_size().unwrap());
         assert_eq!(
             chrono::DateTime::from_timestamp_millis(1_715_990_363_904).unwrap(),
             result.ask_time().unwrap()
         );
-        assert_approx_eq!(f64, 189.9, result.bid_price().unwrap());
+        assert_number_eq!(to_number(189.9), result.bid_price().unwrap());
         assert_eq!(6, result.bid_size().unwrap());
         assert_eq!(
             chrono::DateTime::from_timestamp_millis(1_715_990_363_904).unwrap(),
             result.bid_time().unwrap()
         );
-        assert_approx_eq!(f64, 189.84, result.close_price());
-        assert_approx_eq!(f64, 190.81, result.high_price().unwrap());
-        assert_approx_eq!(f64, 189.9, result.last_price().unwrap());
+        assert_number_eq!(to_number(189.84), result.close_price());
+        assert_number_eq!(to_number(190.81), result.high_price().unwrap());
+        assert_number_eq!(to_number(189.9), result.last_price().unwrap());
         assert_eq!(2, result.last_size().unwrap());
-        assert_approx_eq!(f64, 189.18, result.low_price().unwrap());
-        assert_approx_eq!(f64, 0.06, result.net_change());
-        assert_approx_eq!(f64, 189.51, result.open_price().unwrap());
+        assert_number_eq!(to_number(189.18), result.low_price().unwrap());
+        assert_number_eq!(to_number(0.06), result.net_change());
+        assert_number_eq!(to_number(189.51), result.open_price().unwrap());
         assert_eq!(
             chrono::DateTime::from_timestamp_millis(1_715_990_363_904).unwrap(),
             result.quote_time().unwrap()

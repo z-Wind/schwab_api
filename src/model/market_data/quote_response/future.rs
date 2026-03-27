@@ -2,6 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
+use crate::Number;
+
 /// Quote info of Future security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,7 +43,7 @@ pub struct QuoteFuture {
     /// example: 4083.25
     ///
     /// Current Best Ask Price
-    pub ask_price: f64,
+    pub ask_price: Number,
 
     /// example: 36
     ///
@@ -63,7 +65,7 @@ pub struct QuoteFuture {
     /// example: 4083
     ///
     /// Current Best Bid Price
-    pub bid_price: f64,
+    pub bid_price: Number,
 
     /// example: 18
     ///
@@ -79,17 +81,17 @@ pub struct QuoteFuture {
     /// example: 4123
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub future_percent_change: f64,
+    pub future_percent_change: Number,
 
     /// example: 4123
     ///
     /// Day's high trade price
-    pub high_price: f64,
+    pub high_price: Number,
 
     /// example: XNYS
     ///
@@ -98,7 +100,7 @@ pub struct QuoteFuture {
     pub last_micid: Option<String>,
 
     /// example: 4083
-    pub last_price: f64,
+    pub last_price: Number,
 
     /// example: 7
     ///
@@ -108,17 +110,17 @@ pub struct QuoteFuture {
     /// example: 4075.5
     ///
     /// Day's low trade price
-    pub low_price: f64,
+    pub low_price: Number,
 
     /// example: 5438.25
     ///
     /// Mark price
-    pub mark: f64,
+    pub mark: Number,
 
     /// example: -40
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: 2517139
     ///
@@ -128,7 +130,7 @@ pub struct QuoteFuture {
     /// example: 4114
     ///
     /// Price at market open
-    pub open_price: f64,
+    pub open_price: Number,
 
     /// example: 1621427004585
     ///
@@ -155,12 +157,12 @@ pub struct QuoteFuture {
     /// example: 0.25
     ///
     /// Tick Price
-    pub tick: f64,
+    pub tick: Number,
 
     /// example: 12.5
     ///
     /// Tick Amount
-    pub tick_amount: f64,
+    pub tick_amount: Number,
 
     /// example: 20171188
     ///
@@ -214,7 +216,7 @@ pub struct ReferenceFuture {
     /// example: 50.0
     ///
     /// Future multiplier
-    pub future_multiplier: f64,
+    pub future_multiplier: Number,
 
     /// example: D,D
     ///
@@ -224,7 +226,7 @@ pub struct ReferenceFuture {
     /// example: 4123
     ///
     /// Future Settlement Price
-    pub future_settlement_price: f64,
+    pub future_settlement_price: Number,
 
     /// example: GLBX(de=1640;0=-1700151515301600;1=r-17001515r15301600d-15551640;7=d-16401555)
     ///
@@ -237,7 +239,9 @@ pub struct ReferenceFuture {
     pub product: String,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub future_is_tradable: Option<bool>,
+    // ===================================================
 }
 
 #[cfg(test)]

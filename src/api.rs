@@ -521,7 +521,6 @@ fn save_raw_json(folder: &str, model: &str, json: &str) {
 
 #[cfg(test)]
 mod tests {
-    use float_cmp::assert_approx_eq;
     use pretty_assertions::assert_eq;
     use std::path::Path;
     use std::path::PathBuf;
@@ -531,6 +530,7 @@ mod tests {
     use crate::model::trader::order::ExecutionType;
     use crate::model::trader::order_request::InstrumentRequest;
     use crate::model::trader::preview_order::Instruction;
+    use crate::to_number;
     use crate::token::TokenChecker;
     use crate::token::channel_messenger::ChannelMessenger;
     use crate::token::channel_messenger::compound_messenger::CompoundMessenger;
@@ -899,9 +899,9 @@ mod tests {
         let symbol = InstrumentRequest::Equity {
             symbol: "VEA".to_string(),
         };
-        let quantity = 1.0;
-        let price = 10.0;
-        let modified_price = 11.0;
+        let quantity = to_number(1.0);
+        let price = to_number(10.0);
+        let modified_price = to_number(11.0);
 
         // preview
         let order_preview =
@@ -933,7 +933,7 @@ mod tests {
             order_post_check.session,
             model::trader::order::Session::Normal
         );
-        assert_approx_eq!(f64, order_post_check.price, price);
+        assert_number_eq!(order_post_check.price, price);
         assert_eq!(
             order_post_check.duration,
             model::trader::order::Duration::Day
@@ -952,11 +952,7 @@ mod tests {
             Into::<Instruction>::into(order_post_check.order_leg_collection[0].instruction),
             Instruction::Buy
         );
-        assert_approx_eq!(
-            f64,
-            order_post_check.order_leg_collection[0].quantity,
-            quantity
-        );
+        assert_number_eq!(order_post_check.order_leg_collection[0].quantity, quantity);
 
         // put
         let order_id = order_post_check.order_id;
@@ -979,7 +975,7 @@ mod tests {
             order_put_check.session,
             model::trader::order::Session::Normal
         );
-        assert_approx_eq!(f64, order_put_check.price, modified_price);
+        assert_number_eq!(order_put_check.price, modified_price);
         assert_eq!(
             order_put_check.duration,
             model::trader::order::Duration::Day
@@ -998,11 +994,7 @@ mod tests {
             Into::<Instruction>::into(order_put_check.order_leg_collection[0].instruction),
             Instruction::Buy
         );
-        assert_approx_eq!(
-            f64,
-            order_put_check.order_leg_collection[0].quantity,
-            quantity
-        );
+        assert_number_eq!(order_put_check.order_leg_collection[0].quantity, quantity);
 
         // delete
         let req = api
@@ -1082,8 +1074,8 @@ mod tests {
                         symbol: "VEA".to_string(),
                     },
                     Instruction::Buy,
-                    1.0,
-                    10.0,
+                    to_number(1.0),
+                    to_number(10.0),
                 )
                 .unwrap(),
             )

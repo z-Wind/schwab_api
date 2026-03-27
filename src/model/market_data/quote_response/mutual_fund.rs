@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_with::{TimestampMilliSeconds, serde_as};
 
 use super::equity::Fundamental;
+use crate::Number;
 
 /// Quote info of Mutual Fund security
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -40,34 +41,34 @@ pub struct QuoteMutualFund {
     ///
     /// Higest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekHigh")]
-    pub n52week_high: f64,
+    pub n52week_high: Number,
 
     /// example: 77.581
     ///
     /// Lowest price traded in the past 12 months, or 52 weeks
     #[serde(rename = "52WeekLow")]
-    pub n52week_low: f64,
+    pub n52week_low: Number,
 
     /// example: 126.27
     ///
     /// Previous day's closing price
-    pub close_price: f64,
+    pub close_price: Number,
 
     /// example: 126.99
     ///
     /// Net Asset Value
     #[serde(rename = "nAV")]
-    pub n_av: f64,
+    pub n_av: Number,
 
     /// example: -0.04
     ///
     /// Current Last-Prev Close
-    pub net_change: f64,
+    pub net_change: Number,
 
     /// example: -0.0756
     ///
     /// Net Percentage Change
-    pub net_percent_change: f64,
+    pub net_percent_change: Number,
 
     /// example: Normal
     ///
@@ -87,7 +88,9 @@ pub struct QuoteMutualFund {
     pub trade_time: chrono::DateTime<chrono::Utc>,
 
     // Fields not explicitly defined in the official schema
-    pub last_price: Option<f64>,
+    // ===================================================
+    pub last_price: Option<Number>,
+    // ===================================================
 }
 
 /// Reference data of Mutual Fund security

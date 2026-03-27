@@ -9,6 +9,7 @@ use super::order::OrderType;
 use super::order::PositionEffect;
 use super::order::Session;
 use super::transactions::TransactionInstrument;
+use crate::Number;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,12 +38,12 @@ pub struct OrderStrategy {
     pub all_or_none: Option<bool>,
     pub discretionary: bool,
     pub duration: Duration,
-    pub filled_quantity: f64,
+    pub filled_quantity: Number,
     pub order_type: OrderType,
-    pub order_value: f64,
-    pub price: f64,
-    pub quantity: f64,
-    pub remaining_quantity: f64,
+    pub order_value: Number,
+    pub price: Number,
+    pub quantity: Number,
+    pub remaining_quantity: Number,
     pub sell_non_marginable_first: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub settlement_instruction: Option<SettlementInstruction>,
@@ -54,22 +55,22 @@ pub struct OrderStrategy {
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBalance {
-    pub order_value: f64,
-    pub projected_available_fund: f64,
-    pub projected_buying_power: f64,
-    pub projected_commission: f64,
+    pub order_value: Number,
+    pub projected_available_fund: Number,
+    pub projected_buying_power: Number,
+    pub projected_commission: Number,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderLeg {
-    pub ask_price: f64,
-    pub bid_price: f64,
-    pub last_price: f64,
-    pub mark_price: f64,
-    pub projected_commission: f64,
+    pub ask_price: Number,
+    pub bid_price: Number,
+    pub last_price: Number,
+    pub mark_price: Number,
+    pub projected_commission: Number,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quantity: Option<f64>,
+    pub quantity: Option<Number>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub final_symbol: Option<String>,
     pub leg_id: i64,
@@ -77,8 +78,10 @@ pub struct OrderLeg {
     pub instruction: Instruction,
 
     // Fields not explicitly defined in the official schema
+    // ===================================================
     pub instrument: Option<TransactionInstrument>,
     pub position_effect: Option<PositionEffect>,
+    // ===================================================
 }
 #[serde_with::apply(
     Option => #[serde(skip_serializing_if = "Option::is_none")],
@@ -130,7 +133,7 @@ pub struct CommissionLeg {
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommissionValue {
-    pub value: f64,
+    pub value: Number,
     #[serde(rename = "type")]
     pub type_field: FeeType,
 }
@@ -150,7 +153,7 @@ pub struct FeeLeg {
 #[derive(Default, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeeValue {
-    pub value: f64,
+    pub value: Number,
     #[serde(rename = "type")]
     pub type_field: FeeType,
 }
