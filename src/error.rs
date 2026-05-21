@@ -1,5 +1,7 @@
 //! Represents all possible errors the Client might encounter.
 
+use std::collections::HashMap;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Standard I/O error: {0}")]
@@ -12,6 +14,11 @@ pub enum Error {
     OrderRequestBuild(crate::model::trader::order_request::OrderRequestBuilderError),
     #[error("QuoteError: {0:?}")]
     Quote(crate::model::QuoteError),
+    #[error("PartialQuoteError: {error:?}, successfully retrieved {} quotes", responses.len())]
+    PartialQuote {
+        error: crate::model::QuoteError,
+        responses: HashMap<String, crate::model::QuoteResponse>,
+    },
     #[error("ErrorResponse: {0}")]
     Response(crate::model::ErrorResponse),
     #[error("ServiceError: {0}")]

@@ -142,8 +142,16 @@ impl GetQuotesRequest {
             })?;
 
         if let Some(e) = map.errors {
-            tracing::warn!("quote response contains errors");
-            return Err(Error::Quote(e));
+            tracing::warn!(
+                invalid_count = %e.invalid_symbols.as_ref().map_or(0, std::vec::Vec::len),
+                valid_count = %map.responses.len(),
+                "quote response contains errors, returning partial data via Error::PartialQuote"
+            );
+
+            return Err(Error::PartialQuote {
+                error: e,
+                responses: map.responses,
+            });
         }
 
         tracing::info!(
@@ -1599,6 +1607,70 @@ mod tests {
         let result = req.send().await;
         mock.assert_async().await;
         result.unwrap();
+    }
+
+    #[test(tokio::test)]
+    async fn test_get_quotes_request_real2() {
+        // Request a new server from the pool
+        let mut server = mockito::Server::new_async().await;
+
+        // Use one of these addresses to configure your client
+        let _host = server.host_with_port();
+        let url = server.url();
+
+        // define parameter
+        let symbols = vec!["symbol1".to_string(), "symbol2".to_string()];
+        let fields = vec![
+            QuoteField::Reference,
+            QuoteField::Regular,
+            QuoteField::Extra("Extra".to_string()),
+        ];
+        let indicative = true;
+
+        // Create a mock
+        let mock = server
+            .mock("GET", "/quotes")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbols".into(), symbols.join(",")),
+                Matcher::UrlEncoded("fields".into(), "reference,regular,Extra".into()),
+                Matcher::UrlEncoded("indicative".into(), indicative.to_string()),
+            ]))
+            // .match_query(Matcher::Any)
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body_from_file(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/model/MarketData/QuoteResponse_real2.json"
+            ))
+            .create_async()
+            .await;
+
+        let client = Client::new();
+        let req = client.get(format!(
+            "{url}{}",
+            GetQuotesRequest::endpoint().url_endpoint()
+        ));
+
+        let mut req = GetQuotesRequest::new_with(req, symbols.clone());
+
+        // check initial value
+        assert_eq!(req.symbols, symbols);
+        assert_eq!(req.fields, None);
+        assert_eq!(req.indicative, None);
+
+        // check setter
+        req.fields(fields.clone());
+        assert_eq!(req.fields, Some(fields));
+        req.indicative(indicative);
+        assert_eq!(req.indicative, Some(indicative));
+
+        tracing::debug!(?req);
+        let result = req.send().await;
+        mock.assert_async().await;
+        assert!(
+            matches!(result, Err(Error::PartialQuote { .. })),
+            "Expected PartialQuote error, but got: {result:?}",
+        );
     }
 
     #[test(tokio::test)]

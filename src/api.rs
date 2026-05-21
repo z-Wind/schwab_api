@@ -499,8 +499,7 @@ fn save_raw_json(folder: &str, model: &str, json: &str) {
 
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis())
-        .unwrap_or(0);
+        .map_or(0, |d| d.as_millis());
 
     let file_name = format!("error_{model}_{timestamp}.json");
     let file_path = std::path::Path::new(folder).join(file_name);

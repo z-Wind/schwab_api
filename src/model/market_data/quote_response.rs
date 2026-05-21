@@ -350,6 +350,24 @@ mod tests {
     }
 
     #[test]
+    fn test_serde_real2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/QuoteResponse_real2.json"
+        ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        let val = serde_json::from_value::<QuoteResponseMap>(json.clone()).unwrap();
+        tracing::debug!(?val);
+
+        assert_json_matches!(
+            val,
+            json,
+            Config::new(CompareMode::Strict).numeric_mode(NumericMode::AssumeFloat)
+        );
+    }
+
+    #[test]
     fn test_methods() {
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -391,5 +409,54 @@ mod tests {
             result.trade_time()
         );
         assert_eq!(41_282_925, result.total_volume().unwrap());
+    }
+
+    #[test]
+    fn test_methods2() {
+        let json = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/model/MarketData/QuoteResponse_real2.json"
+        ));
+        let json: serde_json::Value = serde_json::from_str(json).unwrap();
+
+        let mut val = serde_json::from_value::<QuoteResponseMap>(json.clone()).unwrap();
+
+        assert_eq!(
+            vec!["0050.TW", "006208.TW"],
+            val.errors.unwrap().invalid_symbols.unwrap()
+        );
+
+        let result = val.responses.remove("VTI").unwrap();
+        assert_eq!("VTI", result.symbol());
+        assert_number_eq!(to_number(368.25), result.n52week_high().unwrap());
+        assert_number_eq!(to_number(283.0), result.n52week_low().unwrap());
+        assert_number_eq!(to_number(362.8), result.ask_price().unwrap());
+        assert_eq!(680, result.ask_size().unwrap());
+        assert_eq!(
+            chrono::DateTime::from_timestamp_millis(1_779_321_572_821).unwrap(),
+            result.ask_time().unwrap()
+        );
+        assert_number_eq!(to_number(362.53), result.bid_price().unwrap());
+        assert_eq!(40, result.bid_size().unwrap());
+        assert_eq!(
+            chrono::DateTime::from_timestamp_millis(1_779_321_587_121).unwrap(),
+            result.bid_time().unwrap()
+        );
+        assert_number_eq!(to_number(360.06), result.close_price());
+        assert_number_eq!(to_number(364.39), result.high_price().unwrap());
+        assert_number_eq!(to_number(362.7), result.last_price().unwrap());
+        assert_eq!(16, result.last_size().unwrap());
+        assert_number_eq!(to_number(360.2), result.low_price().unwrap());
+        assert_number_eq!(to_number(2.64), result.net_change());
+        assert_number_eq!(to_number(361.2), result.open_price().unwrap());
+        assert_eq!(
+            chrono::DateTime::from_timestamp_millis(1_779_321_587_121).unwrap(),
+            result.quote_time().unwrap()
+        );
+        assert_eq!(
+            chrono::DateTime::from_timestamp_millis(1_779_321_597_093).unwrap(),
+            result.trade_time()
+        );
+        assert_eq!(3_152_983, result.total_volume().unwrap());
     }
 }

@@ -398,6 +398,14 @@ pub struct ReferenceEquity {
 
     /// OTC Market Tier
     pub otc_market_tier: Option<String>,
+
+    // Fields not explicitly defined in the official schema
+    // ===================================================
+    /// example: true
+    ///
+    /// Is the security optionable.
+    pub optionable: Option<bool>,
+    // ===================================================
 }
 
 /// Market info of security

@@ -3,6 +3,9 @@ use serde::Serialize;
 
 /// Partial or Custom errors per request
 #[allow(clippy::struct_field_names)]
+#[serde_with::apply(
+    Option => #[serde(skip_serializing_if = "Option::is_none")],
+)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuoteError {
