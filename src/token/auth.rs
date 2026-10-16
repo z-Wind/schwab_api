@@ -3,6 +3,7 @@ use oauth2::{
     HttpClientError, RedirectUrl, RefreshToken, Scope, TokenResponse, TokenUrl,
     basic::{BasicClient, BasicRequestTokenError, BasicTokenResponse},
 };
+use oauth2_reqwest::ReqwestClient;
 use reqwest::Client;
 use serde::Deserialize;
 use std::{path::Path, sync::LazyLock};
@@ -28,7 +29,7 @@ pub(super) struct AuthRequest {
 pub(super) struct Authorizer<CM: ChannelMessenger> {
     oauth2_client:
         BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>,
-    async_client: Client,
+    async_client: ReqwestClient,
     messenger: CM,
     redirect_url: Url,
 }
@@ -62,6 +63,7 @@ impl<CM: ChannelMessenger> Authorizer<CM> {
             .set_token_uri(TOKEN_URL.clone())
             .set_redirect_uri(redirect_url);
 
+        let async_client = ReqwestClient::from(async_client);
         let mut auth = Authorizer {
             oauth2_client,
             async_client,
@@ -305,15 +307,15 @@ mod tests {
 
     #[test(tokio::test)]
     async fn test_get_auth_code_url() {
-        const CLIENTID: &str = "CLIENTID";
-        const SECRET: &str = "SECRET";
-        const REDIRECT_URL: &str = "https://127.0.0.1:8080";
+        let clientid: &str = "CLIENTID";
+        let secret: &str = "SECRET";
+        let redirect_url: &str = "https://127.0.0.1:8080";
         let messenger = StdioMessenger::new();
 
         let auth = Authorizer::new(
-            CLIENTID.to_string(),
-            SECRET.to_string(),
-            REDIRECT_URL.to_string(),
+            clientid.to_string(),
+            secret.to_string(),
+            redirect_url.to_string(),
             Client::new(),
             messenger,
         )
@@ -338,16 +340,16 @@ mod tests {
         );
         assert_eq!(
             pairs.get(&Cow::Borrowed("client_id")).unwrap(),
-            &Cow::Borrowed(CLIENTID)
+            &Cow::Borrowed(clientid)
         );
         assert_eq!(
             pairs.get(&Cow::Borrowed("redirect_uri")).unwrap(),
-            &Cow::Borrowed(REDIRECT_URL)
+            &Cow::Borrowed(redirect_url)
         );
         assert_eq!(
             pairs.get(&Cow::Borrowed("scope")).unwrap(),
             &Cow::Borrowed("readonly")
         );
-        assert!(!csrf_token.secret().is_empty());
+        assert_ne!(csrf_token.secret(), "");
     }
 }
